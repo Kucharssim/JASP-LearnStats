@@ -1,0 +1,237 @@
+//
+  // Copyright (C) 2013-2018 University of Amsterdam
+//
+  // This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+  // This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public
+// License along with this program.  If not, see
+// <http://www.gnu.org/licenses/>.
+//
+  import QtQuick 2.8
+import QtQuick.Layouts 1.3
+import JASP.Controls 1.0
+import JASP.Widgets 1.0
+
+Form {
+  id: form
+  
+  Section{
+    title: "Show Distribution"
+    columns: 2
+    Group
+    {
+      title: "Parameters"
+
+      Group{
+        DropDown
+        {
+            name: "parametrization"
+            id:   parametrizationChoice
+            indexDefaultValue: 0
+            label: qsTr("Parameterization")
+            values: [
+                { label: "μ, σ²", value: "sigma2"},
+                { label: "μ, σ",  value: "sigma" },
+                { label: "μ, τ²", value: "tau2"  },
+                { label: "μ, τ",  value: "tau"   }
+              ]
+        }
+
+        DoubleField{ name:  "mu"; label: qsTr("μ = "); id: mu; negativeValues: true }
+        DoubleField{ name: "varValue"; label: parametrizationChoice.currentText.replace("μ, ", "") + qsTr(" ="); defaultValue: 1; min: 0; id: vars }
+      }
+
+    }
+    
+    Group{
+      title: qsTr("Display")
+      CheckBox{ label: qsTr("Parameters, support, and moments");name: "formulas" }
+      CheckBox
+      {
+        label: qsTr("Probability Density Function")
+        name: "ddist"
+        CheckBox{ label: qsTr("Formula"); name: "ddistFormula" }
+      }
+      
+      CheckBox{
+        label: qsTr("Cumulative Distribution Function")
+        name: "pdist"
+        CheckBox{ label: qsTr("Formula"); name: "pdistFormula" }
+      }
+      CheckBox{
+          label: qsTr("Quantile Function")
+          name: "qdist"
+          CheckBox{ label: qsTr("Formula"); name: "qdistFormula" }
+      }
+    }
+    
+    Group
+    {
+        title: qsTr("Options")
+        DoubleField{ name:  "range"; label: qsTr("Range"); defaultValue: 3; id: range}
+        Group{
+            columns:2
+
+        CheckBox{ name: "highlightPoint"; label: qsTr("Highlight point at")
+            CheckBox{
+                name: "highlightPointValue"; label: qsTr("Value")
+            }
+            CheckBox{
+                name: "highlightPointTangent"; label: qsTr("PDF to CDF")
+            }
+
+        }
+        DoubleField{ name: "highlightPointAt"; label: qsTr("x ="); min: -range.value; max: range.value; fieldWidth: 60; decimals: 2}
+                }
+
+        CheckBox
+        {
+            name: "highlightIntervals"; label: qsTr("Highlight Intervals")
+        RadioButtonGroup
+        {
+            name: "highlightIntervalsType"
+            RadioButton
+            {
+                value: "minmax"
+                label: qsTr("from")
+                childrenOnSameRow: true
+                checked: true
+                DoubleField{ name: "min"; label: ""; afterLabel: qsTr("to"); negativeValues: true; defaultValue: -1}
+                DoubleField{ name: "max"; label: ""; negativeValues: true; defaultValue: 1}
+            }
+            RadioButton
+            {
+                value: "lower"
+                label: qsTr("from -∞")
+                childrenOnSameRow: true
+                DoubleField{ name: "lower_max"; label: qsTr("to"); negativeValues: true; defaultValue: 0 }
+            }
+            RadioButton
+            {
+                value: "upper"
+                label: qsTr("from")
+                childrenOnSameRow: true
+                DoubleField{ name: "upper_min"; label: ""; afterLabel: qsTr("to ∞"); defaultValue: 0}
+            }
+        }
+        }
+
+    }
+
+  }
+  
+  Section
+  {
+      title: qsTr("Generate and Display Data")
+
+      CheckBox
+      {
+          name: "drawSamples"; label: qsTr("Generate"); childrenOnSameRow: true; id: sample; checked: true
+          IntegerField{
+              name: "sampleSize"
+              afterLabel: qsTr("samples from Normal(μ = ") + mu.value + parametrizationChoice.currentText.replace("μ", "") + qsTr(" = ") + vars.value + qsTr(")")
+              defaultValue: 100}
+      }
+
+      Button{ text: qsTr("sample"); enabled: sample.checked }
+
+      VariablesForm
+      {
+          height: 100
+          visible: sample.checked === false
+          AvailableVariablesList { name: "allVariables" }
+          AssignedVariablesList  { name: "variable"; label: qsTr("Get variable from data set"); allowedColumns: ["scale"]; singleVariable: true }
+      }
+
+
+      CheckBox{ name: "summaryStats"; label: qsTr("Summary Statistics")}
+
+      Group
+      {
+          title: qsTr("Plots")
+          CheckBox{ name: "histogram"; label: qsTr("Histogram") }
+          CheckBox{ name: "ecdf";      label: qsTr("Empirical CDF") }
+      }
+  }
+  
+  Section
+  {
+      title: qsTr("Estimate Parameters")
+
+      Group
+      {
+          title: ""
+          CheckBox{ name: "methodMoments"; label: qsTr("Method of Moments") }
+          CheckBox
+          {
+              name: "methodML";      label: qsTr("Maximum Likelihood"); debug: true
+              Group{
+                  CheckBox{ name: "methodMLAnalytic"; label: qsTr("Analytic")    }
+                  CheckBox{ name: "methodMLNewton";   label: qsTr("Newton")      }
+                  CheckBox{ name: "methodMLGrid";     label: qsTr("Grid Search") }
+              }
+          }
+          CheckBox
+          {
+              name: "methodBayes";   label: qsTr("Bayesian"); debug: true
+              Group{
+                  CheckBox{ name: "methodBayesAnalytic"; label: qsTr("Analytic") }
+                  CheckBox{ name: "methodBayesMAP";      label: qsTr("Maximum A Posteriori") }
+                  CheckBox{ name: "methodBayesGibbs";    label: qsTr("Gibbs Sampling") }
+              }
+              Group{title: qsTr("Priors")}
+          }
+      }
+
+      Group
+      {
+          title: qsTr("Output")
+          debug: true
+          CheckBox{ name: "estEstimates"; label: qsTr("Estimates"); checked: true }
+          CheckBox{ name: "estError"    ; label: qsTr("Uncertainty")
+              CheckBox{ name: "ciInterval"; label: qsTr("CI"); childrenOnSameRow: true
+                  PercentField{ name: "ciIntervalInterval"; label: qsTr("%")}
+              }
+              CheckBox{ name: "std.error"; label: qsTr("Standard Error") }
+          }
+
+          Group{
+              title: qsTr("Plots")
+              CheckBox{ name: "plotEstimates";   label: qsTr("Estimates")   }
+              CheckBox{ name: "plotDiagnostics"; label: qsTr("Diagnostics") }
+              CheckBox{ name: "plotAdvanced";    label: qsTr("Advanced")    }
+          }
+      }
+  }
+  Section
+  {
+      title: qsTr("Assess Fit")
+
+      Group
+      {
+          title: qsTr("Plots")
+          columns: 2
+          CheckBox{ name: "estPDF"; label: qsTr("Estimated p.d.f") }
+          CheckBox{ name: "qqplot"; label: qsTr("q-q plot")}
+          CheckBox{ name: "estCDF"; label: qsTr("Estimated c.d.f") }
+          CheckBox{ name: "ppplot"; label: qsTr("p-p plot")}
+      }
+
+      Group
+      {
+          title: qsTr("Statistics")
+          CheckBox{ name: "kolmogorovSmirnov"; label: qsTr("Kolmogorov-Smirnov")}
+          CheckBox{ name: "kramerVonMisses";   label: qsTr("Cramér–von Mises")  }
+          CheckBox{ name: "andersonDarling";   label: qsTr("Anderson-Darling")  }
+          CheckBox{ name: "sapiroWilk";        label: qsTr("Shapiro-Wilk")     }
+      }
+  }
+}

@@ -1,0 +1,31 @@
+{
+	"moduleDescription" :
+	{
+		"title" : 									"Learn Statistics",
+		"description": 							"Learn statistics with JASP",
+		"version":									0.1,
+		"author":										"JASP Team",
+		"maintainer":								"JASP Team <info@jasp-stats.org>",
+		"website":									"www.jasp-stats.org",
+		"license":									"GPL (>= 2)"
+	},
+
+	"requiredPackages":	[],
+
+	"ribbonEntries":
+	[
+		{
+			"title": 									"Learn Distributions",
+			"icon": 									"placeholder.svg",
+			"analyses":
+			[
+				{
+					"title":							"Univariate Normal",
+					"qml":								"LDgaussianunivariate.qml",
+					"function":						"LDgaussianunivariate",
+					"usesJaspResults":		true
+				}
+			]
+		}
+	]
+}
