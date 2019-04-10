@@ -15,7 +15,7 @@
 // License along with this program.  If not, see
 // <http://www.gnu.org/licenses/>.
 //
-  import QtQuick 2.8
+import QtQuick 2.8
 import QtQuick.Layouts 1.3
 import JASP.Controls 1.0
 import JASP.Widgets 1.0
@@ -24,6 +24,7 @@ Form {
   id: form
   
   Section{
+      expanded: true
     title: "Show Distribution"
     columns: 2
     Group
@@ -57,25 +58,28 @@ Form {
       CheckBox
       {
         label: qsTr("Probability Density Function")
-        name: "ddist"
-        CheckBox{ label: qsTr("Formula"); name: "ddistFormula" }
+        id: plotPDF
+        name: "plotPDF"
+        CheckBox{ label: qsTr("Formula"); name: "formulaPDF" }
       }
       
       CheckBox{
         label: qsTr("Cumulative Distribution Function")
-        name: "pdist"
-        CheckBox{ label: qsTr("Formula"); name: "pdistFormula" }
+        id: plotCDF
+        name: "plotCDF"
+        CheckBox{ label: qsTr("Formula"); name: "formulaCDF" }
       }
       CheckBox{
           label: qsTr("Quantile Function")
-          name: "qdist"
-          CheckBox{ label: qsTr("Formula"); name: "qdistFormula" }
+          name: "plotQF"
+          CheckBox{ label: qsTr("Formula"); name: "formulaQF" }
       }
     }
     
     Group
     {
         title: qsTr("Options")
+        enabled: plotPDF.checked || plotCDF.checked
         DoubleField{ name:  "range"; label: qsTr("Range"); defaultValue: 3; id: range}
         Group{
             columns:2
@@ -89,7 +93,7 @@ Form {
             }
 
         }
-        DoubleField{ name: "highlightPointAt"; label: qsTr("x ="); min: -range.value; max: range.value; fieldWidth: 60; decimals: 2}
+        DoubleField{ name: "highlightPointAt"; label: qsTr("x ="); min: -range.value; max: range.value; decimals: 2}
                 }
 
         CheckBox
@@ -131,22 +135,26 @@ Form {
   Section
   {
       title: qsTr("Generate and Display Data")
-
-      CheckBox
-      {
-          name: "drawSamples"; label: qsTr("Generate"); childrenOnSameRow: true; id: sample; checked: true
-          IntegerField{
-              name: "sampleSize"
-              afterLabel: qsTr("samples from Normal(μ = ") + mu.value + parametrizationChoice.currentText.replace("μ", "") + qsTr(" = ") + vars.value + qsTr(")")
-              defaultValue: 100}
+      GroupBox{
+        ComputedColumnField{ name: "sampleFilterName"; text: "Simulate new variable:"; fieldWidth: 120
+        value: "Normal(3, 5)"}
+        //ComputedColumnsConstructor{visible: false; rCode: "rnorm(n = 10, 1, 1)"}
       }
+      //CheckBox
+      //{
+      //    name: "drawSamples"; label: qsTr("Generate"); childrenOnSameRow: true; id: drawSamples; checked: true
+      //    IntegerField{
+      //        name: "sampleSize"
+      //        afterLabel: qsTr("samples from Normal(μ = ") + mu.value + parametrizationChoice.currentText.replace("μ", "") + qsTr(" = ") + vars.value + qsTr(")")
+      //        defaultValue: 100}
+      //}
 
-      Button{ text: qsTr("sample"); enabled: sample.checked }
+      Button{ text: qsTr("sample"); enabled: true; id: sample }
 
       VariablesForm
       {
           height: 100
-          visible: sample.checked === false
+          visible: true//drawSamples.checked === false
           AvailableVariablesList { name: "allVariables" }
           AssignedVariablesList  { name: "variable"; label: qsTr("Get variable from data set"); allowedColumns: ["scale"]; singleVariable: true }
       }
@@ -157,7 +165,9 @@ Form {
       Group
       {
           title: qsTr("Plots")
-          CheckBox{ name: "histogram"; label: qsTr("Histogram") }
+          CheckBox{ name: "histogram"; label: qsTr("Histogram with"); childrenOnSameRow: true
+            IntegerField{ name: "histogramBins"; afterLabel: qsTr("bins"); defaultValue: 30 }
+          }
           CheckBox{ name: "ecdf";      label: qsTr("Empirical CDF") }
       }
   }

@@ -21,29 +21,49 @@
 LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
 
   jaspResults$title <- "Normal distribution"
-
+  
+  if(options[['variable']] != ""){
+    dataset <- .readDataSetToEnd(columns.as.numeric = options[['variable']])
+    variable <- dataset[[.v(options[['variable']])]]
+    
+    rangeVariable <- range(variable)
+    #rangeVariable[1] <- floor(rangeVariable[1])
+    #rangeVariable[2] <- ceiling(rangeVariable[2])
+  }
+  
   options <- .recodeOptionsLDGaussianUnivariate(options)
 
+  
   jaspResults[['pdfContainer']] <- createJaspContainer(title = "Probability Density Function")
-  if(is.null(jaspResults[['pdfContainer']][['pdf']]) && options$ddist){
+  if(is.null(jaspResults[['pdfContainer']][['pdf']]) && options$plotPDF){
     .ldPlotGaussianPDF(jaspResults, options)
   }
-  if(is.null(jaspResults[['pdfContainer']][['formula']]) && options[['ddistFormula']] && options$ddist){
+  if(is.null(jaspResults[['pdfContainer']][['formula']]) && options$formulaPDF && options$plotPDF){
     .ldFormulaGaussianPDF(jaspResults, options)
   }
   
   jaspResults[['cdfContainer']] <- createJaspContainer(title = "Cumulative Distribution Function")
-  if(is.null(jaspResults[['cdfContainer']][['cdf']]) && options$pdist){
+  if(is.null(jaspResults[['cdfContainer']][['cdf']]) && options$plotCDF){
     .ldPlotGaussianCDF(jaspResults, options)
   }
-  if(is.null(jaspResults[['cdfContainer']][['formula']]) && options[['pdistFormula']]){
+  if(is.null(jaspResults[['cdfContainer']][['formula']]) && options$formulaCDF && options$plotCDF){
     .ldFormulaGaussianCDF(jaspResults, options)
   }
   
   jaspResults[['qfContainer']] <- createJaspContainer(title = "Quantile Function")
-  if(is.null(jaspResults[['qfContainer']][['qf']]) && options[['qdist']]){
+  if(is.null(jaspResults[['qfContainer']][['qf']]) && options$plotQF){
     .ldPlotGaussianQF(jaspResults, options)
   }
+  
+  jaspResults[['dataContainer']] <- createJaspContainer(title = options[['variable']])
+  
+  if(is.null(jaspResults[['dataContainer']][['histogram']]) && options$histogram){
+    .ldPlotHistogram(jaspResults, options, variable, rangeVariable)
+  }
+  if(is.null(jaspResults[['dataContainer']][['ecdf']]) && options$ecdf){
+    .ldPlotECDF(jaspResults, options, variable, rangeVariable)
+  }
+  
   return()
 }
 
@@ -57,6 +77,11 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
   } else if(options$parametrization == "tau"){
     options$sd <- 1/options$varValue
   }
+  
+  options[['pars']] <- list(mean = options[['mu']], sd = options[['sd']])
+  
+  options[['pdfFun']] <- dnorm
+  options[['cdfFun']] <- pnorm
   
   if(options[['highlightIntervalsType']] == "minmax"){
     options[['highlightmin']] <- options[['min']]
@@ -156,8 +181,8 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
 
   jaspResults[['pdfContainer']][['pdf']] <- pdfPlot
 
-  .ldFillPlotGaussianPDF(pdfPlot, options)
-
+  #.ldFillPlotGaussianPDF(pdfPlot, options)
+  .ldFillPlotDistribution(pdfPlot, options, dnorm)
   return()
 }
 
