@@ -55,7 +55,7 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
     .ldPlotGaussianQF(jaspResults, options)
   }
   
-  jaspResults[['dataContainer']] <- createJaspContainer(title = options[['variable']])
+  jaspResults[['dataContainer']] <- createJaspContainer(title = paste0("Overview -- ", options[['variable']]))
   
   if(is.null(jaspResults[['dataContainer']][["summary"]]) && options$summary){
     .ldSummaryContinuousTableMain(jaspResults, variable, options)
@@ -69,6 +69,10 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
     .ldPlotECDF(jaspResults, options, variable, rangeVariable)
   }
   
+  jaspResults[['Estimates']] <- createJaspContainer(title = "Estimated Parameters")
+  if(is.null(jaspResults[['Estimates']][['methodMoments']]) && options$methodMoments){
+    .ldGaussianMethodMomentsTableMain(jaspResults, options, variable)
+  }
   return()
 }
 
@@ -281,6 +285,67 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
   plot <- JASPgraphs::themeJasp(plot)
   plot <- plot + ggplot2::scale_y_continuous(limits = c(0,1))
   pdfPlot[['plotObject']] <- JASPgraphs::themeJasp(plot)
+  
+  return()
+}
+
+#### Estimating methods ----
+
+.ldGaussianMethodMomentsTableMain <- function(jaspResults, options, variable){
+  jaspResults[['Estimates']][['methodMoments']] <- createJaspContainer(title = "Method of Moments")
+  
+  # observed moments
+  obsMomentsTable <- createJaspTable(title = "Observed Moments")
+  
+  obsMomentsTable$dependOnOptions(c("variable"))
+  obsMomentsTable$addCitation("JASP Team (2018). JASP (Version 0.9.2) [Computer software].")
+  
+  obsMomentsTable$addColumnInfo(name = "mean",       title = "Mean",           type = "number", format = "sf:4")
+  obsMomentsTable$addColumnInfo(name = "var",        title = "Variance",       type = "number", format = "sf:4")
+  
+  obsMomentsTable$setExpectedRows(1)
+  
+  jaspResults[['Estimates']][['methodMoments']][['obsMomentsTable']] <- obsMomentsTable
+  
+  obsMomentsTable$addRows(list(mean = mean(variable), var = var(variable)))
+  
+  
+  # est Parameters
+  estParametersTable <- createJaspTable(title = "Estimated Parameters")
+  
+  estParametersTable$dependOnOptions(c("variable", "parametrization"))
+  estParametersTable$addCitation("JASP Team (2018). JASP (Version 0.9.2) [Computer software].")
+
+  estParametersTable$addColumnInfo(name = "par1",       title = "mu_hat",           type = "number", format = "sf:4")
+  
+  if(options$parametrization == "sigma2"){
+    
+    estParametersTable$addColumnInfo(name = "par2", title = "sigma2_hat", type = "number", format = "sf:4")
+    par2 <- var(variable)
+    
+  } else if(options$parametrization == "sigma"){
+    
+    estParametersTable$addColumnInfo(name = "par2", title = "sigma_hat",  type = "number", format = "sf:4")
+    par2 <- sd(variable)
+    
+  } else if(options$parametrization == "tau2"){
+    
+    estParametersTable$addColumnInfo(name = "par2", title = "tau2_hat",   type = "number", format = "sf:4")
+    par2 <- 1/var(variable)
+    
+  } else if(options$parametrization == "tau"){
+    
+    estParametersTable$addColumnInfo(name = "par2", title = "tau_hat",    type = "number", format = "sf:4")
+    par2 <- 1/sd(variable)
+    
+  }
+  
+  estParametersTable$setExpectedRows(1)
+  
+  jaspResults[['Estimates']][['methodMoments']][['estParametersTable']] <- estParametersTable
+  
+  estParametersTable$addRows(list(par1 = mean(variable), par2 = par2))
+  
   
   return()
 }
