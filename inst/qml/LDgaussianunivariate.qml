@@ -160,7 +160,7 @@ Form {
       }
 
 
-      CheckBox{ name: "summaryStats"; label: qsTr("Summary Statistics")}
+      CheckBox{ name: "summary"; label: qsTr("Summary Statistics")}
 
       Group
       {
