@@ -79,3 +79,23 @@
   
   return(kurtosis)
 }
+
+
+.computeMoments <- function(x, max.moment = 2, about.mean = FALSE){
+  n <- length(x)
+  moments <- numeric(length = max.moment)
+  moments[1] <- mean(x)
+  
+  if(max.moment < 2)
+    return(moments)
+  
+  if(about.mean)
+    x <- x-moments[1]
+  
+  
+  for(i in 2:max.moment){
+    moments[i] <- sum(x^i) / n
+  }
+  
+  return(moments)
+}

@@ -73,6 +73,7 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
   if(is.null(jaspResults[['Estimates']][['methodMoments']]) && options$methodMoments){
     .ldGaussianMethodMomentsTableMain(jaspResults, options, variable)
   }
+  
   return()
 }
 
@@ -300,14 +301,24 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
   obsMomentsTable$dependOnOptions(c("variable"))
   obsMomentsTable$addCitation("JASP Team (2018). JASP (Version 0.9.2) [Computer software].")
   
-  obsMomentsTable$addColumnInfo(name = "mean",       title = "Mean",           type = "number", format = "sf:4")
-  obsMomentsTable$addColumnInfo(name = "var",        title = "Variance",       type = "number", format = "sf:4")
+  noOfNeededMoments <- length(options[['pars']])
   
-  obsMomentsTable$setExpectedRows(1)
+  obsMomentsTable$addColumnInfo(name = "moment",     title = "Moment",       type = "integer")
+  obsMomentsTable$addColumnInfo(name = "aboutorigin",       title = "Raw",           type = "number", format = "sf:4")
+  obsMomentsTable$addColumnInfo(name = "aboutmean",        title = "Centered",       type = "number", format = "sf:4")
+  
+  obsMomentsTable$setExpectedRows(noOfNeededMoments)
+  obsMomentsTable$addFootnote(message = "Raw k<sup>th</sup> moment is calculated as 1/n \u2211 x<sup>k</sup>.",
+                              col_names="aboutorigin")
+  obsMomentsTable$addFootnote(message = "For k > 1, centered k<sup>th</sup> moment is calculated as 1/n \u2211 (x-x\u0305)<sup>k</sup>.",
+                              col_names="aboutmean")
   
   jaspResults[['Estimates']][['methodMoments']][['obsMomentsTable']] <- obsMomentsTable
   
-  obsMomentsTable$addRows(list(mean = mean(variable), var = var(variable)))
+  obsMomentsTable[['moment']]      <- 1:noOfNeededMoments
+  obsMomentsTable[['aboutorigin']] <- .computeMoments(x = variable, max.moment = noOfNeededMoments, about.mean = FALSE)
+  obsMomentsTable[['aboutmean']]   <- .computeMoments(x = variable, max.moment = noOfNeededMoments, about.mean = TRUE)
+  
   
   
   # est Parameters
@@ -316,27 +327,26 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
   estParametersTable$dependOnOptions(c("variable", "parametrization"))
   estParametersTable$addCitation("JASP Team (2018). JASP (Version 0.9.2) [Computer software].")
 
-  estParametersTable$addColumnInfo(name = "par1",       title = "mu_hat",           type = "number", format = "sf:4")
+  estParametersTable$addColumnInfo(name = "par1",       title = "\u03BC\u0302",           type = "number", format = "sf:4")
+  par <- .computeMoments(x = variable, max.moment = noOfNeededMoments, about.mean = TRUE)
   
   if(options$parametrization == "sigma2"){
     
-    estParametersTable$addColumnInfo(name = "par2", title = "sigma2_hat", type = "number", format = "sf:4")
-    par2 <- var(variable)
-    
+    estParametersTable$addColumnInfo(name = "par2", title = "\u03C3\u0302<sup>2</sup>", type = "number", format = "sf:4")
   } else if(options$parametrization == "sigma"){
     
-    estParametersTable$addColumnInfo(name = "par2", title = "sigma_hat",  type = "number", format = "sf:4")
-    par2 <- sd(variable)
+    estParametersTable$addColumnInfo(name = "par2", title = "\u03C3\u0302",  type = "number", format = "sf:4")
+    par[2] <- sqrt(par[2])
     
   } else if(options$parametrization == "tau2"){
     
-    estParametersTable$addColumnInfo(name = "par2", title = "tau2_hat",   type = "number", format = "sf:4")
-    par2 <- 1/var(variable)
+    estParametersTable$addColumnInfo(name = "par2", title = "\u03C4\u0302<sup>2</sup>",   type = "number", format = "sf:4")
+    par[2] <- 1/par[2]
     
   } else if(options$parametrization == "tau"){
     
-    estParametersTable$addColumnInfo(name = "par2", title = "tau_hat",    type = "number", format = "sf:4")
-    par2 <- 1/sd(variable)
+    estParametersTable$addColumnInfo(name = "par2", title = "\u03C4\u0302",    type = "number", format = "sf:4")
+    par[2] <- 1/sqrt(par[2])
     
   }
   
@@ -344,7 +354,7 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
   
   jaspResults[['Estimates']][['methodMoments']][['estParametersTable']] <- estParametersTable
   
-  estParametersTable$addRows(list(par1 = mean(variable), par2 = par2))
+  estParametersTable$addRows(list(par1 = par[1], par2 = par[2]))
   
   
   return()
