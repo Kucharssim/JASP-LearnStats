@@ -1,7 +1,7 @@
 .ldSummaryContinuousTableMain <- function(jaspResults, variable, options) {
   summaryTable <- createJaspTable(title = "Summary Statistics")
   
-  summaryTable$dependOnOptions(c("variable"))
+  summaryTable$dependOn(c("variable"))
   summaryTable$addCitation("JASP Team (2018). JASP (Version 0.9.2) [Computer software].")
   
   summaryTable$addColumnInfo(name = "variable",   title = "Variable",       type = "string", combine = TRUE)

@@ -20,7 +20,7 @@
 
 LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
 
-  jaspResults$title <- "Normal distribution"
+  #jaspResults$title <- "Normal distribution"
   
   if(options[['variable']] != ""){
     dataset <- .readDataSetToEnd(columns.as.numeric = options[['variable']])
@@ -118,7 +118,7 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
 .ldFormulaGaussianPDF <- function(jaspResults, options){
   pdfFormula <- createJaspHtml(title = "PDF formula", elementType = "h1")
 
-  pdfFormula$dependOnOptions("parametrization")
+  pdfFormula$dependOn("parametrization")
 
   .ldFillFormulaGaussianPDF(pdfFormula, options)
 
@@ -161,7 +161,7 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
 .ldPlotGaussianQF <- function(jaspResults, options){
   qfPlot <- createJaspPlot(title = "", width = 600, height = 320)
   
-  qfPlot$dependOnOptions(c("sd", "mu", "range"))
+  qfPlot$dependOn(c("sd", "mu", "range"))
   
   jaspResults[['qfContainer']][['qf']] <- qfPlot
   
@@ -191,7 +191,7 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
 .ldPlotGaussianPDF <- function(jaspResults, options){
   pdfPlot <- createJaspPlot(title = "", width = 600, height = 320)
 
-  pdfPlot$dependOnOptions(c("sd", "mu", "range", 
+  pdfPlot$dependOn(c("sd", "mu", "range", 
                             "highlightIntervals", "highlightmin", "highlightmax"))
 
   jaspResults[['pdfContainer']][['pdf']] <- pdfPlot
@@ -246,7 +246,7 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
 .ldPlotGaussianCDF <- function(jaspResults, options){
   cdfPlot <- createJaspPlot(title = "", width = 600, height = 320)
   
-  cdfPlot$dependOnOptions(c("sd", "mu", "range",
+  cdfPlot$dependOn(c("sd", "mu", "range",
                             "highlightPoint", "highlightPointValue", "highlightPointTangent", "highlightPointAt"))
   
   jaspResults[['cdfContainer']][['cdf']] <- cdfPlot
@@ -303,7 +303,7 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
   # observed moments
   obsMomentsTable <- createJaspTable(title = "Observed Moments")
   
-  obsMomentsTable$dependOnOptions(c("variable"))
+  obsMomentsTable$dependOn(c("variable"))
   obsMomentsTable$addCitation("JASP Team (2018). JASP (Version 0.9.2) [Computer software].")
   
   noOfNeededMoments <- length(options[['pars']])
@@ -329,7 +329,7 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
   # est Parameters
   estParametersTable <- createJaspTable(title = "Estimated Parameters")
   
-  estParametersTable$dependOnOptions(c("variable", "parametrization"))
+  estParametersTable$dependOn(c("variable", "parametrization"))
   estParametersTable$addCitation("JASP Team (2018). JASP (Version 0.9.2) [Computer software].")
 
   estParametersTable$addColumnInfo(name = "par1", title = "\u03BC\u0302", type = "number", format = "sf:4")
@@ -338,7 +338,7 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
   if(is.null(jaspResults[['methodMomentsResults']])){
     methodMomentsResults <- createJaspState()
     jaspResults[['methodMomentsResults']] <- methodMomentsResults
-    methodMomentsResults$dependOnOptions(c("variable"))
+    methodMomentsResults$dependOn(c("variable"))
     methodMomentsResults$object <- list(.computeMoments(x = variable, max.moment = noOfNeededMoments, about.mean = TRUE))
   }
   

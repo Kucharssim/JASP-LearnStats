@@ -2,8 +2,9 @@
 	"moduleDescription" :
 	{
 		"title" : 									"Learn Statistics",
+		"icon":                     "placeholder.svg",
 		"description": 							"Learn statistics with JASP",
-		"version":									0.1,
+		"version":									"0.1",
 		"author":										"JASP Team",
 		"maintainer":								"JASP Team <info@jasp-stats.org>",
 		"website":									"www.jasp-stats.org",
@@ -12,20 +13,17 @@
 
 	"requiredPackages":	[],
 
-	"ribbonEntries":
+	"menu":
 	[
 		{
-			"title": 									"Learn Distributions",
-			"icon": 									"placeholder.svg",
-			"analyses":
-			[
-				{
-					"title":							"Univariate Normal",
-					"qml":								"LDgaussianunivariate.qml",
-					"function":						"LDgaussianunivariate",
-					"usesJaspResults":		true
-				}
-			]
+			"title": 							"Distributions",
+			"icon": 							"placeholder.svg"
+		},
+		{
+			"title":							"Univariate Normal",
+			"qml":								"LDgaussianunivariate.qml",
+			"function":						"LDgaussianunivariate",
+			"usesJaspResults":		true
 		}
 	]
 }
