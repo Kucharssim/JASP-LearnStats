@@ -32,15 +32,22 @@
     jaspResults[['pdfContainer']][['highlightDensity']] <- highlightDensity
     highlightDensity$dependOn(c("pars", 'highlightmin', 'highlightmax', "highlightType"))
 
+    # determine plotting region
     args <- options[['pars']]
-    args[['x']] <- c(options[['highlightmin']], options[['highlightmax']])
+    if(options[['highlightType']] == "minmax"){
+      args[['x']] <- c(options[['highlightmin']], options[['highlightmax']])
+    } else if(options[['highlightType']] == "lower"){
+      args[['x']] <- options[['highlightmax']]
+    } else if(options[['highlightType']] == "upper"){
+      args[['x']] <- options[['highlightmin']]
+    }
+    
+    
     pdfValue <- do.call(options[['pdfFun']], args)
 
-    segment_data <- data.frame(x = options[['range_x']][1] + (options[['range_x']][2]-options[['range_x']][1])/12,
+    segment_data <- data.frame(x = options[['range_x']][1] + (options[['range_x']][2]-options[['range_x']][1])/15,
                                xend = args[['x']], y = pdfValue)
     layers <- list()
-    # layers[[1]] <- ggplot2::geom_segment(mapping = ggplot2::aes(x = x_offset, xend = args[['x']][2],
-    #                                      y = pdfValue[1], yend = pdfValue[1]), linetype = 2)
     layers[[1]] <- ggplot2::geom_segment(data = segment_data,
                                          mapping = ggplot2::aes(x = x, xend = xend, y = y, yend = y), linetype = 2)
     layers[[2]] <- ggplot2::geom_text(data = data.frame(x = options[['range_x']][1], y = pdfValue, label = round(pdfValue, 2)),
@@ -58,14 +65,39 @@
     jaspResults[['pdfContainer']][['highlightProbability']] <- highlightProbability
     highlightProbability$dependOn(c("pars", 'highlightmin', 'highlightmax',  "highlightType"))
 
+    # determine plotting region
     args <- options[['pars']]
-    args[['q']] <- c(options[['highlightmin']], options[['highlightmax']])
+    argsPDF <- options[['pars']]
+    if(options[['highlightType']] == "minmax"){
+      args[['q']] <- c(options[['highlightmin']], options[['highlightmax']])
+    } else if(options[['highlightType']] == "lower"){
+      args[['q']] <- c(-Inf, options[['highlightmax']])
+    } else if(options[['highlightType']] == "upper"){
+      args[['q']] <- c(options[['highlightmin']], Inf)
+    }
+    
+    # calculate value under the curve
     cdfValue <- do.call(options[['cdfFun']], args)
     cdfValue <- cdfValue[2] - cdfValue[1]
+    
+    # round value under the curve for plotting
+    cdfValueRound <- round(cdfValue, 2)
+    if(cdfValueRound %in% c(0, 1)){
+      cdfValueRound <- round(cdfValue, 3)
+    }
+    
+    # calculate position of the geom_text
+    args[['q']] <- c(options[['highlightmin']], options[['highlightmax']])
+    argsPDF[['x']] <- seq(args[['q']][1], args[['q']][2], length.out = 20)
+    x <- weighted.mean(argsPDF[['x']], do.call(options[['pdfFun']], argsPDF))
+    argsPDF[['x']] <- x
+    y <- do.call(options[['pdfFun']], argsPDF)/3
     
     layers <- list()
     layers[[1]] <- ggplot2::stat_function(fun = options[['pdfFun']], n = 101, args = options[['pars']], geom = "area",
                                           xlim = args[['q']], fill = "steelblue")
+    layers[[2]] <- ggplot2::geom_text(data = data.frame(x = x, y = y, label = cdfValueRound),
+                                      mapping = ggplot2::aes(x = x, y = y, label = label), size = 8, parse = TRUE)
     highlightProbability$object <- layers
   }
 
