@@ -81,52 +81,41 @@ Form {
         title: qsTr("Options")
         enabled: plotPDF.checked || plotCDF.checked
         DoubleField{ name:  "range"; label: qsTr("Range"); defaultValue: 3; id: range}
-        Group{
-            columns:2
-
-        CheckBox{ name: "highlightPoint"; label: qsTr("Highlight point at")
-            CheckBox{
-                name: "highlightPointValue"; label: qsTr("Value")
+        Group
+        {
+            title: qsTr("Highlight")
+            Group
+            {
+                columns: 2
+                CheckBox{ name: "highlightDensity"; label: qsTr("Density"); id: highlightDensity }
+                CheckBox{ name: "highlightProbability"; label: qsTr("Probability"); id: highlightProbability }
             }
-            CheckBox{
-                name: "highlightPointTangent"; label: qsTr("PDF to CDF")
-            }
-
-        }
-        DoubleField{ name: "highlightPointAt"; label: qsTr("x ="); min: -range.value; max: range.value; decimals: 2}
+            RadioButtonGroup
+            {
+                name: "highlightType"
+                title: qsTr("At intervals")
+                enabled: highlightDensity.checked || highlightProbability.checked
+                RadioButton
+                {
+                    value: "minmax"; label: qsTr("from"); childrenOnSameRow: true; checked: true
+                    DoubleField{ name: "min"; label: ""; afterLabel: qsTr("to"); negativeValues: true; defaultValue: -1}
+                    DoubleField{ name: "max"; label: ""; negativeValues: true; defaultValue: 1}
                 }
 
-        CheckBox
-        {
-            name: "highlightIntervals"; label: qsTr("Highlight Intervals")
-        RadioButtonGroup
-        {
-            name: "highlightIntervalsType"
-            RadioButton
-            {
-                value: "minmax"
-                label: qsTr("from")
-                childrenOnSameRow: true
-                checked: true
-                DoubleField{ name: "min"; label: ""; afterLabel: qsTr("to"); negativeValues: true; defaultValue: -1}
-                DoubleField{ name: "max"; label: ""; negativeValues: true; defaultValue: 1}
-            }
-            RadioButton
-            {
-                value: "lower"
-                label: qsTr("from -∞")
-                childrenOnSameRow: true
-                DoubleField{ name: "lower_max"; label: qsTr("to"); negativeValues: true; defaultValue: 0 }
-            }
-            RadioButton
-            {
-                value: "upper"
-                label: qsTr("from")
-                childrenOnSameRow: true
-                DoubleField{ name: "upper_min"; label: ""; afterLabel: qsTr("to ∞"); defaultValue: 0}
+                RadioButton
+                {
+                    value: "lower"; label: qsTr("from -∞"); childrenOnSameRow: true
+                    DoubleField{ name: "lower_max"; label: qsTr("to"); negativeValues: true; defaultValue: 0 }
+                }
+
+                RadioButton
+                {
+                    value: "upper"; label: qsTr("from"); childrenOnSameRow: true
+                    DoubleField{ name: "upper_min"; label: ""; afterLabel: qsTr("to ∞"); defaultValue: 0}
+                }
             }
         }
-        }
+
 
     }
 

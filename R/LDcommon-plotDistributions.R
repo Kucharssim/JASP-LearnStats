@@ -1,12 +1,107 @@
+.ldPlotPDF <- function(jaspResults, options){
+  pdfPlot <- createJaspPlot(title = "", width = 600, height = 320)
+  
+  pdfPlot$dependOn(c("sd", "mu", "range",
+                     "highlightPoint", "highlightPointValue", "highlightPointTangent", "highlightPointAt"))
+  
+  jaspResults[['pdfContainer']][['pdfPlot']] <- pdfPlot
+  
+  .ldGeomLayersPDF(jaspResults, options)
+  .ldFillPlotPDF(pdfPlot, jaspResults, options)
+  
+  return()
+}
+
+.ldGeomLayersPDF <- function(jaspResults, options){
+
+  # create state for the basic curve
+  if(is.null(jaspResults[['pdfContainer']][['curve']])){
+    curve <- createJaspState()
+    jaspResults[['pdfContainer']][['curve']] <- curve
+    curve$dependOn(c("pars", "range"))
+
+    plot <- ggplot2::ggplot(data = data.frame(x = options[['range_x']]), ggplot2::aes(x = x)) +
+      ggplot2::stat_function(fun = options[['pdfFun']], n = 101, args = options[['pars']], size = 1)
+
+    curve$object <- plot
+  }
+
+  # create state for highlight density
+  if(is.null(jaspResults[['pdfContainer']][['highlightDensity']])){
+    highlightDensity <- createJaspState()
+    jaspResults[['pdfContainer']][['highlightDensity']] <- highlightDensity
+    highlightDensity$dependOn(c("pars", 'highlightmin', 'highlightmax', "highlightType"))
+
+    args <- options[['pars']]
+    args[['x']] <- c(options[['highlightmin']], options[['highlightmax']])
+    pdfValue <- do.call(options[['pdfFun']], args)
+
+    segment_data <- data.frame(x = options[['range_x']][1] + (options[['range_x']][2]-options[['range_x']][1])/12,
+                               xend = args[['x']], y = pdfValue)
+    layers <- list()
+    # layers[[1]] <- ggplot2::geom_segment(mapping = ggplot2::aes(x = x_offset, xend = args[['x']][2],
+    #                                      y = pdfValue[1], yend = pdfValue[1]), linetype = 2)
+    layers[[1]] <- ggplot2::geom_segment(data = segment_data,
+                                         mapping = ggplot2::aes(x = x, xend = xend, y = y, yend = y), linetype = 2)
+    layers[[2]] <- ggplot2::geom_text(data = data.frame(x = options[['range_x']][1], y = pdfValue, label = round(pdfValue, 2)),
+                                      ggplot2::aes(x = x, y = y, label = label), size = 6)
+    layers[[3]] <- ggplot2::geom_linerange(x = args[['x']], ymin = 0, ymax = pdfValue, linetype = 2)
+    layers[[4]] <- JASPgraphs::geom_point(x = args[['x']], y = pdfValue)
+    
+    
+    highlightDensity$object <- layers
+  }
+
+  # create state for highlight probability
+  if(is.null(jaspResults[['pdfContainer']][['highlightProbability']])){
+    highlightProbability <- createJaspState()
+    jaspResults[['pdfContainer']][['highlightProbability']] <- highlightProbability
+    highlightProbability$dependOn(c("pars", 'highlightmin', 'highlightmax',  "highlightType"))
+
+    args <- options[['pars']]
+    args[['q']] <- c(options[['highlightmin']], options[['highlightmax']])
+    cdfValue <- do.call(options[['cdfFun']], args)
+    cdfValue <- cdfValue[2] - cdfValue[1]
+    
+    layers <- list()
+    layers[[1]] <- ggplot2::stat_function(fun = options[['pdfFun']], n = 101, args = options[['pars']], geom = "area",
+                                          xlim = args[['q']], fill = "steelblue")
+    highlightProbability$object <- layers
+  }
+
+  return()
+}
+
+.ldFillPlotPDF <- function(pdfPlot, jaspResults, options){
+  pp <- jaspResults[['pdfContainer']][['curve']]$object
+
+  if(options[['highlightProbability']]){
+    pp <- pp + jaspResults[['pdfContainer']][['highlightProbability']]$object
+  }
+  
+  if(options[['highlightDensity']]){
+    pp <- pp + jaspResults[['pdfContainer']][['highlightDensity']]$object
+  }
+  
+  
+  pp <- pp + ggplot2::ylab("Density") + ggplot2::scale_x_continuous(limits = options[['range_x']], 
+                                                                    breaks = JASPgraphs::axesBreaks(options[['range_x']]))
+  
+  pp <- JASPgraphs::themeJasp(pp)
+  pdfPlot[['plotObject']] <- pp
+
+  return()
+}
+
 .ldFillPlotDistribution <- function(plot, options, fun){
   p <- ggplot2::ggplot(data = data.frame(x = c(-options[['range']], options[['range']])), ggplot2::aes(x = x)) +
     ggplot2::stat_function(fun = fun, n = 101, args = options[['pars']], size = 1)  +
     ggplot2::ylab("Density")
   
   p <- JASPgraphs::themeJasp(p)
-  
+
   plot[['plotObject']] <- p
-  
+
   return()
 }
 
