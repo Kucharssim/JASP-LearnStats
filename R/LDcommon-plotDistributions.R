@@ -1,3 +1,4 @@
+### Plot PDF ----
 .ldPlotPDF <- function(jaspResults, options){
   pdfPlot <- createJaspPlot(title = "", width = 600, height = 320)
   
@@ -81,7 +82,7 @@
     
     # round value under the curve for plotting
     cdfValueRound <- round(cdfValue, 2)
-    if(cdfValueRound %in% c(0, 1)){
+    if(c(0, 1) %in% cdfValueRound){
       cdfValueRound <- round(cdfValue, 3)
     }
     
@@ -124,6 +125,7 @@
   return()
 }
 
+### Plot CDF ----
 .ldPlotCDF <- function(jaspResults, options){
   cdfPlot <- createJaspPlot(title = "", width = 600, height = 320)
   
@@ -145,7 +147,7 @@
     curve$dependOn(c("pars", "range"))
     
     plot <- ggplot2::ggplot(data = data.frame(x = options[['range_x']]), ggplot2::aes(x = x)) +
-      ggplot2::stat_function(fun = options[['pdfFun']], n = 101, args = options[['pars']], size = 1)
+      ggplot2::stat_function(fun = options[['cdfFun']], n = 101, args = options[['pars']], size = 1)
     
     curve$object <- plot
   }
@@ -159,26 +161,26 @@
     # determine plotting region
     args <- options[['pars']]
     if(options[['highlightType']] == "minmax"){
-      args[['x']] <- c(options[['highlightmin']], options[['highlightmax']])
+      args[['q']] <- c(options[['highlightmin']], options[['highlightmax']])
     } else if(options[['highlightType']] == "lower"){
-      args[['x']] <- options[['highlightmax']]
+      args[['q']] <- options[['highlightmax']]
     } else if(options[['highlightType']] == "upper"){
-      args[['x']] <- options[['highlightmin']]
+      args[['q']] <- options[['highlightmin']]
     }
+    pdfArgs <- args
+    pdfArgs[['x']] <- pdfArgs[['q']]
+    pdfArgs[['q']] <- NULL
     
+    pdfValue <- do.call(options[['pdfFun']], pdfArgs)
+    cdfValue <- do.call(options[['cdfFun']], args)
+    intercept <- cdfValue - args[['q']]*pdfValue
+    slopeText <-  round(pdfValue, 2) #bquote(paste(beta, " = ", .(round(slope, 2))))
     
-    pdfValue <- do.call(options[['pdfFun']], args)
-    
-    segment_data <- data.frame(x = options[['range_x']][1] + (options[['range_x']][2]-options[['range_x']][1])/15,
-                               xend = args[['x']], y = pdfValue)
+    line_data <- data.frame(slope = pdfValue, intercept = intercept)
     layers <- list()
-    layers[[1]] <- ggplot2::geom_segment(data = segment_data,
-                                         mapping = ggplot2::aes(x = x, xend = xend, y = y, yend = y), linetype = 2)
-    layers[[2]] <- ggplot2::geom_text(data = data.frame(x = options[['range_x']][1], y = pdfValue, label = round(pdfValue, 2)),
+    layers[[1]] <- ggplot2::geom_abline(slope = pdfValue, intercept = intercept, linetype = 1)
+    layers[[2]] <- ggplot2::geom_text(data = data.frame(x = args[['q']], y = 1.1*cdfValue, label = round(pdfValue, 2)),
                                       ggplot2::aes(x = x, y = y, label = label), size = 6)
-    layers[[3]] <- ggplot2::geom_linerange(x = args[['x']], ymin = 0, ymax = pdfValue, linetype = 2)
-    layers[[4]] <- JASPgraphs::geom_point(x = args[['x']], y = pdfValue)
-    
     
     highlightDensity$object <- layers
   }
@@ -191,7 +193,7 @@
     
     # determine plotting region
     args <- options[['pars']]
-    argsPDF <- options[['pars']]
+    # argsPDF <- options[['pars']]
     if(options[['highlightType']] == "minmax"){
       args[['q']] <- c(options[['highlightmin']], options[['highlightmax']])
     } else if(options[['highlightType']] == "lower"){
@@ -202,26 +204,23 @@
     
     # calculate value under the curve
     cdfValue <- do.call(options[['cdfFun']], args)
-    cdfValue <- cdfValue[2] - cdfValue[1]
     
     # round value under the curve for plotting
-    cdfValueRound <- round(cdfValue, 2)
-    if(cdfValueRound %in% c(0, 1)){
-      cdfValueRound <- round(cdfValue, 3)
-    }
+     cdfValueRound <- round(cdfValue, 2)
+    # if(cdfValueRound %in% c(0, 1)){
+    #   cdfValueRound <- round(cdfValue, 3)
+    # }
     
-    # calculate position of the geom_text
-    args[['q']] <- c(options[['highlightmin']], options[['highlightmax']])
-    argsPDF[['x']] <- seq(args[['q']][1], args[['q']][2], length.out = 20)
-    x <- weighted.mean(argsPDF[['x']], do.call(options[['pdfFun']], argsPDF))
-    argsPDF[['x']] <- x
-    y <- do.call(options[['pdfFun']], argsPDF)/3
-    
+    segment_data <- data.frame(xoffset = options[['range_x']][1] + (options[['range_x']][2]-options[['range_x']][1])/15,
+                               x = options[['range_x']][1], xend = args[['q']], y = cdfValue, label = cdfValueRound)
     layers <- list()
-    layers[[1]] <- ggplot2::stat_function(fun = options[['pdfFun']], n = 101, args = options[['pars']], geom = "area",
-                                          xlim = args[['q']], fill = "steelblue")
-    layers[[2]] <- ggplot2::geom_text(data = data.frame(x = x, y = y, label = cdfValueRound),
-                                      mapping = ggplot2::aes(x = x, y = y, label = label), size = 8, parse = TRUE)
+    layers[[1]] <- ggplot2::geom_segment(data = segment_data,
+                                         mapping = ggplot2::aes(x = xoffset, xend = xend, y = y, yend = y), linetype = 2)
+    layers[[2]] <- ggplot2::geom_text(data = segment_data,
+                                      ggplot2::aes(x = x, y = y, label = label), size = 6)
+    layers[[3]] <- ggplot2::geom_linerange(x = args[['q']], ymin = 0, ymax = cdfValue, linetype = 2)
+    layers[[4]] <- JASPgraphs::geom_point(x = args[['q']], y = cdfValue)
+
     highlightProbability$object <- layers
   }
   
@@ -231,24 +230,61 @@
 .ldFillPlotCDF <- function(cdfPlot, jaspResults, options){
   pp <- jaspResults[['cdfContainer']][['curve']]$object
   
-  if(options[['highlightProbability']]){
-    pp <- pp + jaspResults[['cdfContainer']][['highlightProbability']]$object
-  }
-  
   if(options[['highlightDensity']]){
     pp <- pp + jaspResults[['cdfContainer']][['highlightDensity']]$object
   }
   
+  if(options[['highlightProbability']]){
+    pp <- pp + jaspResults[['cdfContainer']][['highlightProbability']]$object
+  }
   
-  pp <- pp + ggplot2::ylab("Probability (X<x)") +
+  
+  
+  pp <- pp + ggplot2::ylab("Probability (X \u2264 x)") +
     ggplot2::scale_x_continuous(limits = options[['range_x']], 
-                                breaks = JASPgraphs::axesBreaks(options[['range_x']]))
+                                breaks = JASPgraphs::axesBreaks(options[['range_x']])) +
+    ggplot2::scale_y_continuous(limits = c(0, 1))
   
   pp <- JASPgraphs::themeJasp(pp)
   cdfPlot[['plotObject']] <- pp
   
   return()
 }
+
+### Plot QF ----
+.ldPlotQF <- function(jaspResults, options){
+  qfPlot <- createJaspPlot(title = "", width = 600, height = 320)
+  
+  qfPlot$dependOn(c("sd", "mu", "range"))
+  
+  jaspResults[['qfContainer']][['qf']] <- qfPlot
+  
+  .ldFillPlotQF(qfPlot, options)
+  
+  return()
+}
+
+.ldFillPlotQF <- function(qfPlot, options){
+  args <- options[['pars']]
+  args[['x']] <- options[['range_x']]
+  prange <- do.call(options[['pdfFun']], args)
+  args[['x']] <- NULL
+  
+  plot <- ggplot2::ggplot(data = data.frame(x = prange), ggplot2::aes(x = x)) +
+    ggplot2::stat_function(fun = options[['qFun']], n = 101, args = args, size = 1)  +
+    ggplot2::ylab("x") + ggplot2::xlab("Probability(X \u2264 x)") +
+    ggplot2::scale_x_continuous(limits = 0:1) +
+    ggplot2::scale_y_continuous(limits = options[['range_x']], 
+                                breaks = JASPgraphs::axesBreaks(options[['range_x']]))
+  
+  
+  plot <- JASPgraphs::themeJasp(plot)
+  
+  qfPlot[['plotObject']] <- plot
+  
+  return()
+}
+
 
 .ldFillPlotDistribution <- function(plot, options, fun){
   p <- ggplot2::ggplot(data = data.frame(x = c(-options[['range']], options[['range']])), ggplot2::aes(x = x)) +

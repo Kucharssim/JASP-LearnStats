@@ -52,7 +52,7 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
   
   jaspResults[['qfContainer']] <- createJaspContainer(title = "Quantile Function")
   if(is.null(jaspResults[['qfContainer']][['qf']]) && options$plotQF){
-    .ldPlotGaussianQF(jaspResults, options)
+    .ldPlotQF(jaspResults, options)
   }
   
   jaspResults[['dataContainer']] <- createJaspContainer(title = paste0("Overview -- ", options[['variable']]))
@@ -96,7 +96,7 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
   
   options[['pdfFun']] <- dnorm
   options[['cdfFun']] <- pnorm
-  options[['qdFun']]  <- qnorm
+  options[['qFun']]  <- qnorm
   
   options[['range_x']] <- c(-options[['range']], options[['range']])
   
@@ -160,38 +160,6 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
 
   return()
 }
-
-.ldPlotGaussianQF <- function(jaspResults, options){
-  qfPlot <- createJaspPlot(title = "", width = 600, height = 320)
-  
-  qfPlot$dependOn(c("sd", "mu", "range"))
-  
-  jaspResults[['qfContainer']][['qf']] <- qfPlot
-  
-  .ldFillPlotGaussianQF(qfPlot, options)
-  
-  return()
-}
-
-.ldFillPlotGaussianQF <- function(qfPlot, options){
-  range <- c(-options[['range']], options[['range']])
-  prange <- pnorm(range, options[['mu']], options[['sd']])
-  
-  plot <- ggplot2::ggplot(data = data.frame(x = prange), ggplot2::aes(x = x)) +
-    ggplot2::stat_function(fun = qnorm, n = 101, args = list(mean = options[['mu']], sd = options[['sd']]), size = 1)  +
-    ggplot2::ylab("x") + ggplot2::xlab("Probability(X<x)") +
-    ggplot2::scale_x_continuous(limits = 0:1) +
-    ggplot2::scale_y_continuous(limits = range)
-  
-  
-  plot <- JASPgraphs::themeJasp(plot)
-  
-  qfPlot[['plotObject']] <- plot
-  
-  return()
-}
-
-
 
 #### Estimating methods ----
 

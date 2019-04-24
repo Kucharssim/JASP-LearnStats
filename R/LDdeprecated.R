@@ -102,3 +102,32 @@
 #   
 #   return()
 # }
+# .ldPlotGaussianQF <- function(jaspResults, options){
+#   qfPlot <- createJaspPlot(title = "", width = 600, height = 320)
+#   
+#   qfPlot$dependOn(c("sd", "mu", "range"))
+#   
+#   jaspResults[['qfContainer']][['qf']] <- qfPlot
+#   
+#   .ldFillPlotGaussianQF(qfPlot, options)
+#   
+#   return()
+# }
+# 
+# .ldFillPlotGaussianQF <- function(qfPlot, options){
+#   range <- c(-options[['range']], options[['range']])
+#   prange <- pnorm(range, options[['mu']], options[['sd']])
+#   
+#   plot <- ggplot2::ggplot(data = data.frame(x = prange), ggplot2::aes(x = x)) +
+#     ggplot2::stat_function(fun = qnorm, n = 101, args = list(mean = options[['mu']], sd = options[['sd']]), size = 1)  +
+#     ggplot2::ylab("x") + ggplot2::xlab("Probability(X<x)") +
+#     ggplot2::scale_x_continuous(limits = 0:1) +
+#     ggplot2::scale_y_continuous(limits = range)
+#   
+#   
+#   plot <- JASPgraphs::themeJasp(plot)
+#   
+#   qfPlot[['plotObject']] <- plot
+#   
+#   return()
+# }
