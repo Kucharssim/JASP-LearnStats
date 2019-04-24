@@ -21,12 +21,12 @@
 LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
 
   #jaspResults$title <- "Normal distribution"
-  
+  ready <- FALSE
   if(options[['variable']] != ""){
     dataset <- .readDataSetToEnd(columns.as.numeric = options[['variable']])
     variable <- dataset[[.v(options[['variable']])]]
-    
-    rangeVariable <- range(variable)
+    ready <- TRUE
+    options[['rangeVariable']] <- range(variable)
     #rangeVariable[1] <- floor(rangeVariable[1])
     #rangeVariable[2] <- ceiling(rangeVariable[2])
   }
@@ -58,7 +58,7 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
   jaspResults[['dataContainer']] <- createJaspContainer(title = paste0("Overview -- ", options[['variable']]))
   
   if(is.null(jaspResults[['dataContainer']][["summary"]]) && options$summary){
-    .ldSummaryContinuousTableMain(jaspResults, variable, options)
+    #.ldSummaryContinuousTableMain(jaspResults, variable, options)
   }
       
   if(is.null(jaspResults[['dataContainer']][['histogram']]) && options$histogram){
@@ -69,15 +69,19 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
     .ldPlotECDF(jaspResults, options, variable, rangeVariable)
   }
   
-  jaspResults[['estimatesContainer']] <- createJaspContainer(title = "Estimated Parameters")
-  if(is.null(jaspResults[['estimatesContainer']][['methodMoments']]) && options$methodMoments){
-    .ldGaussianMethodMomentsTableMain(jaspResults, options, variable)
+  # jaspResults[['estimatesContainer']] <- createJaspContainer(title = "Estimated Parameters")
+  if(is.null(jaspResults[['methodMoments']]) && options$methodMoments && ready){
+    jaspResults[['methodMoments']] <- createJaspContainer(title = "Method of Moments")
+    
+    .ldGaussianMethodMomentsResults(jaspResults, options, variable)
+    .ldGaussianMethodMomentsTable(jaspResults[['methodMoments']], options)
+    .ldFitAssessment(jaspResults[['methodMoments']], options, variable)
   }
   
-  jaspResults[['fitContainer']] <- createJaspContainer(title = "Fit Assessment")
-  if(is.null(jaspResults[['fitContainer']][['qqplot']]) && options$qqplot){
-    .ldPlotQQ(jaspResults, options, variable)
-  }
+  # jaspResults[['fitContainer']] <- createJaspContainer(title = "Fit Assessment")
+  # if(is.null(jaspResults[['fitContainer']][['qqplot']]) && options$qqplot){
+  #   .ldPlotQQ(jaspResults, options, variable)
+  # }
   return()
 }
 
@@ -162,81 +166,181 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
 }
 
 #### Estimating methods ----
+# .ldFillMainResults <- function(methodContainer, options, variable){
+#   # state
+#   # if(is.null(methodContainer[['estParameters']])){
+#   #   .ldGaussianMethodMomentsTableMain(jaspResults, options, variable)
+#   # }
+#   
+#   if(is.null(jaspResults[['estimatesContainer']][['methodMoments']][['fitAssessment']])){
+#     .ldFitAssessment(jaspResults[['estimatesContainer']][['methodMoments']], options, variable)
+#   }
+# 
+# }
 
-.ldGaussianMethodMomentsTableMain <- function(jaspResults, options, variable){
-  jaspResults[['estimatesContainer']][['methodMoments']] <- createJaspContainer(title = "Method of Moments")
-  
-  # observed moments
-  obsMomentsTable <- createJaspTable(title = "Observed Moments")
-  
-  obsMomentsTable$dependOn(c("variable"))
-  obsMomentsTable$addCitation("JASP Team (2018). JASP (Version 0.9.2) [Computer software].")
-  
-  noOfNeededMoments <- length(options[['pars']])
-  
-  obsMomentsTable$addColumnInfo(name = "moment",     title = "Moment",       type = "integer")
-  obsMomentsTable$addColumnInfo(name = "aboutorigin",       title = "Raw",           type = "number", format = "sf:4")
-  obsMomentsTable$addColumnInfo(name = "aboutmean",        title = "Centered",       type = "number", format = "sf:4")
-  
-  obsMomentsTable$setExpectedRows(noOfNeededMoments)
-  obsMomentsTable$addFootnote(message = "Raw k<sup>th</sup> moment is calculated as 1/n \u2211 x<sup>k</sup>.",
-                              col_names="aboutorigin")
-  obsMomentsTable$addFootnote(message = "For k > 1, centered k<sup>th</sup> moment is calculated as 1/n \u2211 (x-x\u0305)<sup>k</sup>.",
-                              col_names="aboutmean")
-  
-  jaspResults[['estimatesContainer']][['methodMoments']][['obsMomentsTable']] <- obsMomentsTable
-  
-  obsMomentsTable[['moment']]      <- 1:noOfNeededMoments
-  obsMomentsTable[['aboutorigin']] <- .computeMoments(x = variable, max.moment = noOfNeededMoments, about.mean = FALSE)
-  obsMomentsTable[['aboutmean']]   <- .computeMoments(x = variable, max.moment = noOfNeededMoments, about.mean = TRUE)
-  
-  
-  
-  # est Parameters
+.ldGaussianMethodMomentsTable <- function(methodContainer, options){
   estParametersTable <- createJaspTable(title = "Estimated Parameters")
   
   estParametersTable$dependOn(c("variable", "parametrization"))
   estParametersTable$addCitation("JASP Team (2018). JASP (Version 0.9.2) [Computer software].")
-
+  
   estParametersTable$addColumnInfo(name = "par1", title = "\u03BC\u0302", type = "number", format = "sf:4")
   
-  # state
-  if(is.null(jaspResults[['methodMomentsResults']])){
-    methodMomentsResults <- createJaspState()
-    jaspResults[['methodMomentsResults']] <- methodMomentsResults
-    methodMomentsResults$dependOn(c("variable"))
-    methodMomentsResults$object <- list(.computeMoments(x = variable, max.moment = noOfNeededMoments, about.mean = TRUE))
-  }
-  
-  # fill
-  par <- jaspResults[['methodMomentsResults']]$object[[1]]
-
   if(options$parametrization == "sigma2"){
-    
-    estParametersTable$addColumnInfo(name = "par2", title = "\u03C3\u0302<sup>2</sup>", type = "number", format = "sf:4")
+
+    estParametersTable$addColumnInfo(name  = options$parametrization,
+                                     title = "\u03C3\u0302<sup>2</sup>", type = "number", format = "sf:4")
   } else if(options$parametrization == "sigma"){
-    
-    estParametersTable$addColumnInfo(name = "par2", title = "\u03C3\u0302",  type = "number", format = "sf:4")
-    par[2] <- sqrt(par[2])
-    
+
+    estParametersTable$addColumnInfo(name  = options$parametrization,
+                                     title = "\u03C3\u0302",  type = "number", format = "sf:4")
+
   } else if(options$parametrization == "tau2"){
-    
-    estParametersTable$addColumnInfo(name = "par2", title = "\u03C4\u0302<sup>2</sup>",   type = "number", format = "sf:4")
-    par[2] <- 1/par[2]
-    
+
+    estParametersTable$addColumnInfo(name  = options$parametrization,
+                                     title = "\u03C4\u0302<sup>2</sup>",   type = "number", format = "sf:4")
+
   } else if(options$parametrization == "tau"){
-    
-    estParametersTable$addColumnInfo(name = "par2", title = "\u03C4\u0302",    type = "number", format = "sf:4")
-    par[2] <- 1/sqrt(par[2])
-    
+
+    estParametersTable$addColumnInfo(name  = options$parametrization,,
+                                     title = "\u03C4\u0302",    type = "number", format = "sf:4")
   }
-  
-  estParametersTable$setExpectedRows(1)
-  
-  jaspResults[['estimatesContainer']][['methodMoments']][['estParametersTable']] <- estParametersTable
-  
-  estParametersTable$addRows(list(par1 = par[1], par2 = par[2]))
-  
+  #browser()
+  #estParametersTable$addRow(as.list(methodContainer[['results']]$object[['table']]))
+  methodContainer[['estParametersTable']] <- estParametersTable
   
   return()
 }
+
+
+.ldGaussianMethodMomentsResults <- function(jaspResults, options, variable){
+  jaspResults[['methodMoments']][['results']] <- createJaspState()
+  
+  if(is.null(jaspResults[['methodMoments']][['results']])){
+    results <- list()
+    results$par <- .computeObservedMoments(x = variable, max.moment = 2, about.mean = TRUE)
+    results$par[2] <- sqrt(results$par[2])
+    names(results$par) <- c("mean", "sd")
+    
+    results$table <- c(mean = results$par[1],
+                       sigma = results$par[2], sigma2 = results$par[2]^2, tau = results$par[2], tau2 = 1/results$par[2]^2)
+    jaspResults[['methodMoments']][['results']]$object <- results
+  }
+  
+  return()
+}
+
+.ldFitAssessment <- function(methodContainer, options, variable){
+  methodContainer[['fitAssessment']] <- createJaspContainer(title = "Fit Assessment")
+  estParameters <- methodContainer[['results']]$object[['par']]
+  
+  if(is.null(methodContainer[['fitAssessment']][['estPDF']]) && options$estPDF){
+    pdfplot <- createJaspPlot(title = "Something")
+    pdfplot$dependOn(c("variable"))
+    methodContainer[['fitAssessment']][['estPDF']] <- pdfplot
+    
+    .ldFillEstPDFPlot(pdfplot, estParameters, options, variable)
+  }
+  
+  if(is.null(methodContainer[['fitAssessment']][['qqplot']]) && options$qqplot){
+    qqplot <- createJaspPlot(title = "Q-Q plot")
+    qqplot$dependOn("variable")
+    methodContainer[['fitAssessment']][['qqplot']] <- qqplot
+    
+    .ldFillQQPlot(qqplot, estParameters, options, variable)
+  }
+  
+  if(is.null(methodContainer[['fitAssessment']][['estCDF']]) && options$estCDF){
+    cdfplot <- createJaspPlot(title = "Something")
+    cdfplot$dependOn("variable")
+    methodContainer[['fitAssessment']][['estCDF']] <- cdfplot
+    
+    .ldFillEstCDFPlot(cdfplot, estParameters, options, variable)
+  }
+  
+  if(is.null(methodContainer[['fitAssessment']][['ppplot']]) && options$ppplot){
+    ppplot <- createJaspPlot(title = "P-P plot")
+    ppplot$dependOn("variable")
+    methodContainer[['fitAssessment']][['ppplot']] <- ppplot
+    
+    .ldFillPPPlot(ppplot, estParameters, options, variable)
+  }
+}
+
+# .ldGaussianMethodMomentsTableMain <- function(jaspResults, options, variable){
+#   jaspResults[['estimatesContainer']][['methodMoments']] <- createJaspContainer(title = "Method of Moments")
+#   
+#   # # observed moments
+#   # obsMomentsTable <- createJaspTable(title = "Observed Moments")
+#   # 
+#   # obsMomentsTable$dependOn(c("variable"))
+#   # obsMomentsTable$addCitation("JASP Team (2018). JASP (Version 0.9.2) [Computer software].")
+#   # 
+#   # noOfNeededMoments <- length(options[['pars']])
+#   # 
+#   # obsMomentsTable$addColumnInfo(name = "moment",     title = "Moment",       type = "integer")
+#   # obsMomentsTable$addColumnInfo(name = "aboutorigin",       title = "Raw",           type = "number", format = "sf:4")
+#   # obsMomentsTable$addColumnInfo(name = "aboutmean",        title = "Centered",       type = "number", format = "sf:4")
+#   # 
+#   # obsMomentsTable$setExpectedRows(noOfNeededMoments)
+#   # obsMomentsTable$addFootnote(message = "Raw k<sup>th</sup> moment is calculated as 1/n \u2211 x<sup>k</sup>.",
+#   #                             col_names="aboutorigin")
+#   # obsMomentsTable$addFootnote(message = "For k > 1, centered k<sup>th</sup> moment is calculated as 1/n \u2211 (x-x\u0305)<sup>k</sup>.",
+#   #                             col_names="aboutmean")
+#   # 
+#   # jaspResults[['estimatesContainer']][['methodMoments']][['obsMomentsTable']] <- obsMomentsTable
+#   # 
+#   # obsMomentsTable[['moment']]      <- 1:noOfNeededMoments
+#   # obsMomentsTable[['aboutorigin']] <- .computeMoments(x = variable, max.moment = noOfNeededMoments, about.mean = FALSE)
+#   # obsMomentsTable[['aboutmean']]   <- .computeMoments(x = variable, max.moment = noOfNeededMoments, about.mean = TRUE)
+#   # 
+#   
+#   
+#   # est Parameters
+#   estParametersTable <- createJaspTable(title = "Estimated Parameters")
+#   
+#   estParametersTable$dependOn(c("variable", "parametrization"))
+#   estParametersTable$addCitation("JASP Team (2018). JASP (Version 0.9.2) [Computer software].")
+# 
+#   estParametersTable$addColumnInfo(name = "par1", title = "\u03BC\u0302", type = "number", format = "sf:4")
+#   
+#   # state
+#   if(is.null(jaspResults[['methodMomentsResults']])){
+#     methodMomentsResults <- createJaspState()
+#     jaspResults[['methodMomentsResults']] <- methodMomentsResults
+#     methodMomentsResults$dependOn(c("variable"))
+#     methodMomentsResults$object <- list(.computeMoments(x = variable, max.moment = noOfNeededMoments, about.mean = TRUE))
+#   }
+#   
+#   # fill
+#   par <- jaspResults[['methodMomentsResults']]$object[[1]]
+# 
+#   if(options$parametrization == "sigma2"){
+#     
+#     estParametersTable$addColumnInfo(name = "par2", title = "\u03C3\u0302<sup>2</sup>", type = "number", format = "sf:4")
+#   } else if(options$parametrization == "sigma"){
+#     
+#     estParametersTable$addColumnInfo(name = "par2", title = "\u03C3\u0302",  type = "number", format = "sf:4")
+#     par[2] <- sqrt(par[2])
+#     
+#   } else if(options$parametrization == "tau2"){
+#     
+#     estParametersTable$addColumnInfo(name = "par2", title = "\u03C4\u0302<sup>2</sup>",   type = "number", format = "sf:4")
+#     par[2] <- 1/par[2]
+#     
+#   } else if(options$parametrization == "tau"){
+#     
+#     estParametersTable$addColumnInfo(name = "par2", title = "\u03C4\u0302",    type = "number", format = "sf:4")
+#     par[2] <- 1/sqrt(par[2])
+#     
+#   }
+#   
+#   estParametersTable$setExpectedRows(1)
+#   
+#   jaspResults[['estimatesContainer']][['methodMoments']][['estParametersTable']] <- estParametersTable
+#   
+#   estParametersTable$addRows(list(par1 = par[1], par2 = par[2]))
+#   
+#   
+#   return()
+# }

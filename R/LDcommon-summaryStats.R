@@ -81,7 +81,7 @@
 }
 
 
-.computeMoments <- function(x, max.moment = 2, about.mean = FALSE){
+.computeObservedMoments <- function(x, max.moment = 2, about.mean = FALSE){
   n <- length(x)
   moments <- numeric(length = max.moment)
   moments[1] <- mean(x)
