@@ -56,7 +56,7 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
   jaspResults[['dataContainer']] <- createJaspContainer(title = paste0("Overview -- ", options[['variable']]))
   
   if(is.null(jaspResults[['dataContainer']][["summary"]]) && options$summary){
-    #.ldSummaryContinuousTableMain(jaspResults, variable, options)
+    .ldSummaryContinuousTableMain(jaspResults, variable, options)
   }
       
   if(is.null(jaspResults[['dataContainer']][['histogram']]) && options$histogram){

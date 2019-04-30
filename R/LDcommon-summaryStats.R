@@ -16,7 +16,7 @@
   summaryTable$addColumnInfo(name = "skew",       title = "Skewness",       type = "number", format = "sf:4")
   summaryTable$addColumnInfo(name = "kurt",       title = "Kurtosis",       type = "number", format = "sf:4")
   
-  summaryTable$setExpectedRows(1)
+  #summaryTable$setExpectedRows(1)
   
   jaspResults[['dataContainer']][['summary']] <- summaryTable
   
