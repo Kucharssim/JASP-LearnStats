@@ -322,7 +322,7 @@
     ggplot2::geom_rug() +
     ggplot2::scale_x_continuous(limits = range) + 
     ggplot2::xlab("") +
-    ggplot2::ylab(paste0("Frequency(", options[['variable']], " in bin)"))
+    ggplot2::ylab(paste0("Freq(", options[['variable']], " in bin)"))
   
   p <- JASPgraphs::themeJasp(p)
   plot[['plotObject']] <- p
@@ -348,7 +348,7 @@
     ggplot2::geom_rug() +
     ggplot2::scale_x_continuous(limits = options[['rangeVariable']]) +
     ggplot2::xlab("x") +
-    ggplot2::ylab(paste0("Frequency(", options[['variable']], "< x)"))
+    ggplot2::ylab(paste0("Freq(", options[['variable']], " \u2264 x)"))
   
   p <- JASPgraphs::themeJasp(p)
   plot[['plotObject']] <- p

@@ -68,6 +68,15 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
   }
   
   # jaspResults[['estimatesContainer']] <- createJaspContainer(title = "Estimated Parameters")
+  if(is.null(jaspResults[['methodUnbiased']]) && options$methodMoments && ready){
+    jaspResults[['methodUnbiased']] <- createJaspContainer(title = "Minimum variance unbiased estimate")
+    
+    .ldGaussianMethodUnbiasedResults(jaspResults, options, variable)
+    .ldGaussianMethodMomentsTable(jaspResults[['methodUnbiased']], options)
+    .ldFitAssessment(jaspResults[['methodUnbiased']], options, variable)
+  }
+  
+  
   if(is.null(jaspResults[['methodMoments']]) && options$methodMoments && ready){
     jaspResults[['methodMoments']] <- createJaspContainer(title = "Method of Moments")
     
@@ -228,6 +237,26 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
                        tau = results$par[[2]],
                        tau2 = 1/results$par[[2]]^2)
     jaspResults[['methodMoments']][['results']]$object <- results
+  }
+  
+  return()
+}
+
+.ldGaussianMethodUnbiasedResults <- function(jaspResults, options, variable){
+  jaspResults[['methodUnbiased']][['results']] <- createJaspState()
+  jaspResults[['methodUnbiased']][['results']]$dependOn(c("variable"))
+  
+  if(is.null(jaspResults[['methodUnbiased']][['results']]$object)){
+    results <- list()
+    results$par <- c(mean = mean(variable), sd = .sdGaussianUnbiased(variable))
+    names(results$par) <- c("mean", "sd")
+    
+    results$table <- c(mu = results$par[[1]],
+                       sigma = results$par[[2]],
+                       sigma2 = var(variable),
+                       tau = 1/results$par[[2]],
+                       tau2 = 1/var(variable))
+    jaspResults[['methodUnbiased']][['results']]$object <- results
   }
   
   return()
@@ -414,3 +443,15 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
 #   
 #   return()
 # }
+
+.sdGaussianUnbiased <- function(x){
+  # https://en.wikipedia.org/wiki/Unbiased_estimation_of_standard_deviation
+  x <- na.omit(x)
+  n <- length(x)
+  sdBiased <- sd(x)
+  
+  logCorrectionFactor <- 0.5*log(2) - 0.5*log(n-1) + lgamma(n/2) - lgamma((n-1)/2)
+  correctionFactor <- exp(logCorrectionFactor)
+  
+  return(sdBiased/correctionFactor)
+}

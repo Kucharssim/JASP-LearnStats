@@ -168,6 +168,7 @@ Form {
       Group
       {
           title: ""
+          CheckBox{ name: "methodUnbiased"; label: qsTr("Minimum variance unbiased estimate")}
           CheckBox{ name: "methodMoments"; label: qsTr("Method of Moments") }
           CheckBox
           {
@@ -175,7 +176,7 @@ Form {
               Group{
                   CheckBox{ name: "methodMLAnalytic"; label: qsTr("Analytic")    }
                   CheckBox{ name: "methodMLNewton";   label: qsTr("Newton")      }
-                  CheckBox{ name: "methodMLGrid";     label: qsTr("Grid Search") }
+                  CheckBox{ name: "methodMLGrid";     label: qsTr("Grid search") }
               }
           }
           CheckBox
@@ -183,8 +184,8 @@ Form {
               name: "methodBayes";   label: qsTr("Bayesian"); debug: true
               Group{
                   CheckBox{ name: "methodBayesAnalytic"; label: qsTr("Analytic") }
-                  CheckBox{ name: "methodBayesMAP";      label: qsTr("Maximum A Posteriori") }
-                  CheckBox{ name: "methodBayesGibbs";    label: qsTr("Gibbs Sampling") }
+                  CheckBox{ name: "methodBayesMAP";      label: qsTr("Maximum a posteriori") }
+                  CheckBox{ name: "methodBayesGibbs";    label: qsTr("Gibbs sampling") }
               }
               Group{title: qsTr("Priors")}
           }
