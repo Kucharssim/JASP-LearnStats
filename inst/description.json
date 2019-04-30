@@ -11,7 +11,7 @@
 		"license":									"GPL (>= 2)"
 	},
 
-	"requiredPackages":	[],
+	"requiredPackages":	["goftest"],
 
 	"menu":
 	[

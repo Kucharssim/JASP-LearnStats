@@ -228,9 +228,9 @@ Form {
       {
           title: qsTr("Statistics")
           CheckBox{ name: "kolmogorovSmirnov"; label: qsTr("Kolmogorov-Smirnov")}
-          CheckBox{ name: "kramerVonMisses";   label: qsTr("Cramér–von Mises")  }
+          CheckBox{ name: "cramerVonMisses";   label: qsTr("Cramér–von Mises")  }
           CheckBox{ name: "andersonDarling";   label: qsTr("Anderson-Darling")  }
-          CheckBox{ name: "sapiroWilk";        label: qsTr("Shapiro-Wilk")     }
+          CheckBox{ name: "shapiroWilk";        label: qsTr("Shapiro-Wilk")     }
       }
   }
 }

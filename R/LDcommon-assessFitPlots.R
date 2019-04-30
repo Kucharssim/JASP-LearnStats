@@ -14,7 +14,8 @@
   p <- ggplot2::ggplot(data = NULL, ggplot2::aes(x = variable)) +
     ggplot2::geom_histogram(ggplot2::aes(y = ..density..), fill = "steelblue") +
     ggplot2::stat_function(fun = options[['pdfFun']], args = as.list(estParameters), size = 1.5) + 
-    ggplot2::scale_x_continuous(limits = options[['rangeVariable']])
+    ggplot2::scale_x_continuous(limits = options[['rangeVariable']]) +
+    ggplot2::ylab("Density") + ggplot2::xlab(options[['variable']])
   
   p <- JASPgraphs::themeJasp(p)
   
@@ -51,7 +52,8 @@
     ggplot2::geom_rug() +
     ggplot2::stat_function(fun = options[['cdfFun']], args = as.list(estParameters), size = 1.5) + 
     ggplot2::scale_x_continuous(limits = options[['rangeVariable']]) +
-    ggplot2::scale_y_continuous(limits = 0:1)
+    ggplot2::scale_y_continuous(limits = 0:1) + 
+    ggplot2::ylab("Probability (X \u2264 x)") + ggplot2::xlab(options[['variable']])
   
   p <- JASPgraphs::themeJasp(p)
   
