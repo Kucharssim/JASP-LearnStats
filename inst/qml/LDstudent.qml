@@ -32,22 +32,8 @@ Form {
       title: "Parameters"
 
       Group{
-        DropDown
-        {
-            name: "parametrization"
-            id:   parametrizationChoice
-            indexDefaultValue: 0
-            label: qsTr("Parameterization")
-            values: [
-                { label: "μ, σ²", value: "sigma2"},
-                { label: "μ, σ",  value: "sigma" },
-                { label: "μ, τ²", value: "tau2"  },
-                { label: "μ, τ",  value: "tau"   }
-              ]
-        }
-
-        DoubleField{ name:  "mu"; label: qsTr("μ = "); id: mu; negativeValues: true }
-        DoubleField{ name: "varValue"; label: parametrizationChoice.currentText.replace("μ, ", "") + qsTr(" ="); defaultValue: 1; min: 0; id: vars }
+        DoubleField{ name:  "ncp"; label: qsTr("ncp = "); negativeValues: true }
+        DoubleField{ name: "df"; label: qsTr("df = "); defaultValue: 1; min: 0}
       }
 
     }

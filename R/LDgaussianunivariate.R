@@ -53,7 +53,9 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
     .ldPlotQF(jaspResults, options)
   }
   
-  jaspResults[['dataContainer']] <- createJaspContainer(title = paste0("Overview -- ", options[['variable']]))
+  if(!ready) return()
+  
+  jaspResults[['dataContainer']] <- createJaspContainer(title = paste0("Overview - ", options[['variable']]))
   
   if(is.null(jaspResults[['dataContainer']][["summary"]]) && options$summary){
     .ldSummaryContinuousTableMain(jaspResults, variable, options)
@@ -67,9 +69,11 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
     .ldPlotECDF(jaspResults, options, variable)
   }
   
-  # jaspResults[['estimatesContainer']] <- createJaspContainer(title = "Estimated Parameters")
-  if(is.null(jaspResults[['methodUnbiased']]) && options$methodMoments && ready){
-    jaspResults[['methodUnbiased']] <- createJaspContainer(title = "Minimum variance unbiased estimate")
+  
+  
+  if(options$methodUnbiased){
+    if(is.null(jaspResults[['methodUnbiased']]))
+      jaspResults[['methodUnbiased']] <- createJaspContainer(title = "Minimum variance unbiased estimate")
     
     .ldGaussianMethodUnbiasedResults(jaspResults, options, variable)
     .ldGaussianMethodMomentsTable(jaspResults[['methodUnbiased']], options)
@@ -77,18 +81,15 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
   }
   
   
-  if(is.null(jaspResults[['methodMoments']]) && options$methodMoments && ready){
-    jaspResults[['methodMoments']] <- createJaspContainer(title = "Method of Moments")
+  if(options$methodMoments){
+    if(is.null(jaspResults[['methodMoments']]))
+      jaspResults[['methodMoments']] <- createJaspContainer(title = "Method of Moments")
     
     .ldGaussianMethodMomentsResults(jaspResults, options, variable)
     .ldGaussianMethodMomentsTable(jaspResults[['methodMoments']], options)
     .ldFitAssessment(jaspResults[['methodMoments']], options, variable)
   }
   
-  # jaspResults[['fitContainer']] <- createJaspContainer(title = "Fit Assessment")
-  # if(is.null(jaspResults[['fitContainer']][['qqplot']]) && options$qqplot){
-  #   .ldPlotQQ(jaspResults, options, variable)
-  # }
   return()
 }
 
@@ -172,19 +173,6 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
   return()
 }
 
-#### Estimating methods ----
-# .ldFillMainResults <- function(methodContainer, options, variable){
-#   # state
-#   # if(is.null(methodContainer[['estParameters']])){
-#   #   .ldGaussianMethodMomentsTableMain(jaspResults, options, variable)
-#   # }
-#   
-#   if(is.null(jaspResults[['estimatesContainer']][['methodMoments']][['fitAssessment']])){
-#     .ldFitAssessment(jaspResults[['estimatesContainer']][['methodMoments']], options, variable)
-#   }
-# 
-# }
-
 .ldGaussianMethodMomentsTable <- function(methodContainer, options){
   estParametersTable <- createJaspTable(title = "Estimated Parameters")
   
@@ -195,26 +183,31 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
   
   estParametersTable$addColumnInfo(name = "mu", title = "\u03BC\u0302", type = "number", format = "sf:4")
   
-  if(options$parametrization == "sigma2"){
-
-    estParametersTable$addColumnInfo(name  = options$parametrization,
-                                     title = "\u03C3\u0302<sup>2</sup>", type = "number", format = "sf:4")
-  } else if(options$parametrization == "sigma"){
-
-    estParametersTable$addColumnInfo(name  = options$parametrization,
-                                     title = "\u03C3\u0302",  type = "number", format = "sf:4")
-
-  } else if(options$parametrization == "tau2"){
-
-    estParametersTable$addColumnInfo(name  = options$parametrization,
-                                     title = "\u03C4\u0302<sup>2</sup>",   type = "number", format = "sf:4")
-
-  } else if(options$parametrization == "tau"){
-
-    estParametersTable$addColumnInfo(name  = options$parametrization,,
-                                     title = "\u03C4\u0302",    type = "number", format = "sf:4")
+  if(options$ciInterval){
+    estParametersTable$addColumnInfo(name = "mu.lower", title = "Lower", type = "number", format = "sf:4",
+                                     overtitle = sprintf("%s%% CI for \u03BC", options[['ciIntervalInterval']]*100))
+    estParametersTable$addColumnInfo(name = "mu.upper", title = "Upper", type = "number", format = "sf:4",
+                                     overtitle = sprintf("%s%% CI for \u03BC", options[['ciIntervalInterval']]*100))
   }
+  
+  par2 <- c(sigma2 = "\u03C3\u0302<sup>2</sup>", sigma = "\u03C3\u0302", 
+            tau2 = "\u03C4\u0302<sup>2</sup>", tau = "\u03C4\u0302")[[options[['parametrization']]]]
+  
+  estParametersTable$addColumnInfo(name = options[['parametrization']],
+                                   title = par2, type = "number", format = "sf:4")
 
+  if(options$ciInterval){
+    estParametersTable$addColumnInfo(name = paste0(options[['parametrization']], ".lower"),
+                                     title = "Lower", type = "number", format = "sf:4",
+                                     overtitle = sprintf("%s%% CI for %s", 
+                                                         options[['ciIntervalInterval']]*100,
+                                                         par2))
+    estParametersTable$addColumnInfo(name = paste0(options[['parametrization']], ".upper"),
+                                     title = "Upper", type = "number", format = "sf:4",
+                                     overtitle = sprintf("%s%% CI for %s", 
+                                                         options[['ciIntervalInterval']]*100, 
+                                                         par2))
+  }
   estParametersTable$addRows(as.list(methodContainer[['results']]$object[['table']]))
   methodContainer[['estParametersTable']] <- estParametersTable
   
@@ -256,6 +249,19 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
                        sigma2 = var(variable),
                        tau = 1/results$par[[2]],
                        tau2 = 1/var(variable))
+    
+    if(options[['ciInterval']]){
+      res <- t.test(variable, conf.level = options[['ciIntervalInterval']])
+      resvar <- ci.GaussianVar(variable, conf.level = options[['ciIntervalInterval']])
+      ressd  <- ci.GaussianSD (variable, conf.level = options[['ciIntervalInterval']])
+      
+      results$table <- c(results$table, mu.lower = res[['conf.int']][[1]], mu.upper = res[['conf.int']][[2]],
+                         sigma2.lower = resvar[1], sigma2.upper = resvar[2],
+                         sigma.lower  = ressd[1], sigma.upper = ressd[2],
+                         tau2.lower = 1/resvar[1], tau2.upper = 1/resvar[2],
+                         tau.lower = 1/ressd[1], tau.upper = 1/ressd[2])
+      
+    }
     jaspResults[['methodUnbiased']][['results']]$object <- results
   }
   
@@ -454,4 +460,21 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
   correctionFactor <- exp(logCorrectionFactor)
   
   return(sdBiased/correctionFactor)
+}
+
+
+ci.GaussianVar <- function(x, conf.level = options[['ciIntervalInterval']]){
+  x <- na.omit(x)
+  df <- length(x) - 1
+  v <- var(x)
+  
+  alpha <- 1-conf.level
+  perc <- c(1-alpha/2, alpha/2)
+  res <- v * df / qchisq(p = perc, df = df)
+  
+  return(res)
+}
+
+ci.GaussianSD <- function(variable, conf.level = options[['ciIntervalInterval']]){
+  sqrt(ci.GaussianVar(variable, conf.level))
 }

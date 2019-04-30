@@ -24,6 +24,18 @@
 			"qml":								"LDgaussianunivariate.qml",
 			"function":						"LDgaussianunivariate",
 			"usesJaspResults":		true
+		},
+		{
+		  "title":              "Student's t",
+		  "qml":                "LDstudent.qml",
+		  "function":           "LDstudent",
+		  "usesJaspResults":    true
+		},
+		{
+		  "title":              "Fisher-Snedecor F",
+		  "qml":                "LDfDist.qml",
+		  "function":           "LDfDist",
+		  "usesJaspResults":    true
 		}
 	]
 }

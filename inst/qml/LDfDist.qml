@@ -32,22 +32,9 @@ Form {
       title: "Parameters"
 
       Group{
-        DropDown
-        {
-            name: "parametrization"
-            id:   parametrizationChoice
-            indexDefaultValue: 0
-            label: qsTr("Parameterization")
-            values: [
-                { label: "μ, σ²", value: "sigma2"},
-                { label: "μ, σ",  value: "sigma" },
-                { label: "μ, τ²", value: "tau2"  },
-                { label: "μ, τ",  value: "tau"   }
-              ]
-        }
-
-        DoubleField{ name:  "mu"; label: qsTr("μ = "); id: mu; negativeValues: true }
-        DoubleField{ name: "varValue"; label: parametrizationChoice.currentText.replace("μ, ", "") + qsTr(" ="); defaultValue: 1; min: 0; id: vars }
+        DoubleField{ name: "df1"; label: qsTr("df1 = "); defaultValue: 1; min: 0}
+        DoubleField{ name: "df2"; label: qsTr("df2 = "); defaultValue: 1; min: 0}
+        DoubleField{ name: "ncp"; label: qsTr("ncp = "); defaultValue: 0}
       }
 
     }
@@ -80,7 +67,7 @@ Form {
     {
         title: qsTr("Options")
         enabled: plotPDF.checked || plotCDF.checked
-        DoubleField{ name:  "range"; label: qsTr("Range"); defaultValue: 3; id: range}
+        DoubleField{ name:  "range"; label: qsTr("Range"); defaultValue: 5; id: range}
         Group
         {
             title: qsTr("Highlight")
@@ -98,20 +85,20 @@ Form {
                 RadioButton
                 {
                     value: "minmax"; label: qsTr("from"); childrenOnSameRow: true; checked: true
-                    DoubleField{ name: "min"; label: ""; afterLabel: qsTr("to"); negativeValues: true; defaultValue: -1}
+                    DoubleField{ name: "min"; label: ""; afterLabel: qsTr("to"); negativeValues: true; defaultValue: 0}
                     DoubleField{ name: "max"; label: ""; negativeValues: true; defaultValue: 1}
                 }
 
                 RadioButton
                 {
                     value: "lower"; label: qsTr("from -∞"); childrenOnSameRow: true
-                    DoubleField{ name: "lower_max"; label: qsTr("to"); negativeValues: true; defaultValue: 0 }
+                    DoubleField{ name: "lower_max"; label: qsTr("to"); negativeValues: true; defaultValue: 1 }
                 }
 
                 RadioButton
                 {
                     value: "upper"; label: qsTr("from"); childrenOnSameRow: true
-                    DoubleField{ name: "upper_min"; label: ""; afterLabel: qsTr("to ∞"); defaultValue: 0}
+                    DoubleField{ name: "upper_min"; label: ""; afterLabel: qsTr("to ∞"); defaultValue: 1}
                 }
             }
         }
