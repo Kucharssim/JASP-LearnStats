@@ -1,8 +1,43 @@
+.ldPlotContinuousDistributionFunctions <- function(jaspResults, options){
+  
+  if(options$plotPDF){
+    if(is.null(jaspResults[['pdfContainer']])){
+      jaspResults[['pdfContainer']] <- createJaspContainer(title = "Probability Density Function")
+      jaspResults[['pdfContainer']]$dependOn(c("pars"))
+    }
+  
+    .ldPlotPDF(jaspResults, options)
+  }
+  
+  # if(is.null(jaspResults[['pdfContainer']][['formula']]) && options$formulaPDF && options$plotPDF){
+  #   .ldFormulaGaussianPDF(jaspResults, options)
+  # }
+
+  if(is.null(jaspResults[['cdfContainer']]))
+    jaspResults[['cdfContainer']] <- createJaspContainer(title = "Cumulative Distribution Function")
+  
+  if(is.null(jaspResults[['cdfContainer']][['cdfPlot']]) && options$plotCDF){
+    .ldPlotCDF(jaspResults, options)
+  }
+  
+  # if(is.null(jaspResults[['cdfContainer']][['formula']]) && options$formulaCDF && options$plotCDF){
+  #   .ldFormulaGaussianCDF(jaspResults, options)
+  # }
+
+  if(is.null(jaspResults[['qfContainer']]))
+    jaspResults[['qfContainer']] <- createJaspContainer(title = "Quantile Function")
+  
+  if(is.null(jaspResults[['qfContainer']][['qf']]) && options$plotQF){
+    .ldPlotQF(jaspResults, options)
+  }
+}
+
+
 ### Plot PDF ----
 .ldPlotPDF <- function(jaspResults, options){
   pdfPlot <- createJaspPlot(title = "", width = 600, height = 320)
   
-  pdfPlot$dependOn(c("sd", "mu", "range"))
+  pdfPlot$dependOn(c("sd", "mu", "range", "plotPDF"))
   
   jaspResults[['pdfContainer']][['pdfPlot']] <- pdfPlot
   

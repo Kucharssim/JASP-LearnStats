@@ -19,9 +19,12 @@
 # }
 
 LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
-
+  
+  .simulateData(jaspResults, options)
+  
   #jaspResults$title <- "Normal distribution"
   ready <- FALSE
+  variable <- NULL
   if(options[['variable']] != ""){
     dataset <- .readDataSetToEnd(columns.as.numeric = options[['variable']])
     variable <- dataset[[.v(options[['variable']])]]
@@ -31,64 +34,70 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
   
   options <- .recodeOptionsLDGaussianUnivariate(options)
 
+  .ldPlotContinuousDistributionFunctions(jaspResults, options)
   
-  jaspResults[['pdfContainer']] <- createJaspContainer(title = "Probability Density Function")
-  if(is.null(jaspResults[['pdfContainer']][['pdfPlot']]) && options$plotPDF){
-    .ldPlotPDF(jaspResults, options)
+  # jaspResults[['pdfContainer']] <- createJaspContainer(title = "Probability Density Function")
+  # if(is.null(jaspResults[['pdfContainer']][['pdfPlot']]) && options$plotPDF){
+  #   .ldPlotPDF(jaspResults, options)
+  # }
+  # if(is.null(jaspResults[['pdfContainer']][['formula']]) && options$formulaPDF && options$plotPDF){
+  #   .ldFormulaGaussianPDF(jaspResults, options)
+  # }
+  # 
+  # jaspResults[['cdfContainer']] <- createJaspContainer(title = "Cumulative Distribution Function")
+  # if(is.null(jaspResults[['cdfContainer']][['cdfPlot']]) && options$plotCDF){
+  #   .ldPlotCDF(jaspResults, options)
+  # }
+  # if(is.null(jaspResults[['cdfContainer']][['formula']]) && options$formulaCDF && options$plotCDF){
+  #   .ldFormulaGaussianCDF(jaspResults, options)
+  # }
+  # 
+  # jaspResults[['qfContainer']] <- createJaspContainer(title = "Quantile Function")
+  # if(is.null(jaspResults[['qfContainer']][['qf']]) && options$plotQF){
+  #   .ldPlotQF(jaspResults, options)
+  # }
+
+  
+  if(is.null(jaspResults[['dataContainer']]) && ready){
+    jaspResults[['dataContainer']] <- createJaspContainer(title = paste0("Overview - ", options[['variable']]))
   }
-  if(is.null(jaspResults[['pdfContainer']][['formula']]) && options$formulaPDF && options$plotPDF){
-    .ldFormulaGaussianPDF(jaspResults, options)
-  }
   
-  jaspResults[['cdfContainer']] <- createJaspContainer(title = "Cumulative Distribution Function")
-  if(is.null(jaspResults[['cdfContainer']][['cdfPlot']]) && options$plotCDF){
-    .ldPlotCDF(jaspResults, options)
-  }
-  if(is.null(jaspResults[['cdfContainer']][['formula']]) && options$formulaCDF && options$plotCDF){
-    .ldFormulaGaussianCDF(jaspResults, options)
-  }
-  
-  jaspResults[['qfContainer']] <- createJaspContainer(title = "Quantile Function")
-  if(is.null(jaspResults[['qfContainer']][['qf']]) && options$plotQF){
-    .ldPlotQF(jaspResults, options)
-  }
-  
-  if(!ready) return()
-  
-  jaspResults[['dataContainer']] <- createJaspContainer(title = paste0("Overview - ", options[['variable']]))
-  
-  if(is.null(jaspResults[['dataContainer']][["summary"]]) && options$summary){
+  if(is.null(jaspResults[['dataContainer']][["summary"]]) && options$summary && ready){
     .ldSummaryContinuousTableMain(jaspResults, variable, options)
   }
       
-  if(is.null(jaspResults[['dataContainer']][['histogram']]) && options$histogram){
+  if(is.null(jaspResults[['dataContainer']][['histogram']]) && options$histogram && ready){
     .ldPlotHistogram(jaspResults, options, variable)
   }
   
-  if(is.null(jaspResults[['dataContainer']][['ecdf']]) && options$ecdf){
+  if(is.null(jaspResults[['dataContainer']][['ecdf']]) && options$ecdf && ready){
     .ldPlotECDF(jaspResults, options, variable)
   }
   
-  
-  
-  if(options$methodUnbiased){
-    if(is.null(jaspResults[['methodUnbiased']]))
-      jaspResults[['methodUnbiased']] <- createJaspContainer(title = "Minimum variance unbiased estimate")
+  if(options[['methodUnbiased']]){
+    if(is.null(jaspResults[['methodUnbiased']])){
+      jaspResults[['methodUnbiased']] <- createJaspContainer(title = "Minimum variance unbiased estimator")
+      jaspResults[['methodUnbiased']]$dependOn(c("methodUnbiased", "variable"))
+      jaspResults[['methodUnbiased']]$position <- 100
+    }
     
-    .ldGaussianMethodUnbiasedResults(jaspResults, options, variable)
-    .ldGaussianMethodMomentsTable(jaspResults[['methodUnbiased']], options)
-    .ldFitAssessment(jaspResults[['methodUnbiased']], options, variable)
+    .ldGaussianMethodUnbiasedResults(jaspResults, options, variable, ready)
+    .ldGaussianEstimatesTable(jaspResults[['methodUnbiased']], options, ready, TRUE)
+    .ldFitAssessment(jaspResults[['methodUnbiased']], options, variable, ready)
   }
   
-  
-  if(options$methodMoments){
-    if(is.null(jaspResults[['methodMoments']]))
+  if(options[['methodMoments']]){
+    if(is.null(jaspResults[['methodMoments']])){
       jaspResults[['methodMoments']] <- createJaspContainer(title = "Method of Moments")
+      jaspResults[['methodMoments']]$dependOn(c("methodMoments", "variable"))
+      jaspResults[['methodMoments']]$position <- 101
+    }
     
-    .ldGaussianMethodMomentsResults(jaspResults, options, variable)
-    .ldGaussianMethodMomentsTable(jaspResults[['methodMoments']], options)
-    .ldFitAssessment(jaspResults[['methodMoments']], options, variable)
+   .ldGaussianMethodMomentsResults(jaspResults, options, variable, ready)
+   .ldGaussianEstimatesTable(jaspResults[['methodMoments']], options, ready, FALSE)
+   .ldFitAssessment(jaspResults[['methodMoments']], options, variable, ready)
   }
+  
   
   return()
 }
@@ -173,21 +182,28 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
   return()
 }
 
-.ldGaussianMethodMomentsTable <- function(methodContainer, options){
-  estParametersTable <- createJaspTable(title = "Estimated Parameters")
+.ldGaussianEstimatesTable <- function(methodContainer, options, ready, ci.possible){
+  if(!is.null(methodContainer[['estParametersTable']])) return()
   
-  estParametersTable$dependOn(c("variable", "parametrization"))
+  if(!options$outputEstimates) return()
+  
+  estParametersTable <- createJaspTable(title = "Estimated Parameters", dependencies = "variable")
+  
+  estParametersTable$dependOn(c("variable", "parametrization", "outputEstimates", "ciInterval", "ciIntervalInterval"))
+  estParametersTable$position <- 1
   estParametersTable$addCitation("JASP Team (2018). JASP (Version 0.9.2) [Computer software].")
   
   estParametersTable$showSpecifiedColumnsOnly <- TRUE
   
   estParametersTable$addColumnInfo(name = "mu", title = "\u03BC\u0302", type = "number", format = "sf:4")
   
-  if(options$ciInterval){
+  if(options$ciInterval && ci.possible){
     estParametersTable$addColumnInfo(name = "mu.lower", title = "Lower", type = "number", format = "sf:4",
                                      overtitle = sprintf("%s%% CI for \u03BC", options[['ciIntervalInterval']]*100))
     estParametersTable$addColumnInfo(name = "mu.upper", title = "Upper", type = "number", format = "sf:4",
                                      overtitle = sprintf("%s%% CI for \u03BC", options[['ciIntervalInterval']]*100))
+  } else if(options$ciInterval){
+    estParametersTable$addFootnote("Confidence intervals are unavailable with this method.")
   }
   
   par2 <- c(sigma2 = "\u03C3\u0302<sup>2</sup>", sigma = "\u03C3\u0302", 
@@ -196,7 +212,7 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
   estParametersTable$addColumnInfo(name = options[['parametrization']],
                                    title = par2, type = "number", format = "sf:4")
 
-  if(options$ciInterval){
+  if(options$ciInterval && ci.possible){
     estParametersTable$addColumnInfo(name = paste0(options[['parametrization']], ".lower"),
                                      title = "Lower", type = "number", format = "sf:4",
                                      overtitle = sprintf("%s%% CI for %s", 
@@ -208,16 +224,23 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
                                                          options[['ciIntervalInterval']]*100, 
                                                          par2))
   }
-  estParametersTable$addRows(as.list(methodContainer[['results']]$object[['table']]))
   methodContainer[['estParametersTable']] <- estParametersTable
   
+  if(!ready)
+    return()
+  
+  # fill
+  estParametersTable$addRows(as.list(methodContainer[['results']]$object[['table']]))
   return()
 }
 
 
-.ldGaussianMethodMomentsResults <- function(jaspResults, options, variable){
+.ldGaussianMethodMomentsResults <- function(jaspResults, options, variable, ready){
+  if(!ready || !options[['methodMoments']])
+    return()
+  
   jaspResults[['methodMoments']][['results']] <- createJaspState()
-
+  
   if(is.null(jaspResults[['methodMoments']][['results']]$object)){
     results <- list()
     results$par <- .computeObservedMoments(x = variable, max.moment = 2, about.mean = TRUE)
@@ -235,7 +258,11 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
   return()
 }
 
-.ldGaussianMethodUnbiasedResults <- function(jaspResults, options, variable){
+.ldGaussianMethodUnbiasedResults <- function(jaspResults, options, variable, ready){
+  if(!ready || !options[['methodUnbiased']])
+    return()
+  
+  
   jaspResults[['methodUnbiased']][['results']] <- createJaspState()
   jaspResults[['methodUnbiased']][['results']]$dependOn(c("variable"))
   
@@ -268,68 +295,96 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
   return()
 }
 
-.ldFitAssessment <- function(methodContainer, options, variable){
-  methodContainer[['fitAssessment']] <- createJaspContainer(title = "Fit Assessment")
+.ldFitAssessment <- function(methodContainer, options, variable, ready){
+  if(is.null(methodContainer[['fitAssessment']])){
+    methodContainer[['fitAssessment']] <- createJaspContainer(title = "Fit Assessment")
+    methodContainer[['fitAssessment']]$dependOn(c("variable"))
+  }
+  
+  
   estParameters <- methodContainer[['results']]$object[['par']]
+  
+  .ldFillAssessmentTable(methodContainer, estParameters, options, variable, ready)
+  
   
   if(is.null(methodContainer[['fitAssessment']][['estPDF']]) && options$estPDF){
     pdfplot <- createJaspPlot(title = "Histogram vs. Theoretical PDF")
-    pdfplot$dependOn(c("variable", "estPDF"))
+    pdfplot$dependOn(c("estPDF"))
+    pdfplot$position <- 2
     methodContainer[['fitAssessment']][['estPDF']] <- pdfplot
     
-    .ldFillEstPDFPlot(pdfplot, estParameters, options, variable)
+    if(ready)
+      .ldFillEstPDFPlot(pdfplot, estParameters, options, variable)
   }
   
   if(is.null(methodContainer[['fitAssessment']][['qqplot']]) && options$qqplot){
     qqplot <- createJaspPlot(title = "Q-Q plot")
-    qqplot$dependOn("variable")
+    qqplot$dependOn(c("qqplot"))
+    qqplot$position <- 3
     methodContainer[['fitAssessment']][['qqplot']] <- qqplot
     
-    .ldFillQQPlot(qqplot, estParameters, options, variable)
+    if(ready)
+      .ldFillQQPlot(qqplot, estParameters, options, variable)
   }
   
   if(is.null(methodContainer[['fitAssessment']][['estCDF']]) && options$estCDF){
     cdfplot <- createJaspPlot(title = "ECDF vs. Theoretical CDF")
-    cdfplot$dependOn("variable")
+    cdfplot$dependOn(c("estCDF"))
+    cdfplot$position <- 4
     methodContainer[['fitAssessment']][['estCDF']] <- cdfplot
     
-    .ldFillEstCDFPlot(cdfplot, estParameters, options, variable)
+    if(ready)
+      .ldFillEstCDFPlot(cdfplot, estParameters, options, variable)
   }
   
   if(is.null(methodContainer[['fitAssessment']][['ppplot']]) && options$ppplot){
     ppplot <- createJaspPlot(title = "P-P plot")
-    ppplot$dependOn("variable")
+    ppplot$dependOn(c("ppplot"))
+    ppplot$position <-5
     methodContainer[['fitAssessment']][['ppplot']] <- ppplot
     
-    .ldFillPPPlot(ppplot, estParameters, options, variable)
+    if(ready)
+      .ldFillPPPlot(ppplot, estParameters, options, variable)
   }
-  
-  .ldAssessmentStatisticsResults(methodContainer, options, variable)
-  
-  if(!is.null(methodContainer[['fitAssessment']][['statisticsResults']]$object))
-    .ldFillAssessmentTable(methodContainer, options, variable)
   
   return()
 }
 
-.ldFillAssessmentTable <- function(methodContainer, options, variable){
+.ldFillAssessmentTable <- function(methodContainer, estParameters, options, variable, ready){
+  tests <- c(options$kolmogorovSmirnov, options$cramerVonMisses, options$andersonDarling, options$shapiroWilk)
+  if(!any(tests))
+     return()
+  
   statisticsTable <- createJaspTable(title = "Statistics")
+  statisticsTable$position <- 1
   statisticsTable$dependOn(c("variable", "kolmogorovSmirnov",
-                             "cramerVonMises", "andersonDarling",
+                             "cramerVonMisses", "andersonDarling",
                              "shapiroWilk"))
   
   statisticsTable$addColumnInfo(name = "test", title = "Test", type = "string")
   statisticsTable$addColumnInfo(name = "statistic", title = "Statistic", type = "number", format = "sf:4")
   statisticsTable$addColumnInfo(name = "p.value", title = "p-value", type = "number", format = "sf:4")
-  
-  statisticsTable$addRows(methodContainer[['fitAssessment']][['statisticsResults']]$object)
-  
-  
+    
   methodContainer[['fitAssessment']][['statisticsTable']] <- statisticsTable
+  
+  
+  
+  if(ready){
+    .ldAssessmentStatisticsResults(methodContainer, estParameters, options, variable)
+    statisticsTable$addRows(methodContainer[['fitAssessment']][['statisticsResults']]$object)
+  } else{
+    test <- c("Kolmogorov-Smirnov", "Cramer-von Misses", "Anderson-Darling", "Shapiro-Wilk")[tests]
+    statisticsTable[['test']] <- test
+  }
+  
   return()
 }
 
-.ldAssessmentStatisticsResults <- function(methodContainer, options, variable){
+.ldAssessmentStatisticsResults <- function(methodContainer, estParameters, options, variable){
+  if(!is.null(methodContainer[['fitAssessment']][['statisticsResults']])) return()
+  
+  if(is.null(estParameters)) return()
+  
   methodContainer[['fitAssessment']][['statisticsResults']] <- createJaspState()
   methodContainer[['fitAssessment']][['statisticsResults']]$dependOn(c("variable", "kolmogorovSmirnov",
                                                                        "cramerVonMises", "andersonDarling",
@@ -369,6 +424,16 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
   }
   
   methodContainer[['fitAssessment']][['statisticsResults']]$object <- results
+  
+  return()
+}
+
+.simulateData <- function(jaspResults, options){
+  if(is.null(jaspResults[['simdata']])){
+    jaspResults[['simdata']] <- createJaspState()
+    jaspResults[['simdata']]$dependOn(c("simulateNow"))
+    .setColumnDataAsScale(options[["newVariable"]], rnorm(100))
+  }
   
   return()
 }

@@ -22,6 +22,8 @@ import JASP.Widgets 1.0
 
 Form {
   id: form
+  AddColumnField { name: "newVariable"; text: "Column name selection result: "; fieldWidth: 120}
+  Button{name: "simulateNow"}
   
   Section{
       expanded: true
@@ -195,7 +197,7 @@ Form {
       {
           title: qsTr("Output")
           debug: false
-          CheckBox{ name: "estEstimates"; label: qsTr("Estimates"); checked: true }
+          CheckBox{ name: "outputEstimates"; label: qsTr("Estimates"); checked: true }
 
           CheckBox
           { 
