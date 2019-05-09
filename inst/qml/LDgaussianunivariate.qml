@@ -22,8 +22,9 @@ import JASP.Widgets 1.0
 
 Form {
   id: form
-  AddColumnField { name: "newVariable"; text: "Column name selection result: "; fieldWidth: 120}
-  Button{name: "simulateNow"}
+  AddColumnField { name: "simulates"; text: "Simulate new variable: "; fieldWidth: 120; id: simulates; columnType: 1}
+  CheckBox{name: "simulateNow"; id: simulateNow}
+  Button{ text: "simulateNow"; onClicked: { if (simulateNow.checked) simulateNow.checked = false; if(!simulateNow.checked) simulateNow.checked = true}}
   
   Section{
       expanded: true
@@ -126,11 +127,11 @@ Form {
   Section
   {
       title: qsTr("Generate and Display Data")
-      GroupBox{
-        ComputedColumnField{ name: "sampleFilterName"; text: "Simulate new variable:"; fieldWidth: 120
-        value: "Normal(3, 5)"}
+      //GroupBox{
+      //  ComputedColumnField{ name: "sampleFilterName"; text: "Simulate new variable:"; fieldWidth: 120
+      //  value: "Normal(3, 5)"}
         //ComputedColumnsConstructor{visible: false; rCode: "rnorm(n = 10, 1, 1)"}
-      }
+      //}
       //CheckBox
       //{
       //    name: "drawSamples"; label: qsTr("Generate"); childrenOnSameRow: true; id: drawSamples; checked: true

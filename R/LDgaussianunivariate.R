@@ -20,20 +20,26 @@
 
 LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
   
-  .simulateData(jaspResults, options)
+  options <- .recodeOptionsLDGaussianUnivariate(options)
   
   #jaspResults$title <- "Normal distribution"
   ready <- FALSE
   variable <- NULL
-  if(options[['variable']] != ""){
+  if(options[['variable']] != "" && is.null(jaspResults[['variable']])){
+    print("reading data")
     dataset <- .readDataSetToEnd(columns.as.numeric = options[['variable']])
+    #print(str(dataset))
     variable <- dataset[[.v(options[['variable']])]]
     ready <- TRUE
     options[['rangeVariable']] <- range(variable)
+    print(variable)
+    jaspResults[['variable']] <- createJaspState(object = variable, dependencies = c("plotPDF"))
   }
-  
-  options <- .recodeOptionsLDGaussianUnivariate(options)
 
+  .simulateData(jaspResults, options, ready)
+  
+   return()
+  
   .ldPlotContinuousDistributionFunctions(jaspResults, options)
   
   # jaspResults[['pdfContainer']] <- createJaspContainer(title = "Probability Density Function")
@@ -428,12 +434,21 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
   return()
 }
 
-.simulateData <- function(jaspResults, options){
-  if(is.null(jaspResults[['simdata']])){
-    jaspResults[['simdata']] <- createJaspState()
-    jaspResults[['simdata']]$dependOn(c("simulateNow"))
-    .setColumnDataAsScale(options[["newVariable"]], rnorm(100))
-  }
+.simulateData <- function(jaspResults, options, ready){
+  if(!is.null(jaspResults[['variable']])) return()
+  if(ready) return()
+  
+  print("simulating new variable")
+  sample <- rnorm(100)
+  .setColumnDataAsScale(options[['simulates']], sample)
+  # print(jaspResults[['simdata']])
+  # print(options[['simulateNow']])
+  # if(is.null(jaspResults[['simdata']])){
+  #   sample <- rnorm(100)
+  #   jaspResults[['simdata']] <- createJaspState(sample)
+  #   jaspResults[['simdata']]$dependOn(c("simulates"))
+  #   .setColumnDataAsScale(options[["simulates"]], sample)
+  # }
   
   return()
 }
