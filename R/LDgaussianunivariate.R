@@ -19,26 +19,21 @@
 # }
 
 LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
-  
-  options <- .recodeOptionsLDGaussianUnivariate(options)
-  
   #jaspResults$title <- "Normal distribution"
   ready <- FALSE
   variable <- NULL
-  if(options[['variable']] != "" && is.null(jaspResults[['variable']])){
+  if(options[['variable']] != ""){
     print("reading data")
     dataset <- .readDataSetToEnd(columns.as.numeric = options[['variable']])
-    #print(str(dataset))
+
     variable <- dataset[[.v(options[['variable']])]]
     ready <- TRUE
     options[['rangeVariable']] <- range(variable)
-    print(variable)
-    jaspResults[['variable']] <- createJaspState(object = variable, dependencies = c("plotPDF"))
   }
 
-  .simulateData(jaspResults, options, ready)
+  options <- .recodeOptionsLDGaussianUnivariate(options)
   
-   return()
+  #.simulateData(jaspResults, options, ready)
   
   .ldPlotContinuousDistributionFunctions(jaspResults, options)
   
@@ -63,11 +58,13 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
   #   .ldPlotQF(jaspResults, options)
   # }
 
-  
+  return()
+
   if(is.null(jaspResults[['dataContainer']]) && ready){
     jaspResults[['dataContainer']] <- createJaspContainer(title = paste0("Overview - ", options[['variable']]))
+    jaspResults[['dataContainer']]$dependOn(c("variable"))
   }
-  
+
   if(is.null(jaspResults[['dataContainer']][["summary"]]) && options$summary && ready){
     .ldSummaryContinuousTableMain(jaspResults, variable, options)
   }
@@ -119,8 +116,9 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
     options$sd <- 1/options$varValue
   }
   
-  options[['pars']] <- list(mean = options[['mu']], sd = options[['sd']])
+  options[['parValNames']] <- c("mu", "varValue")
   
+  options[['pars']] <- list(mean = options[['mu']], sd = options[['sd']])
   options[['pdfFun']] <- dnorm
   options[['cdfFun']] <- pnorm
   options[['qFun']]  <- qnorm

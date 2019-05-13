@@ -1,24 +1,23 @@
 .ldPlotContinuousDistributionFunctions <- function(jaspResults, options){
   
-  if(options$plotPDF){
-    if(is.null(jaspResults[['pdfContainer']])){
-      jaspResults[['pdfContainer']] <- createJaspContainer(title = "Probability Density Function")
-      jaspResults[['pdfContainer']]$dependOn(c("pars"))
-    }
-  
-    .ldPlotPDF(jaspResults, options)
+  if(is.null(jaspResults[['pdfContainer']])){
+    jaspResults[['pdfContainer']] <- createJaspContainer(title = "Probability Density Function")
+    jaspResults[['pdfContainer']]$position <- 2 
+    jaspResults[['pdfContainer']]$dependOn(options[['parValNames']])
   }
   
-  # if(is.null(jaspResults[['pdfContainer']][['formula']]) && options$formulaPDF && options$plotPDF){
-  #   .ldFormulaGaussianPDF(jaspResults, options)
-  # }
+  .ldPlotPDF(jaspResults, options)
+    
+  #   if(is.null(jaspResults[['pdfContainer']][['formula']]) && options$formulaPDF)
+  #     .ldFormulaGaussianPDF(jaspResults, options)
+  # #}
 
   if(is.null(jaspResults[['cdfContainer']]))
     jaspResults[['cdfContainer']] <- createJaspContainer(title = "Cumulative Distribution Function")
-  
-  if(is.null(jaspResults[['cdfContainer']][['cdfPlot']]) && options$plotCDF){
-    .ldPlotCDF(jaspResults, options)
-  }
+    jaspResults[['cdfContainer']]$position <- 3
+    
+  .ldPlotCDF(jaspResults, options)
+    
   
   # if(is.null(jaspResults[['cdfContainer']][['formula']]) && options$formulaCDF && options$plotCDF){
   #   .ldFormulaGaussianCDF(jaspResults, options)
@@ -35,10 +34,15 @@
 
 ### Plot PDF ----
 .ldPlotPDF <- function(jaspResults, options){
-  pdfPlot <- createJaspPlot(title = "", width = 600, height = 320)
+  if(!is.null(jaspResults[['pdfContainer']][['pdfPlot']])) return()
+  if(!options$plotPDF) return()
   
-  pdfPlot$dependOn(c("sd", "mu", "range", "plotPDF"))
   
+  pdfPlot <- createJaspPlot(title = "Density Plot", width = 600, height = 320)
+  print("new pdf plot")
+  pdfPlot$dependOn(c('plotPDF', 'range', 'highlightType',
+                     'highlightDensity', 'highlightProbability', 
+                     'min', 'max', 'lower_max', 'upper_min', options[['parValNames']]))
   jaspResults[['pdfContainer']][['pdfPlot']] <- pdfPlot
   
   .ldGeomLayersPDF(jaspResults, options)
@@ -48,7 +52,6 @@
 }
 
 .ldGeomLayersPDF <- function(jaspResults, options){
-
   # create state for the basic curve
   if(is.null(jaspResults[['pdfContainer']][['curve']])){
     curve <- createJaspState()
@@ -65,7 +68,7 @@
   if(is.null(jaspResults[['pdfContainer']][['highlightDensity']])){
     highlightDensity <- createJaspState()
     jaspResults[['pdfContainer']][['highlightDensity']] <- highlightDensity
-    highlightDensity$dependOn(c("pars", 'highlightmin', 'highlightmax', "highlightType"))
+    highlightDensity$dependOn(c(options[['parValNames']], 'highlightType', 'min', 'max', 'lower_max', 'upper_min'))
 
     # determine plotting region
     args <- options[['pars']]
@@ -98,7 +101,7 @@
   if(is.null(jaspResults[['pdfContainer']][['highlightProbability']])){
     highlightProbability <- createJaspState()
     jaspResults[['pdfContainer']][['highlightProbability']] <- highlightProbability
-    highlightProbability$dependOn(c("pars", 'highlightmin', 'highlightmax',  "highlightType"))
+    highlightProbability$dependOn(c(options[['parValNames']], 'highlightType', 'min', 'max', 'lower_max', 'upper_min'))
 
     # determine plotting region
     args <- options[['pars']]
@@ -162,7 +165,7 @@
 
 ### Plot CDF ----
 .ldPlotCDF <- function(jaspResults, options){
-  cdfPlot <- createJaspPlot(title = "", width = 600, height = 320)
+  cdfPlot <- createJaspPlot(title = "Cumulative Probability Plot", width = 600, height = 320)
   
   cdfPlot$dependOn(c("sd", "mu", "range"))
   

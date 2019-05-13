@@ -22,9 +22,9 @@ import JASP.Widgets 1.0
 
 Form {
   id: form
-  AddColumnField { name: "simulates"; text: "Simulate new variable: "; fieldWidth: 120; id: simulates; columnType: 1}
-  CheckBox{name: "simulateNow"; id: simulateNow}
-  Button{ text: "simulateNow"; onClicked: { if (simulateNow.checked) simulateNow.checked = false; if(!simulateNow.checked) simulateNow.checked = true}}
+  //AddColumnField { name: "simulates"; text: "Simulate new variable: "; fieldWidth: 120; id: simulates; columnType: 1}
+  //CheckBox{name: "simulateNow"; id: simulateNow}
+  //Button{ text: "simulateNow"; onClicked: { if (simulateNow.checked) simulateNow.checked = false; if(!simulateNow//.checked) simulateNow.checked = true}}
   
   Section{
       expanded: true
