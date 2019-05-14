@@ -5,7 +5,7 @@
     jaspResults[['pdfContainer']]$position <- 2 
     jaspResults[['pdfContainer']]$dependOn(c(options[['parValNames']], "parametrization"))
   }
-  
+  .ldExplanationPDF(jaspResults, options)
   .ldPlotPDF(jaspResults, options)
     
   #   if(is.null(jaspResults[['pdfContainer']][['formula']]) && options$formulaPDF)
@@ -18,6 +18,7 @@
     jaspResults[['cdfContainer']]$dependOn(c(options[['parValNames']], "parametrization"))
   }
   
+  .ldExplanationCDF(jaspResults, options)
   .ldPlotCDF(jaspResults, options)
     
   
@@ -38,13 +39,28 @@
 
 
 ### Plot PDF ----
+.ldExplanationPDF <- function(jaspResults, options){
+  if(!options$explanatoryText) return()
+  if(!options$plotPDF) return()
+  if(!is.null(jaspResults[['pdfContainer']][['explanation']])) return()
+  
+  explanation <- createJaspHtml()
+  explanation$dependOn(c("plotPDF", "explanatoryText"))
+  explanation$position <- 1
+  text <- "The probability density function (PDF), usually denoted as f(x), is a function of a random variable X. The value of f(x) provides the relative likelihood that a realization of the random variable X yields a value equal to x.
+  The density plot displays the probability density function of a random variable. The y-axis displays the value of the density function for a particular value of the random variable (displayed on the x-axis)."
+  explanation[['text']] <- text
+  jaspResults[['pdfContainer']][['explanation']] <- explanation
+  
+  return()
+}
+
 .ldPlotPDF <- function(jaspResults, options){
   if(!is.null(jaspResults[['pdfContainer']][['pdfPlot']])) return()
   if(!options$plotPDF) return()
   
   
   pdfPlot <- createJaspPlot(title = "Density Plot", width = 600, height = 320)
-  print("new pdf plot")
   pdfPlot$dependOn(c('plotPDF', 'range', 'highlightType',
                      'highlightDensity', 'highlightProbability', 
                      'min', 'max', 'lower_max', 'upper_min', options[['parValNames']]))
@@ -169,6 +185,24 @@
 }
 
 ### Plot CDF ----
+.ldExplanationCDF <- function(jaspResults, options){
+  if(!options$explanatoryText) return()
+  if(!options$plotCDF) return()
+  if(!is.null(jaspResults[['cdfContainer']][['explanation']])) return()
+  
+  explanation <- createJaspHtml()
+  explanation$dependOn(c("plotCDF", "explanatoryText"))
+  explanation$position <- 1
+  text <- "The cumulative distribution function (CDF), usually denoted as F(x), is a function of a random variable X. The value of F(x) provides the probability that a realization of the random variable X yields a value that is equal to or smaller than x.
+  The cumulative probability plot displays the cumulative distribution of a random variable. The y-axis displays the value of the cumulative distribution function for a particular value of the random variable (displayed on the x-axis).
+  
+  "
+  explanation[['text']] <- text
+  jaspResults[['cdfContainer']][['explanation']] <- explanation
+  
+  return()
+}
+
 .ldPlotCDF <- function(jaspResults, options){
   if(!is.null(jaspResults[['cdfContainer']][['cdfPlot']])) return()
   if(!options$plotCDF) return()

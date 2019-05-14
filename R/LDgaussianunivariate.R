@@ -20,6 +20,8 @@
 
 LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
   #jaspResults$title <- "Normal distribution"
+  .ldIntroText(jaspResults, options, .ldGaussianIntro)
+  
   ready <- FALSE
   variable <- NULL
   if(options[['variable']] != ""){
@@ -72,15 +74,30 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
    .ldFitAssessment(jaspResults[['methodMoments']], options, variable, ready)
   }
   
-  .ldGaussianExplanatoryText(jaspResults, options)
     
   return()
 }
 
-.ldGaussianExplanatoryText <- function(jaspResults, options){
+.ldIntroText <- function(jaspResults, options, introText){
+  if(!options$explanatoryText) return()
+  
+  intro <- createJaspHtml()
+  intro$dependOn(c("explanatoryText"))
+  intro$position <- 1
+  intro[['text']] <- introText()
+  jaspResults[['exp_Intro']] <- intro
   
   
   return()  
+}
+
+.ldGaussianIntro <- function(){
+  intro <- "<h3> Demonstration of the Normal Distribution </h3>
+The script is divided into four parts. The first part displays the Normal distribution, its probability density function, 
+cumulative distribution function, and quantile function.
+  "
+  
+  return(intro)
 }
 .recodeOptionsLDGaussianUnivariate <- function(options){
   if(options$parametrization == "sigma2"){
