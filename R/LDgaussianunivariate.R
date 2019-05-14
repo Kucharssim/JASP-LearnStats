@@ -34,39 +34,17 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
   options <- .recodeOptionsLDGaussianUnivariate(options)
   
   #.simulateData(jaspResults, options, ready)
-  
+
   .ldPlotContinuousDistributionFunctions(jaspResults, options)
   
-  # jaspResults[['pdfContainer']] <- createJaspContainer(title = "Probability Density Function")
-  # if(is.null(jaspResults[['pdfContainer']][['pdfPlot']]) && options$plotPDF){
-  #   .ldPlotPDF(jaspResults, options)
-  # }
-  # if(is.null(jaspResults[['pdfContainer']][['formula']]) && options$formulaPDF && options$plotPDF){
-  #   .ldFormulaGaussianPDF(jaspResults, options)
-  # }
-  # 
-  # jaspResults[['cdfContainer']] <- createJaspContainer(title = "Cumulative Distribution Function")
-  # if(is.null(jaspResults[['cdfContainer']][['cdfPlot']]) && options$plotCDF){
-  #   .ldPlotCDF(jaspResults, options)
-  # }
-  # if(is.null(jaspResults[['cdfContainer']][['formula']]) && options$formulaCDF && options$plotCDF){
-  #   .ldFormulaGaussianCDF(jaspResults, options)
-  # }
-  # 
-  # jaspResults[['qfContainer']] <- createJaspContainer(title = "Quantile Function")
-  # if(is.null(jaspResults[['qfContainer']][['qf']]) && options$plotQF){
-  #   .ldPlotQF(jaspResults, options)
-  # }
 
-  return()
-
-  if(is.null(jaspResults[['dataContainer']]) && ready){
+  if(is.null(jaspResults[['dataContainer']])){
     jaspResults[['dataContainer']] <- createJaspContainer(title = paste0("Overview - ", options[['variable']]))
     jaspResults[['dataContainer']]$dependOn(c("variable"))
   }
 
-  if(is.null(jaspResults[['dataContainer']][["summary"]]) && options$summary && ready){
-    .ldSummaryContinuousTableMain(jaspResults, variable, options)
+  if(is.null(jaspResults[['dataContainer']][["summary"]]) && options$summary){
+    .ldSummaryContinuousTableMain(jaspResults, variable, options, ready)
   }
       
   if(is.null(jaspResults[['dataContainer']][['histogram']]) && options$histogram && ready){

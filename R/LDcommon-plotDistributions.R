@@ -3,7 +3,7 @@
   if(is.null(jaspResults[['pdfContainer']])){
     jaspResults[['pdfContainer']] <- createJaspContainer(title = "Probability Density Function")
     jaspResults[['pdfContainer']]$position <- 2 
-    jaspResults[['pdfContainer']]$dependOn(options[['parValNames']])
+    jaspResults[['pdfContainer']]$dependOn(c(options[['parValNames']], "parametrization"))
   }
   
   .ldPlotPDF(jaspResults, options)
@@ -12,10 +12,12 @@
   #     .ldFormulaGaussianPDF(jaspResults, options)
   # #}
 
-  if(is.null(jaspResults[['cdfContainer']]))
+  if(is.null(jaspResults[['cdfContainer']])){
     jaspResults[['cdfContainer']] <- createJaspContainer(title = "Cumulative Distribution Function")
     jaspResults[['cdfContainer']]$position <- 3
-    
+    jaspResults[['cdfContainer']]$dependOn(c(options[['parValNames']], "parametrization"))
+  }
+  
   .ldPlotCDF(jaspResults, options)
     
   
@@ -23,12 +25,15 @@
   #   .ldFormulaGaussianCDF(jaspResults, options)
   # }
 
-  if(is.null(jaspResults[['qfContainer']]))
+  if(is.null(jaspResults[['qfContainer']])){
     jaspResults[['qfContainer']] <- createJaspContainer(title = "Quantile Function")
-  
-  if(is.null(jaspResults[['qfContainer']][['qf']]) && options$plotQF){
-    .ldPlotQF(jaspResults, options)
+    jaspResults[['qfContainer']]$position <- 3
+    jaspResults[['qfContainer']]$dependOn(c(options[['parValNames']], "parametrization"))
   }
+  
+  .ldPlotQF(jaspResults, options)
+  
+  return()
 }
 
 
@@ -56,7 +61,7 @@
   if(is.null(jaspResults[['pdfContainer']][['curve']])){
     curve <- createJaspState()
     jaspResults[['pdfContainer']][['curve']] <- curve
-    curve$dependOn(c("pars", "range"))
+    curve$dependOn(c(options[['parValNames']], "range"))
 
     plot <- ggplot2::ggplot(data = data.frame(x = options[['range_x']]), ggplot2::aes(x = x)) +
       ggplot2::stat_function(fun = options[['pdfFun']], n = 101, args = options[['pars']], size = 1)
@@ -165,9 +170,14 @@
 
 ### Plot CDF ----
 .ldPlotCDF <- function(jaspResults, options){
+  if(!is.null(jaspResults[['cdfContainer']][['cdfPlot']])) return()
+  if(!options$plotCDF) return()
+  
   cdfPlot <- createJaspPlot(title = "Cumulative Probability Plot", width = 600, height = 320)
   
-  cdfPlot$dependOn(c("sd", "mu", "range"))
+  cdfPlot$dependOn(c('plotCDF', 'range', 'highlightType',
+                     'highlightDensity', 'highlightProbability', 
+                     'min', 'max', 'lower_max', 'upper_min', options[['parValNames']]))
   
   jaspResults[['cdfContainer']][['cdfPlot']] <- cdfPlot
   
@@ -182,7 +192,7 @@
   if(is.null(jaspResults[['cdfContainer']][['curve']])){
     curve <- createJaspState()
     jaspResults[['cdfContainer']][['curve']] <- curve
-    curve$dependOn(c("pars", "range"))
+    curve$dependOn(c(options[['parValNames']], "range"))
     
     plot <- ggplot2::ggplot(data = data.frame(x = options[['range_x']]), ggplot2::aes(x = x)) +
       ggplot2::stat_function(fun = options[['cdfFun']], n = 101, args = options[['pars']], size = 1)
@@ -194,7 +204,7 @@
   if(is.null(jaspResults[['cdfContainer']][['highlightDensity']])){
     highlightDensity <- createJaspState()
     jaspResults[['cdfContainer']][['highlightDensity']] <- highlightDensity
-    highlightDensity$dependOn(c("pars", 'highlightmin', 'highlightmax', "highlightType"))
+    highlightDensity$dependOn(c(options[['parValNames']], 'highlightType', 'min', 'max', 'lower_max', 'upper_min'))
     
     # determine plotting region
     args <- options[['pars']]
@@ -227,7 +237,7 @@
   if(is.null(jaspResults[['cdfContainer']][['highlightProbability']])){
     highlightProbability <- createJaspState()
     jaspResults[['cdfContainer']][['highlightProbability']] <- highlightProbability
-    highlightProbability$dependOn(c("pars", 'highlightmin', 'highlightmax',  "highlightType"))
+    highlightProbability$dependOn(c(options[['parValNames']], 'highlightType', 'min', 'max', 'lower_max', 'upper_min'))
     
     # determine plotting region
     args <- options[['pars']]
@@ -291,9 +301,14 @@
 
 ### Plot QF ----
 .ldPlotQF <- function(jaspResults, options){
-  qfPlot <- createJaspPlot(title = "", width = 600, height = 320)
+  if(!is.null(jaspResults[['qfContainer']][['qfPlot']])) return()
+  if(!options$plotQF) return()
   
-  qfPlot$dependOn(c("sd", "mu", "range"))
+  qfPlot <- createJaspPlot(title = "Quantile Plot", width = 600, height = 320)
+  
+  qfPlot$dependOn(c('plotQF', 'range', 'highlightType',
+                    'highlightDensity', 'highlightProbability', 
+                    'min', 'max', 'lower_max', 'upper_min', options[['parValNames']]))
   
   jaspResults[['qfContainer']][['qf']] <- qfPlot
   

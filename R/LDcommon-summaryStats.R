@@ -1,6 +1,8 @@
-.ldSummaryContinuousTableMain <- function(jaspResults, variable, options) {
-  summaryTable <- createJaspTable(title = "Summary Statistics")
+.ldSummaryContinuousTableMain <- function(jaspResults, variable, options, ready) {
+  if(!is.null(jaspResults[['dataContainer']][['summary']])) return()
   
+  summaryTable <- createJaspTable(title = "Summary Statistics")
+  summaryTable$position <- 1
   summaryTable$dependOn(c("variable"))
   summaryTable$addCitation("JASP Team (2018). JASP (Version 0.9.2) [Computer software].")
   
@@ -16,31 +18,29 @@
   summaryTable$addColumnInfo(name = "skew",       title = "Skewness",       type = "number", format = "sf:4")
   summaryTable$addColumnInfo(name = "kurt",       title = "Kurtosis",       type = "number", format = "sf:4")
   
-  #summaryTable$setExpectedRows(1)
-  
   jaspResults[['dataContainer']][['summary']] <- summaryTable
   
-  if(options[['variable']] == "")
+  if(!ready) 
     return()
   
-  .ldFillSummaryContinuousTableMain(summaryTable, variable, options)
+  .ldFillSummaryContinuousTableMain(summaryTable, variable, options, ready)
   
   return()
 }
 
-.ldFillSummaryContinuousTableMain <- function(summaryTable, variable, options){
+.ldFillSummaryContinuousTableMain <- function(summaryTable, variable, options, ready){
   
   summaryTable$addRows(list(variable = options[['variable']],
-                       mean     = mean(variable),
-                       var      = var(variable),
-                       sd       = sd(variable),
-                       min      = min(variable),
-                       quantile25 = quantile(variable, 0.25),
-                       median   = median(variable),
-                       quantile75 = quantile(variable, 0.75),
-                       max      = max(variable),
-                       skew     = .summarySkewness(variable),
-                       kurt     = .summaryKurtosis(variable)))
+                            mean     = mean(variable),
+                            var      = var(variable),
+                            sd       = sd(variable),
+                            min      = min(variable),
+                            quantile25 = quantile(variable, 0.25),
+                            median   = median(variable),
+                            quantile75 = quantile(variable, 0.75),
+                            max      = max(variable),
+                            skew     = .summarySkewness(variable),
+                            kurt     = .summaryKurtosis(variable)))
   
   return()
 }

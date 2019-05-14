@@ -63,6 +63,7 @@ Form {
         label: qsTr("Probability Density Function")
         id: plotPDF
         name: "plotPDF"
+        checked: true
         CheckBox{ label: qsTr("Formula"); name: "formulaPDF" }
       }
       
@@ -171,8 +172,8 @@ Form {
       Group
       {
           title: ""
-          CheckBox{ name: "methodUnbiased"; label: qsTr("Minimum variance unbiased estimate")}
-          CheckBox{ name: "methodMoments"; label: qsTr("Method of Moments") }
+          CheckBox{ name: "methodUnbiased"; label: qsTr("Unbiased estimator")}
+          CheckBox{ name: "methodMoments"; label: qsTr("Method of moments") }
           CheckBox
           {
               name: "methodML";      label: qsTr("Maximum Likelihood"); debug: true
