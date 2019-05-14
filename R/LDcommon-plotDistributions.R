@@ -29,12 +29,11 @@
   if(is.null(jaspResults[['qfContainer']])){
     jaspResults[['qfContainer']] <- createJaspContainer(title = "Quantile Function")
     jaspResults[['qfContainer']]$position <- 4
-    jaspResults[['qfContainer']]$dependOn(c(options[['parValNames']], "parametrization"))
+    jaspResults[['qfContainer']]$dependOn(c("parametrization"))
   }
   
   .ldPlotQF(jaspResults, options)
-  
-  return()
+
 }
 
 
@@ -52,7 +51,7 @@
   explanation[['text']] <- text
   jaspResults[['pdfContainer']][['explanation']] <- explanation
   
-  return()
+
 }
 
 .ldPlotPDF <- function(jaspResults, options){
@@ -69,7 +68,6 @@
   .ldGeomLayersPDF(jaspResults, options)
   .ldFillPlotPDF(pdfPlot, jaspResults, options)
   
-  return()
 }
 
 .ldGeomLayersPDF <- function(jaspResults, options){
@@ -160,7 +158,7 @@
     highlightProbability$object <- layers
   }
 
-  return()
+
 }
 
 .ldFillPlotPDF <- function(pdfPlot, jaspResults, options){
@@ -181,7 +179,7 @@
   pp <- JASPgraphs::themeJasp(pp)
   pdfPlot[['plotObject']] <- pp
 
-  return()
+
 }
 
 ### Plot CDF ----
@@ -200,7 +198,7 @@
   explanation[['text']] <- text
   jaspResults[['cdfContainer']][['explanation']] <- explanation
   
-  return()
+
 }
 
 .ldPlotCDF <- function(jaspResults, options){
@@ -218,7 +216,7 @@
   .ldGeomLayersCDF(jaspResults, options)
   .ldFillPlotCDF(cdfPlot, jaspResults, options)
   
-  return()
+
 }
 
 .ldGeomLayersCDF <- function(jaspResults, options){
@@ -306,7 +304,7 @@
     highlightProbability$object <- layers
   }
   
-  return()
+
 }
 
 .ldFillPlotCDF <- function(cdfPlot, jaspResults, options){
@@ -330,7 +328,7 @@
   pp <- JASPgraphs::themeJasp(pp)
   cdfPlot[['plotObject']] <- pp
   
-  return()
+
 }
 
 ### Plot QF ----
@@ -340,25 +338,22 @@
   
   qfPlot <- createJaspPlot(title = "Quantile Plot", width = 600, height = 320)
   
-  qfPlot$dependOn(c('plotQF', 'range', 'highlightType',
-                    'highlightDensity', 'highlightProbability', 
-                    'min', 'max', 'lower_max', 'upper_min', options[['parValNames']]))
+  qfPlot$dependOn(c('plotQF', 'range', options[['parValNames']]))
   
-  jaspResults[['qfContainer']][['qf']] <- qfPlot
+  jaspResults[['qfContainer']][['qfPlot']] <- qfPlot
   
   .ldFillPlotQF(qfPlot, options)
-  
-  return()
+
 }
 
 .ldFillPlotQF <- function(qfPlot, options){
   args <- options[['pars']]
-  args[['x']] <- options[['range_x']]
-  prange <- do.call(options[['pdfFun']], args)
-  args[['x']] <- NULL
+  args[['q']] <- options[['range_x']]
+  prange <- do.call(options[['cdfFun']], args)
+  args[['q']] <- NULL
   
   plot <- ggplot2::ggplot(data = data.frame(x = prange), ggplot2::aes(x = x)) +
-    ggplot2::stat_function(fun = options[['qFun']], n = 101, args = args, size = 1)  +
+    ggplot2::stat_function(fun = options[['qFun']], n = 151, args = args, size = 1)  +
     ggplot2::ylab("x") + ggplot2::xlab("Probability(X \u2264 x)") +
     ggplot2::scale_x_continuous(limits = 0:1) +
     ggplot2::scale_y_continuous(limits = options[['range_x']], 
@@ -369,7 +364,7 @@
   
   qfPlot[['plotObject']] <- plot
   
-  return()
+
 }
 
 
@@ -402,7 +397,7 @@
   
   .ldFillPlotHistogram(histPlot, options, variable)
   
-  return()
+
 }
 
 .ldFillPlotHistogram <- function(plot, options, variable){
@@ -421,7 +416,7 @@
   p <- JASPgraphs::themeJasp(p)
   plot[['plotObject']] <- p
   
-  return()
+
 }
 
 .ldPlotECDF <- function(jaspResults, options, variable, ready){
@@ -440,7 +435,7 @@
   
   .ldFillPlotECDF(ecdfPlot, options, variable)
   
-  return()
+
 }
 
 .ldFillPlotECDF <- function(plot, options, variable){
@@ -454,5 +449,5 @@
   p <- JASPgraphs::themeJasp(p)
   plot[['plotObject']] <- p
   
-  return()
+
 }

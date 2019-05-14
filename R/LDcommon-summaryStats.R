@@ -32,14 +32,14 @@
 .ldFillSummaryContinuousTableMain <- function(summaryTable, variable, options, ready){
   
   summaryTable$addRows(list(variable = options[['variable']],
-                            mean     = mean(variable),
-                            var      = var(variable),
-                            sd       = sd(variable),
-                            min      = min(variable),
-                            quantile25 = quantile(variable, 0.25),
-                            median   = median(variable),
-                            quantile75 = quantile(variable, 0.75),
-                            max      = max(variable),
+                            mean     = mean(variable, na.rm = TRUE),
+                            var      = var(variable, na.rm = TRUE),
+                            sd       = sd(variable, na.rm = TRUE),
+                            min      = min(variable, na.rm = TRUE),
+                            quantile25 = quantile(variable, 0.25, na.rm = TRUE),
+                            median   = median(variable, na.rm = TRUE),
+                            quantile75 = quantile(variable, 0.75, na.rm = TRUE),
+                            max      = max(variable, na.rm = TRUE),
                             skew     = .summarySkewness(variable),
                             kurt     = .summaryKurtosis(variable)))
   
@@ -50,7 +50,7 @@
   
   # Skewness function as in SPSS (for samlpes spaces):
   # http://suite101.com/article/skew-and-how-skewness-is-calculated-in-statistical-software-a231005
-  
+  x <- na.omit(x)
   n <- length(x)
   m <- mean(x)
   s <- sd(x)
@@ -68,6 +68,7 @@
   # http://www.ats.ucla.edu/stat/mult_pkg/faq/general/kurtosis.htm
   # http://en.wikipedia.org/wiki/Kurtosis#Estimators_of_population_kurtosis
   
+  x   <- na.omit(x)
   n   <- length(x)
   s4  <- sum((x - mean(x))^4)
   s2  <- sum((x - mean(x))^2)
@@ -83,6 +84,7 @@
 
 
 .computeObservedMoments <- function(x, max.moment = 2, about.mean = FALSE){
+  x <- na.omit(x)
   n <- length(x)
   moments <- numeric(length = max.moment)
   moments[1] <- mean(x)

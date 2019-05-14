@@ -29,6 +29,7 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
     dataset <- .readDataSetToEnd(columns.as.numeric = options[['variable']])
 
     variable <- dataset[[.v(options[['variable']])]]
+    variable <- variable[!is.na(variable)]
     ready <- TRUE
     options[['rangeVariable']] <- range(variable)
   }
@@ -38,7 +39,6 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
   #.simulateData(jaspResults, options, ready)
 
   .ldPlotContinuousDistributionFunctions(jaspResults, options)
-  
 
   if(is.null(jaspResults[['dataContainer']])){
     jaspResults[['dataContainer']] <- createJaspContainer(title = paste0("Overview - ", options[['variable']]))
