@@ -41,25 +41,18 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
   if(is.null(jaspResults[['dataContainer']])){
     jaspResults[['dataContainer']] <- createJaspContainer(title = paste0("Overview - ", options[['variable']]))
     jaspResults[['dataContainer']]$dependOn(c("variable"))
+    jaspResults[['dataContainer']]$position <- 5
   }
 
-  if(is.null(jaspResults[['dataContainer']][["summary"]]) && options$summary){
-    .ldSummaryContinuousTableMain(jaspResults, variable, options, ready)
-  }
-      
-  if(is.null(jaspResults[['dataContainer']][['histogram']]) && options$histogram && ready){
-    .ldPlotHistogram(jaspResults, options, variable)
-  }
-  
-  if(is.null(jaspResults[['dataContainer']][['ecdf']]) && options$ecdf && ready){
-    .ldPlotECDF(jaspResults, options, variable)
-  }
+  .ldSummaryContinuousTableMain(jaspResults, variable, options, ready)
+  .ldPlotHistogram(jaspResults, options, variable, ready)
+  .ldPlotECDF(jaspResults, options, variable, ready)
   
   if(options[['methodUnbiased']]){
     if(is.null(jaspResults[['methodUnbiased']])){
-      jaspResults[['methodUnbiased']] <- createJaspContainer(title = "Minimum variance unbiased estimator")
+      jaspResults[['methodUnbiased']] <- createJaspContainer(title = "Unbiased estimator")
       jaspResults[['methodUnbiased']]$dependOn(c("methodUnbiased", "variable"))
-      jaspResults[['methodUnbiased']]$position <- 100
+      jaspResults[['methodUnbiased']]$position <- 6
     }
     
     .ldGaussianMethodUnbiasedResults(jaspResults, options, variable, ready)
@@ -71,7 +64,7 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
     if(is.null(jaspResults[['methodMoments']])){
       jaspResults[['methodMoments']] <- createJaspContainer(title = "Method of Moments")
       jaspResults[['methodMoments']]$dependOn(c("methodMoments", "variable"))
-      jaspResults[['methodMoments']]$position <- 101
+      jaspResults[['methodMoments']]$position <- 7
     }
     
    .ldGaussianMethodMomentsResults(jaspResults, options, variable, ready)
@@ -79,10 +72,16 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
    .ldFitAssessment(jaspResults[['methodMoments']], options, variable, ready)
   }
   
-  
+  .ldGaussianExplanatoryText(jaspResults, options)
+    
   return()
 }
 
+.ldGaussianExplanatoryText <- function(jaspResults, options){
+  
+  
+  return()  
+}
 .recodeOptionsLDGaussianUnivariate <- function(options){
   if(options$parametrization == "sigma2"){
     options$sd <- sqrt(options$varValue)
@@ -338,7 +337,7 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
      return()
   
   statisticsTable <- createJaspTable(title = "Statistics")
-  statisticsTable$position <- 1
+  statisticsTable$position <- 6
   statisticsTable$dependOn(c("variable", "kolmogorovSmirnov",
                              "cramerVonMisses", "andersonDarling",
                              "shapiroWilk"))

@@ -27,7 +27,7 @@
 
   if(is.null(jaspResults[['qfContainer']])){
     jaspResults[['qfContainer']] <- createJaspContainer(title = "Quantile Function")
-    jaspResults[['qfContainer']]$position <- 3
+    jaspResults[['qfContainer']]$position <- 4
     jaspResults[['qfContainer']]$dependOn(c(options[['parValNames']], "parametrization"))
   }
   
@@ -352,12 +352,19 @@
 # }
 
 #### Plot empirical ----
-.ldPlotHistogram <- function(jaspResults, options, variable){
+.ldPlotHistogram <- function(jaspResults, options, variable, ready){
+  if(!options$histogram) return()
+  if(!is.null(jaspResults[['dataContainer']][['histogram']])) return()
+  
   histPlot <- createJaspPlot(title = "Histogram", width = 600, height = 320)
   
-  histPlot$dependOn(c("variable", "histogramBins"))
+  histPlot$dependOn(c("variable", "histogramBins", "histogram"))
+  histPlot$position <- 2
+  
   
   jaspResults[['dataContainer']][['histogram']] <- histPlot
+  
+  if(!ready) return()
   
   .ldFillPlotHistogram(histPlot, options, variable)
   
@@ -383,12 +390,19 @@
   return()
 }
 
-.ldPlotECDF <- function(jaspResults, options, variable){
+.ldPlotECDF <- function(jaspResults, options, variable, ready){
+  if(!options[['ecdf']]) return()
+  if(!is.null(jaspResults[['dataContainer']][['ecdf']])) return()
+  
+  
   ecdfPlot <- createJaspPlot(title = "Empirical cumulative distribution", width = 600, height = 320)
   
-  ecdfPlot$dependOn(c("variable"))
+  ecdfPlot$dependOn(c("variable", "ecdf"))
+  ecdfPlot$position <- 3
   
   jaspResults[['dataContainer']][['ecdf']] <- ecdfPlot
+  
+  if(!ready) return()
   
   .ldFillPlotECDF(ecdfPlot, options, variable)
   

@@ -57,10 +57,11 @@ Form {
     
     Group{
       title: qsTr("Display")
-      CheckBox{ label: qsTr("Parameters, support, and moments");name: "formulas" }
+      CheckBox{ label: qsTr("Explanatory text"); name: "explanatoryText"}
+      CheckBox{ label: qsTr("Parameters, support, and moments"); name: "formulas" }
       CheckBox
       {
-        label: qsTr("Probability Density Function")
+        label: qsTr("Probability density function")
         id: plotPDF
         name: "plotPDF"
         checked: true
@@ -68,13 +69,13 @@ Form {
       }
       
       CheckBox{
-        label: qsTr("Cumulative Distribution Function")
+        label: qsTr("Cumulative distribution function")
         id: plotCDF
         name: "plotCDF"
         CheckBox{ label: qsTr("Formula"); name: "formulaCDF" }
       }
       CheckBox{
-          label: qsTr("Quantile Function")
+          label: qsTr("Quantile function")
           name: "plotQF"
           CheckBox{ label: qsTr("Formula"); name: "formulaQF" }
       }
@@ -225,9 +226,9 @@ Form {
           title: qsTr("Plots")
           columns: 2
           CheckBox{ name: "estPDF"; label: qsTr("Estimated p.d.f") }
-          CheckBox{ name: "qqplot"; label: qsTr("q-q plot")}
+          CheckBox{ name: "qqplot"; label: qsTr("Q-Q plot")}
           CheckBox{ name: "estCDF"; label: qsTr("Estimated c.d.f") }
-          CheckBox{ name: "ppplot"; label: qsTr("p-p plot")}
+          CheckBox{ name: "ppplot"; label: qsTr("P-P plot")}
       }
 
       Group
