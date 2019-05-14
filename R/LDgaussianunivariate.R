@@ -309,7 +309,7 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
   }
   
   if(is.null(methodContainer[['fitAssessment']][['estCDF']]) && options$estCDF){
-    cdfplot <- createJaspPlot(title = "ECDF vs. Theoretical CDF")
+    cdfplot <- createJaspPlot(title = "Empirical vs. Theoretical CDF")
     cdfplot$dependOn(c("estCDF"))
     cdfplot$position <- 4
     methodContainer[['fitAssessment']][['estCDF']] <- cdfplot

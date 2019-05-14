@@ -395,7 +395,7 @@
   if(!is.null(jaspResults[['dataContainer']][['ecdf']])) return()
   
   
-  ecdfPlot <- createJaspPlot(title = "Empirical cumulative distribution", width = 600, height = 320)
+  ecdfPlot <- createJaspPlot(title = "Empirical Cumulative Distribution", width = 600, height = 320)
   
   ecdfPlot$dependOn(c("variable", "ecdf"))
   ecdfPlot$position <- 3

@@ -143,7 +143,7 @@ Form {
       //        defaultValue: 100}
       //}
 
-      Button{ text: qsTr("sample"); enabled: true; id: sample }
+      //Button{ text: qsTr("sample"); enabled: true; id: sample }
 
       VariablesForm
       {
@@ -153,8 +153,11 @@ Form {
           AssignedVariablesList  { name: "variable"; label: qsTr("Get variable from data set"); allowedColumns: ["scale"]; singleVariable: true }
       }
 
-
-      CheckBox{ name: "summary"; label: qsTr("Summary Statistics")}
+      Group{
+          title: qsTr("Statistics")
+          CheckBox{ name: "summary"; label: qsTr("Descriptives")}
+          CheckBox{ name: "moments"; label: qsTr("Observed moments")}
+      }
 
       Group
       {
@@ -162,7 +165,7 @@ Form {
           CheckBox{ name: "histogram"; label: qsTr("Histogram with"); childrenOnSameRow: true
             IntegerField{ name: "histogramBins"; afterLabel: qsTr("bins"); defaultValue: 30 }
           }
-          CheckBox{ name: "ecdf";      label: qsTr("Empirical CDF") }
+          CheckBox{ name: "ecdf";      label: qsTr("Empirical cumulative distribution") }
       }
   }
   
@@ -225,9 +228,9 @@ Form {
       {
           title: qsTr("Plots")
           columns: 2
-          CheckBox{ name: "estPDF"; label: qsTr("Estimated p.d.f") }
+          CheckBox{ name: "estPDF"; label: qsTr("Histogram vs. theoretical pdf") }
           CheckBox{ name: "qqplot"; label: qsTr("Q-Q plot")}
-          CheckBox{ name: "estCDF"; label: qsTr("Estimated c.d.f") }
+          CheckBox{ name: "estCDF"; label: qsTr("Empirical vs. theoretical cdf") }
           CheckBox{ name: "ppplot"; label: qsTr("P-P plot")}
       }
 
