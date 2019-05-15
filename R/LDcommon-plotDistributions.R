@@ -405,7 +405,7 @@
   
   histPlot <- createJaspPlot(title = "Histogram", width = 600, height = 320)
   
-  histPlot$dependOn(c("variable", "histogramBins", "histogram"))
+  histPlot$dependOn(c("variable", "histogramBins", "histogram", "simulateNow"))
   histPlot$position <- 2
   
   
@@ -415,7 +415,6 @@
   
   .ldFillPlotHistogram(histPlot, options, variable)
   
-
 }
 
 .ldFillPlotHistogram <- function(plot, options, variable){
@@ -444,7 +443,7 @@
   
   ecdfPlot <- createJaspPlot(title = "Empirical Cumulative Distribution", width = 600, height = 320)
   
-  ecdfPlot$dependOn(c("variable", "ecdf"))
+  ecdfPlot$dependOn(c("variable", "ecdf", "simulateNow"))
   ecdfPlot$position <- 3
   
   jaspResults[['dataContainer']][['ecdf']] <- ecdfPlot

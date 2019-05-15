@@ -4,7 +4,7 @@
   
   summaryTable <- createJaspTable(title = "Descriptives")
   summaryTable$position <- 1
-  summaryTable$dependOn(c("variable", "summary"))
+  summaryTable$dependOn(c("variable", "summary", "simulateNow"))
   summaryTable$addCitation("JASP Team (2018). JASP (Version 0.9.2) [Computer software].")
   
   summaryTable$addColumnInfo(name = "variable",   title = "Variable",       type = "string", combine = TRUE)

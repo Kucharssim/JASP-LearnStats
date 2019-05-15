@@ -20,7 +20,8 @@
 
 LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
   #jaspResults$title <- "Normal distribution"
-  .ldIntroText(jaspResults, options, .ldGaussianIntro)
+  options <- .recodeOptionsLDGaussianUnivariate(options)
+  .simulateData(jaspResults, options)
   
   ready <- FALSE
   variable <- NULL
@@ -34,9 +35,9 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
     options[['rangeVariable']] <- range(variable)
   }
 
-  options <- .recodeOptionsLDGaussianUnivariate(options)
   
-  .simulateData(jaspResults, options, ready)
+  .ldIntroText(jaspResults, options, .ldGaussianIntro)
+  #.ldFormulas(jaspResults, options, .ldGaussianFormulas)
 
   .ldPlotContinuousDistributionFunctions(jaspResults, options)
 
@@ -112,10 +113,11 @@ cumulative distribution function, and quantile function.
   
   options[['parValNames']] <- c("mu", "varValue")
   
-  options[['pars']] <- list(mean = options[['mu']], sd = options[['sd']])
+  options[['pars']]   <- list(mean = options[['mu']], sd = options[['sd']])
   options[['pdfFun']] <- dnorm
   options[['cdfFun']] <- pnorm
-  options[['qFun']]  <- qnorm
+  options[['qFun']]   <- qnorm
+  options[['rFun']]   <- rnorm
   
   options[['range_x']] <- c(-options[['range']], options[['range']])
   
@@ -237,9 +239,11 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
   if(!ready || !options[['methodMoments']])
     return()
   
-  jaspResults[['methodMoments']][['results']] <- createJaspState()
   
   if(is.null(jaspResults[['methodMoments']][['results']]$object)){
+    jaspResults[['methodMoments']][['results']] <- createJaspState()
+    jaspResults[['methodMoments']][['results']]$dependOn(c("variable", "simulateNow"))
+    
     results <- list()
     results$par <- .computeObservedMoments(x = variable, max.moment = 2, about.mean = TRUE)
     results$par[2] <- sqrt(results$par[2])
@@ -261,10 +265,11 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
     return()
   
   
-  jaspResults[['methodUnbiased']][['results']] <- createJaspState()
-  jaspResults[['methodUnbiased']][['results']]$dependOn(c("variable"))
   
   if(is.null(jaspResults[['methodUnbiased']][['results']]$object)){
+    jaspResults[['methodUnbiased']][['results']] <- createJaspState()
+    jaspResults[['methodUnbiased']][['results']]$dependOn(c("variable", "simulateNow"))
+    
     results <- list()
     results$par <- c(mean = mean(variable), sd = .sdGaussianUnbiased(variable))
     names(results$par) <- c("mean", "sd")
@@ -296,7 +301,7 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
 .ldFitAssessment <- function(methodContainer, options, variable, ready){
   if(is.null(methodContainer[['fitAssessment']])){
     methodContainer[['fitAssessment']] <- createJaspContainer(title = "Fit Assessment")
-    methodContainer[['fitAssessment']]$dependOn(c("variable"))
+    methodContainer[['fitAssessment']]$dependOn(c("variable", "simulateNow"))
   }
   
   
@@ -426,17 +431,9 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
   return()
 }
 
-.simulateData <- function(jaspResults, options, ready){
-  #if(!is.null(jaspResults[['variable']])) return()
-  #if(ready) return()
-  
-  #print("simulating new variable")
-  #sample <- rnorm(100)
-  #.setColumnDataAsScale(options[['newVariableName']], sample)
-  # print(jaspResults[['simdata']])
-  # print(options[['simulateNow']])
+.simulateData <- function(jaspResults, options){
   if(is.null(jaspResults[['simdata']])){
-    sample <- rnorm(100)
+    sample <- do.call(options[['rFun']], c(options[['pars']], options[['sampleSize']]))
     jaspResults[['simdata']] <- createJaspState(sample)
     jaspResults[['simdata']]$dependOn(c("newVariableName", "simulateNow"))
     .setColumnDataAsScale(options[["newVariableName"]], sample)
