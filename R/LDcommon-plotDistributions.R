@@ -32,6 +32,7 @@
     jaspResults[['qfContainer']]$dependOn(c("parametrization"))
   }
   
+  .ldExplanationQF(jaspResults, options)
   .ldPlotQF(jaspResults, options)
 
 }
@@ -332,6 +333,23 @@
 }
 
 ### Plot QF ----
+.ldExplanationQF <- function(jaspResults, options){
+  if(!options$explanatoryText) return()
+  if(!options$plotQF) return()
+  if(!is.null(jaspResults[['qfContainer']][['explanation']])) return()
+  
+  explanation <- createJaspHtml()
+  explanation$dependOn(c("plotQF", "explanatoryText"))
+  explanation$position <- 1
+  text <- "The quantile function, denoted as F<sup>-1</sup>(p). The value of the function gives the value of the random variable such that the probability of the variable being less than or equal to that value equals the given probability p. It is also known as the inverse cumulative distribution function.
+  The cumulative probability plot displays the cumulative distribution of a random variable. The y-axis displays the value of the cumulative distribution function for a particular value of the random variable (displayed on the x-axis).
+  
+  "
+  explanation[['text']] <- text
+  jaspResults[['qfContainer']][['explanation']] <- explanation
+  
+}
+
 .ldPlotQF <- function(jaspResults, options){
   if(!is.null(jaspResults[['qfContainer']][['qfPlot']])) return()
   if(!options$plotQF) return()
