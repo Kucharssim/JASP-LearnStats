@@ -22,10 +22,7 @@ import JASP.Widgets 1.0
 
 Form {
   id: form
-  //AddColumnField { name: "simulates"; text: "Simulate new variable: "; fieldWidth: 120; id: simulates; columnType: 1}
-  //CheckBox{name: "simulateNow"; id: simulateNow}
-  //Button{ text: "simulateNow"; onClicked: { if (simulateNow.checked) simulateNow.checked = false; if(!simulateNow//.checked) simulateNow.checked = true}}
-  
+   
   Section{
       expanded: true
     title: "Show Distribution"
@@ -49,8 +46,10 @@ Form {
               ]
         }
 
-        DoubleField{ name:  "mu"; label: qsTr("μ = "); id: mu; negativeValues: true }
-        DoubleField{ name: "varValue"; label: parametrizationChoice.currentText.replace("μ, ", "") + qsTr(" ="); defaultValue: 1; min: 0; id: vars }
+        Group{
+            DoubleField{ name:  "mu"; label: qsTr("μ = "); id: mu; negativeValues: true }
+            DoubleField{ name: "varValue"; label: parametrizationChoice.currentText.replace("μ, ", "") + qsTr(" ="); defaultValue: 1; min: 0; id: varValue }
+        }
       }
 
     }
@@ -129,22 +128,15 @@ Form {
   Section
   {
       title: qsTr("Generate and Display Data")
-      //GroupBox{
-      //  ComputedColumnField{ name: "sampleFilterName"; text: "Simulate new variable:"; fieldWidth: 120
-      //  value: "Normal(3, 5)"}
-        //ComputedColumnsConstructor{visible: false; rCode: "rnorm(n = 10, 1, 1)"}
-      //}
-      //CheckBox
-      //{
-      //    name: "drawSamples"; label: qsTr("Generate"); childrenOnSameRow: true; id: drawSamples; checked: true
-      //    IntegerField{
-      //        name: "sampleSize"
-      //        afterLabel: qsTr("samples from Normal(μ = ") + mu.value + parametrizationChoice.currentText.replace("μ", "") + qsTr(" = ") + vars.value + qsTr(")")
-      //        defaultValue: 100}
-      //}
-
-      //Button{ text: qsTr("sample"); enabled: true; id: sample }
-
+      Group{
+          title: qsTr("Simulate new variable from Normal(μ = ") + mu.value + ", " + parametrizationChoice.currentText.replace("μ, ", "") + " = " + varValue.value + ")"
+          AddColumnField{ name: "newVariableName"; text: "Variable name: "; fieldWidth: 120; placeholderText: "e.g., random normal"}
+          IntegerField{name: "sampleSize"; label: "Number of samples: "; min: 1; defaultValue: 100}
+          Button{name: "simulateNowButton"; label: "Simulate"; id: simulateNowButton; onClicked:{
+            if (simulateNow.checked) simulateNow.checked = false; else simulateNow.checked = true
+          }}
+          CheckBox{name: "simulateNow"; visible: false; id: simulateNow}
+      }
       VariablesForm
       {
           height: 100

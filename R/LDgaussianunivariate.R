@@ -36,7 +36,7 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
 
   options <- .recodeOptionsLDGaussianUnivariate(options)
   
-  #.simulateData(jaspResults, options, ready)
+  .simulateData(jaspResults, options, ready)
 
   .ldPlotContinuousDistributionFunctions(jaspResults, options)
 
@@ -427,20 +427,20 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
 }
 
 .simulateData <- function(jaspResults, options, ready){
-  if(!is.null(jaspResults[['variable']])) return()
-  if(ready) return()
+  #if(!is.null(jaspResults[['variable']])) return()
+  #if(ready) return()
   
-  print("simulating new variable")
-  sample <- rnorm(100)
-  .setColumnDataAsScale(options[['simulates']], sample)
+  #print("simulating new variable")
+  #sample <- rnorm(100)
+  #.setColumnDataAsScale(options[['newVariableName']], sample)
   # print(jaspResults[['simdata']])
   # print(options[['simulateNow']])
-  # if(is.null(jaspResults[['simdata']])){
-  #   sample <- rnorm(100)
-  #   jaspResults[['simdata']] <- createJaspState(sample)
-  #   jaspResults[['simdata']]$dependOn(c("simulates"))
-  #   .setColumnDataAsScale(options[["simulates"]], sample)
-  # }
+  if(is.null(jaspResults[['simdata']])){
+    sample <- rnorm(100)
+    jaspResults[['simdata']] <- createJaspState(sample)
+    jaspResults[['simdata']]$dependOn(c("newVariableName", "simulateNow"))
+    .setColumnDataAsScale(options[["newVariableName"]], sample)
+  }
   
   return()
 }
