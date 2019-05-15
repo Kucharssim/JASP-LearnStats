@@ -98,12 +98,12 @@ Form {
             RadioButtonGroup
             {
                 name: "highlightType"
-                title: qsTr("At intervals")
+                title: qsTr("Limits")
                 enabled: highlightDensity.checked || highlightProbability.checked
                 RadioButton
                 {
                     value: "minmax"; label: qsTr("from"); childrenOnSameRow: true; checked: true
-                    DoubleField{ name: "min"; label: ""; afterLabel: qsTr("to"); negativeValues: true; defaultValue: -1}
+                    DoubleField{ name: "min"; label: ""; afterLabel: qsTr("to"); negativeValues: true; defaultValue: 0}
                     DoubleField{ name: "max"; label: ""; negativeValues: true; defaultValue: 1}
                 }
 
