@@ -1,20 +1,20 @@
-.ldPlotContinuousDistributionFunctions <- function(jaspResults, options){
+.ldPlotContinuousDistributionFunctions <- function(jaspResults, options, pdfFormula){
   
   if(is.null(jaspResults[['pdfContainer']])){
     jaspResults[['pdfContainer']] <- createJaspContainer(title = "Probability Density Function")
-    jaspResults[['pdfContainer']]$position <- 2 
+    jaspResults[['pdfContainer']]$position <- 3 
     jaspResults[['pdfContainer']]$dependOn(c(options[['parValNames']], "parametrization"))
   }
   .ldExplanationPDF(jaspResults, options)
   .ldPlotPDF(jaspResults, options)
     
-  #   if(is.null(jaspResults[['pdfContainer']][['formula']]) && options$formulaPDF)
-  #     .ldFormulaGaussianPDF(jaspResults, options)
-  # #}
+
+  if(is.null(jaspResults[['pdfContainer']][['formula']]))
+    pdfFormula(jaspResults, options)
 
   if(is.null(jaspResults[['cdfContainer']])){
     jaspResults[['cdfContainer']] <- createJaspContainer(title = "Cumulative Distribution Function")
-    jaspResults[['cdfContainer']]$position <- 3
+    jaspResults[['cdfContainer']]$position <- 4
     jaspResults[['cdfContainer']]$dependOn(c(options[['parValNames']], "parametrization"))
   }
   
@@ -28,7 +28,7 @@
 
   if(is.null(jaspResults[['qfContainer']])){
     jaspResults[['qfContainer']] <- createJaspContainer(title = "Quantile Function")
-    jaspResults[['qfContainer']]$position <- 4
+    jaspResults[['qfContainer']]$position <- 5
     jaspResults[['qfContainer']]$dependOn(c("parametrization"))
   }
   

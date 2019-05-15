@@ -37,14 +37,14 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
 
   
   .ldIntroText(jaspResults, options, .ldGaussianIntro)
-  #.ldFormulas(jaspResults, options, .ldGaussianFormulas)
+  .ldGaussianFormulas(jaspResults, options)
 
-  .ldPlotContinuousDistributionFunctions(jaspResults, options)
+  .ldPlotContinuousDistributionFunctions(jaspResults, options, .ldFormulaGaussianPDF)
 
   if(is.null(jaspResults[['dataContainer']])){
     jaspResults[['dataContainer']] <- createJaspContainer(title = paste0("Overview - ", options[['variable']]))
     jaspResults[['dataContainer']]$dependOn(c("variable"))
-    jaspResults[['dataContainer']]$position <- 5
+    jaspResults[['dataContainer']]$position <- 6
   }
 
   .ldSummaryContinuousTableMain(jaspResults, variable, options, ready)
@@ -55,7 +55,7 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
     if(is.null(jaspResults[['methodUnbiased']])){
       jaspResults[['methodUnbiased']] <- createJaspContainer(title = "Unbiased estimator")
       jaspResults[['methodUnbiased']]$dependOn(c("methodUnbiased", "variable"))
-      jaspResults[['methodUnbiased']]$position <- 6
+      jaspResults[['methodUnbiased']]$position <- 7
     }
     
     .ldGaussianMethodUnbiasedResults(jaspResults, options, variable, ready)
@@ -67,7 +67,7 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
     if(is.null(jaspResults[['methodMoments']])){
       jaspResults[['methodMoments']] <- createJaspContainer(title = "Method of Moments")
       jaspResults[['methodMoments']]$dependOn(c("methodMoments", "variable"))
-      jaspResults[['methodMoments']]$position <- 7
+      jaspResults[['methodMoments']]$position <- 8
     }
     
    .ldGaussianMethodMomentsResults(jaspResults, options, variable, ready)
@@ -94,11 +94,55 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
 
 .ldGaussianIntro <- function(){
   intro <- "<h3> Demonstration of the Normal Distribution </h3>
-The script is divided into four parts. The first part displays the Normal distribution, its probability density function, 
-cumulative distribution function, and quantile function.
+This demonstration is divided into four parts. The first part displays the Normal distribution, its probability density function, 
+cumulative distribution function, and quantile function. The second part allows to generate data from the Normal distribution and compute
+descriptive statistics and display descriptive plots. In the third part, the parameters of the Normal distribution can be estimated.
+The fourth part allows to check the fit of the Normal distribution to the data.
   "
   
   return(intro)
+}
+
+.ldGaussianFormulas <- function(jaspResults, options){
+  if(options$formulas && is.null(jaspResults[['formulas']])){
+    formulas <- createJaspHtml(title = "Parameters, Support, and Moments")
+    formulas$dependOn(c("formulas", "parametrization"))
+    formulas$position <- 2
+    
+    text <- "<b>Parameters</b>
+    mean: &mu; \u2208 \u211D
+    "
+    
+    text2 <- "<b>Support</b>
+    x \u2208 \u211D"
+    
+    text3 <- "<b>Moments</b> 
+    E(X) = &mu;
+    Var(X) = "
+    
+    if(options[['parametrization']] == "sigma2"){
+      text <- paste(text,
+                    "variance: &sigma;<sup>2</sup> \u2208 \u211D<sup>+</sup>
+                    ")
+      text3 <- paste0(text3, "&sigma;<sup>2</sup>")
+    } else if(options[['parametrization']] == "sigma"){
+      text <- paste(text,
+                    "standard deviation: &sigma; \u2208 \u211D<sup>+</sup>")
+      text3 <- paste0(text3, "&sigma;<sup>2</sup>")
+    } else if(options[['parametrization']] == "tau2"){
+      text <- paste(text,
+                    "precision: &tau;<sup>2</sup> \u2208 \u211D<sup>+</sup>")
+      text3 <- paste0(text3, "1/&tau;<sup>2</sup>")
+    } else{
+      text <- paste(text,
+                    "square root of precision: &tau; \u2208 \u211D<sup>+</sup>")
+      text3 <- paste0(text3, "1/&tau;<sup>2</sup>")
+    }
+    
+    formulas$text <- paste(text, text2, text3, sep = "<br><br>")
+    
+    jaspResults[['formulas']] <- formulas
+  }
 }
 .recodeOptionsLDGaussianUnivariate <- function(options){
   if(options$parametrization == "sigma2"){
@@ -140,14 +184,15 @@ cumulative distribution function, and quantile function.
 
 
 .ldFormulaGaussianPDF <- function(jaspResults, options){
-  pdfFormula <- createJaspHtml(title = "PDF formula", elementType = "h1")
+  if(!options$formulaPDF) return()
+  if(!options$plotPDF) return()
+  pdfFormula <- createJaspHtml(title = "Probability Density Function", elementType = "h1")
 
-  pdfFormula$dependOn("parametrization")
+  pdfFormula$dependOn(c("parametrization", "formulaPDF", "plotPDF"))
 
   .ldFillFormulaGaussianPDF(pdfFormula, options)
 
   jaspResults[['pdfContainer']][['formula']] <- pdfFormula
-  return()
 }
 
 .ldFillFormulaGaussianPDF <- function(pdfFormula, options){
@@ -179,7 +224,6 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
 
   pdfFormula[['text']] <- gsub(pattern = "\n", replacement = " ", x = text)
 
-  return()
 }
 
 .ldGaussianEstimatesTable <- function(methodContainer, options, ready, ci.possible){
@@ -189,7 +233,7 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
   
   estParametersTable <- createJaspTable(title = "Estimated Parameters", dependencies = "variable")
   
-  estParametersTable$dependOn(c("variable", "parametrization", "outputEstimates", "ciInterval", "ciIntervalInterval"))
+  estParametersTable$dependOn(c("variable", "parametrization", "outputEstimates", "ciInterval", "ciIntervalInterval", "simulateNow"))
   estParametersTable$position <- 1
   estParametersTable$addCitation("JASP Team (2018). JASP (Version 0.9.2) [Computer software].")
   
@@ -211,7 +255,10 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
   
   estParametersTable$addColumnInfo(name = options[['parametrization']],
                                    title = par2, type = "number", format = "sf:4")
-
+  
+  # par2 <- c(sigma2 = "\u03C3<sup>2</sup>", sigma = "\u03C3", 
+  #           tau2 = "\u03C4<sup>2</sup>", tau = "\u03C4")[[options[['parametrization']]]]
+  
   if(options$ciInterval && ci.possible){
     estParametersTable$addColumnInfo(name = paste0(options[['parametrization']], ".lower"),
                                      title = "Lower", type = "number", format = "sf:4",

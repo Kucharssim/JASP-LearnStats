@@ -26,11 +26,10 @@ Form {
   Section{
       expanded: true
     title: "Show Distribution"
-    columns: 2
     Group
     {
       title: "Parameters"
-
+      Layout.columnSpan: 2
       Group{
         DropDown
         {
@@ -47,8 +46,10 @@ Form {
         }
 
         Group{
+            columns: 2
             DoubleField{ name:  "mu"; label: qsTr("μ = "); id: mu; negativeValues: true }
-            DoubleField{ name: "varValue"; label: parametrizationChoice.currentText.replace("μ, ", "") + qsTr(" ="); defaultValue: 1; min: 0; id: varValue }
+            DoubleField{ name: "varValue"; label: parametrizationChoice.currentText.replace("μ, ", "") + " ="; defaultValue: 1; min: 0; id: varValue }
+            //DoubleField{name: "varValue; label: {if(parametrizationChoice.currentText === "μ, σ²") {σ²}; else τ²}}
         }
       }
 
@@ -129,10 +130,10 @@ Form {
   {
       title: qsTr("Generate and Display Data")
       Group{
-          title: qsTr("Simulate new variable from Normal(μ = ") + mu.value + ", " + parametrizationChoice.currentText.replace("μ, ", "") + " = " + varValue.value + ")"
+          title: qsTr("Generate new variable from Normal(μ = ") + mu.value + ", " + parametrizationChoice.currentText.replace("μ, ", "") + " = " + varValue.value + ")"
           AddColumnField{ name: "newVariableName"; text: "Variable name: "; fieldWidth: 120; placeholderText: "e.g., random normal"}
           IntegerField{name: "sampleSize"; label: "Number of samples: "; min: 1; defaultValue: 100}
-          Button{name: "simulateNowButton"; label: "Simulate"; id: simulateNowButton; onClicked:{
+          Button{name: "simulateNowButton"; label: "Draw samples"; id: simulateNowButton; onClicked:{
             if (simulateNow.checked) simulateNow.checked = false; else simulateNow.checked = true
           }}
           CheckBox{name: "simulateNow"; visible: false; id: simulateNow}
