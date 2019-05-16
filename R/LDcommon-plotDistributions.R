@@ -278,9 +278,9 @@
     if(options[['highlightType']] == "minmax"){
       args[['q']] <- c(options[['highlightmin']], options[['highlightmax']])
     } else if(options[['highlightType']] == "lower"){
-      args[['q']] <- c(-Inf, options[['highlightmax']])
+      args[['q']] <- c(options[['highlightmax']])
     } else if(options[['highlightType']] == "upper"){
-      args[['q']] <- c(options[['highlightmin']], Inf)
+      args[['q']] <- c(options[['highlightmin']])
     }
     
     # calculate value under the curve
@@ -341,8 +341,9 @@
   explanation <- createJaspHtml()
   explanation$dependOn(c("plotQF", "explanatoryText"))
   explanation$position <- 1
-  text <- "The quantile function, denoted as F<sup>-1</sup>(p). The value of the function gives the value of the random variable such that the probability of the variable being less than or equal to that value equals the given probability p. It is also known as the inverse cumulative distribution function.
-  The cumulative probability plot displays the cumulative distribution of a random variable. The y-axis displays the value of the cumulative distribution function for a particular value of the random variable (displayed on the x-axis).
+  text <- "The quantile function, usually denoted as Q(p), is the inverse of the cumulative distribution function.
+  The function gives the quantile such that the probability of the random variable being less than or equal to that value equals the given probability p.   
+  The quantile plot displays the quantile function. The y-axis displays the quantile of which the probability that the random variable is less or equal to that value is equal to p (plotted on the x-axis).
   
   "
   explanation[['text']] <- text

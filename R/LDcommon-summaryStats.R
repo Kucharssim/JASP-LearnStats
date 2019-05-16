@@ -8,6 +8,7 @@
   summaryTable$addCitation("JASP Team (2018). JASP (Version 0.9.2) [Computer software].")
   
   summaryTable$addColumnInfo(name = "variable",   title = "Variable",       type = "string", combine = TRUE)
+  summaryTable$addColumnInfo(name = "sampleSize", title = "n",              type = "integer")
   summaryTable$addColumnInfo(name = "mean",       title = "Mean",           type = "number", format = "sf:4")
   summaryTable$addColumnInfo(name = "var",        title = "Variance",       type = "number", format = "sf:4")
   summaryTable$addColumnInfo(name = "sd",         title = "Std. deviation", type = "number", format = "sf:4")
@@ -16,8 +17,8 @@
   summaryTable$addColumnInfo(name = "median",     title = "Median",         type = "number", format = "sf:4")
   summaryTable$addColumnInfo(name = "quantile75", title = "75% Quantile",   type = "number", format = "sf:4")
   summaryTable$addColumnInfo(name = "max",        title = "Maximum",        type = "number", format = "sf:4")
-  summaryTable$addColumnInfo(name = "skew",       title = "Skewness",       type = "number", format = "sf:4")
-  summaryTable$addColumnInfo(name = "kurt",       title = "Kurtosis",       type = "number", format = "sf:4")
+  #summaryTable$addColumnInfo(name = "skew",       title = "Skewness",       type = "number", format = "sf:4")
+  #summaryTable$addColumnInfo(name = "kurt",       title = "Kurtosis",       type = "number", format = "sf:4")
   
   jaspResults[['dataContainer']][['summary']] <- summaryTable
   
@@ -31,17 +32,19 @@
 
 .ldFillSummaryContinuousTableMain <- function(summaryTable, variable, options, ready){
   
-  summaryTable$addRows(list(variable = options[['variable']],
-                            mean     = mean(variable, na.rm = TRUE),
-                            var      = var(variable, na.rm = TRUE),
-                            sd       = sd(variable, na.rm = TRUE),
-                            min      = min(variable, na.rm = TRUE),
+  summaryTable$addRows(list(variable   = options[['variable']],
+                            sampleSize = sum(!is.na(variable)),
+                            mean       = mean(variable, na.rm = TRUE),
+                            var        = var(variable, na.rm = TRUE),
+                            sd         = sd(variable, na.rm = TRUE),
+                            min        = min(variable, na.rm = TRUE),
                             quantile25 = quantile(variable, 0.25, na.rm = TRUE),
-                            median   = median(variable, na.rm = TRUE),
+                            median     = median(variable, na.rm = TRUE),
                             quantile75 = quantile(variable, 0.75, na.rm = TRUE),
-                            max      = max(variable, na.rm = TRUE),
-                            skew     = .summarySkewness(variable),
-                            kurt     = .summaryKurtosis(variable)))
+                            max        = max(variable, na.rm = TRUE))
+                            #skew       = .summarySkewness(variable),
+                            #kurt       = .summaryKurtosis(variable))
+                       )
   
   return()
 }

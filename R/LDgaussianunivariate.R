@@ -315,7 +315,7 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
   
   if(is.null(jaspResults[['methodUnbiased']][['results']]$object)){
     jaspResults[['methodUnbiased']][['results']] <- createJaspState()
-    jaspResults[['methodUnbiased']][['results']]$dependOn(c("variable", "simulateNow"))
+    jaspResults[['methodUnbiased']][['results']]$dependOn(c("variable", "simulateNow", "ciInterval"))
     
     results <- list()
     results$par <- c(mean = mean(variable), sd = .sdGaussianUnbiased(variable))
@@ -409,7 +409,7 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
   statisticsTable$position <- 6
   statisticsTable$dependOn(c("variable", "kolmogorovSmirnov",
                              "cramerVonMisses", "andersonDarling",
-                             "shapiroWilk"))
+                             "shapiroWilk", "simulateNow"))
   
   statisticsTable$addColumnInfo(name = "test", title = "Test", type = "string")
   statisticsTable$addColumnInfo(name = "statistic", title = "Statistic", type = "number", format = "sf:4")
@@ -437,10 +437,10 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
   
   methodContainer[['fitAssessment']][['statisticsResults']] <- createJaspState()
   methodContainer[['fitAssessment']][['statisticsResults']]$dependOn(c("variable", "kolmogorovSmirnov",
-                                                                       "cramerVonMises", "andersonDarling",
-                                                                       "shapiroWilk"))
+                                                                       "cramerVonMisses", "andersonDarling",
+                                                                       "shapiroWilk", "simulateNow"))
   
-  allTests <- c("kolmogorovSmirnov", "cramerVonMises", "andersonDarling", "shapiroWilk")
+  allTests <- c("kolmogorovSmirnov", "cramerVonMisses", "andersonDarling", "shapiroWilk")
   whichTests <- allTests[c(options$kolmogorovSmirnov,
                            options$cramerVonMisses,
                            options$andersonDarling,
@@ -454,7 +454,7 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
       results[[test]] <- list(test      = "Kolmogorov-Smirnov", 
                               statistic = res$statistic,
                               p.value   = res$p.value)
-    } else if(test == "cramerVonMises"){
+    } else if(test == "cramerVonMisses"){
       # https://www.rdocumentation.org/packages/goftest/versions/1.0-4/topics/cvm.test
       res <- goftest::cvm.test(variable, null = options[['cdfFun']], estParameters)
       results[[test]] <- list(test = "Cramer-von Misses",
