@@ -21,8 +21,8 @@
 LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
   #jaspResults$title <- "Normal distribution"
   options <- .recodeOptionsLDGaussianUnivariate(options)
-  .simulateData(jaspResults, options)
-  
+  #.simulateData(jaspResults, options)
+browser()
   ready <- FALSE
   variable <- NULL
   if(options[['variable']] != ""){
@@ -36,11 +36,16 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
   }
 
   
-  .ldIntroText(jaspResults, options, .ldGaussianIntro)
-  .ldGaussianFormulas(jaspResults, options)
-
-  .ldPlotContinuousDistributionFunctions(jaspResults, options, .ldFormulaGaussianPDF)
-
+  #.ldIntroText(jaspResults, options, .ldGaussianIntro)
+  #.ldGaussianFormulas(jaspResults, options)
+   
+  
+  plotsContainer <- .ldGetPlotsContainer(jaspResults, options)
+  
+  .ldPlotContinuousDistributionFunctions(plotsContainer, options)
+  
+  
+  return()
   if(is.null(jaspResults[['dataContainer']])){
     jaspResults[['dataContainer']] <- createJaspContainer(title = paste0("Overview - ", options[['variable']]))
     jaspResults[['dataContainer']]$dependOn(c("variable"))

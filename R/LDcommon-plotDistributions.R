@@ -1,17 +1,40 @@
-.ldPlotContinuousDistributionFunctions <- function(jaspResults, options, pdfFormula){
-  
-  if(is.null(jaspResults[['pdfContainer']])){
-    jaspResults[['pdfContainer']] <- createJaspContainer(title = "Probability Density Function")
-    jaspResults[['pdfContainer']]$position <- 3 
-    jaspResults[['pdfContainer']]$dependOn(c(options[['parValNames']], "parametrization"))
-  }
-  .ldExplanationPDF(jaspResults, options)
-  .ldPlotPDF(jaspResults, options)
+.ldGetPlotsContainer <- function(jaspResults, options){
+  if(!is.null(jaspResults[['plotsContainer']])){
+    plotsContainer <- jaspResults[['plotsContainer']]
+  } else{
+    plotsContainer <- createJaspContainer()
+    plotsContainer$position <- 3
     
+    if("parametrization" %in% names(options)){
+      plotsContainer$dependOn(c(options$parValNames, "parametrization"))
+    } else{
+      plotsContainer$dependOn(c(options$parValNames))
+    }
+    
+    jaspResults[['plotsContainer']] <- plotsContainer
+  }
+  
+  return(plotsContainer)
+}
 
-  if(is.null(jaspResults[['pdfContainer']][['formula']]))
-    pdfFormula(jaspResults, options)
+.ldPlotContinuousDistributionFunctions <- function(plotsContainer, options){
+  
+  if(options$plotPDF){
+    #.getpdfContainer
+    if(!is.null(plotsContainer[['pdfContainer']])){
+      pdfContainer <- plotsContainer[['pdfContainer']]
+    } else{
+      pdfContainer <- createJaspContainer(title = "Probability Density Function")
+      pdfContainer$position <- 1
+      
+    }
+    
+    # create plot
+    .ldPlotPDF(pdfContainer, options)
+    plotsContainer[['pdfContainer']] <- pdfContainer 
+  }
 
+  return()
   if(is.null(jaspResults[['cdfContainer']])){
     jaspResults[['cdfContainer']] <- createJaspContainer(title = "Cumulative Distribution Function")
     jaspResults[['cdfContainer']]$position <- 4
@@ -55,20 +78,106 @@
 
 }
 
-.ldPlotPDF <- function(jaspResults, options){
-  if(!is.null(jaspResults[['pdfContainer']][['pdfPlot']])) return()
-  if(!options$plotPDF) return()
-  
+.ldPlotPDF <- function(pdfContainer, options){
+  if(!is.null(pdfContainer[['pdfPlot']])) return()
   
   pdfPlot <- createJaspPlot(title = "Density Plot", width = 600, height = 320)
+  pdfPlot$position <- 2 # after explanation, before formula
   pdfPlot$dependOn(c('plotPDF', 'range', 'highlightType',
                      'highlightDensity', 'highlightProbability', 
-                     'min', 'max', 'lower_max', 'upper_min', options[['parValNames']]))
-  jaspResults[['pdfContainer']][['pdfPlot']] <- pdfPlot
+                     'min', 'max', 'lower_max', 'upper_min'))
+  pdfContainer[['pdfPlot']] <- pdfPlot
   
-  .ldGeomLayersPDF(jaspResults, options)
-  .ldFillPlotPDF(pdfPlot, jaspResults, options)
+  plot <- .ldGetPlotPDF(pdfContainer, options)
   
+  pdfPlot[['plotObject']] <- plot
+}
+
+.ldGetPlotPDF <- function(pdfContainer, options){
+  if(!is.null(pdfContainer[['pdfPlotState']])) return(pdfContainer[['pdfPlotState']]$object)
+  
+  # basic density curve
+  plot <- ggplot2::ggplot(data = data.frame(x = options[['range_x']]), ggplot2::aes(x = x)) +
+    ggplot2::stat_function(fun = options[['pdfFun']], n = 101, args = options[['pars']], size = 1)
+  
+  # highlight probability
+  if(options$highlightProbability){
+    # determine plotting region
+    args <- options[['pars']]
+    argsPDF <- options[['pars']]
+    if(options[['highlightType']] == "minmax"){
+      args[['q']] <- c(options[['highlightmin']], options[['highlightmax']])
+    } else if(options[['highlightType']] == "lower"){
+      args[['q']] <- c(-Inf, options[['highlightmax']])
+    } else if(options[['highlightType']] == "upper"){
+      args[['q']] <- c(options[['highlightmin']], Inf)
+    }
+    
+    # calculate value under the curve
+    cdfValue <- do.call(options[['cdfFun']], args)
+    cdfValue <- cdfValue[2] - cdfValue[1]
+    
+    # round value under the curve for plotting
+    cdfValueRound <- round(cdfValue, 2)
+    if(c(0, 1) %in% cdfValueRound){
+      cdfValueRound <- round(cdfValue, 3)
+    }
+    
+    # calculate position of the geom_text
+    args[['q']] <- c(options[['highlightmin']], options[['highlightmax']])
+    argsPDF[['x']] <- seq(args[['q']][1], args[['q']][2], length.out = 20)
+    x <- weighted.mean(argsPDF[['x']], do.call(options[['pdfFun']], argsPDF))
+    argsPDF[['x']] <- x
+    y <- do.call(options[['pdfFun']], argsPDF)/3
+    
+    plot <- plot + 
+      ggplot2::stat_function(fun = options[['pdfFun']], n = 101, args = options[['pars']], geom = "area", 
+                             xlim = args[['q']], fill = "steelblue") +
+      ggplot2::geom_text(data = data.frame(x = x, y = y, label = cdfValueRound),
+                         mapping = ggplot2::aes(x = x, y = y, label = label), size = 8, parse = TRUE)
+  }
+  
+  # highlight density
+  if(options$highlightDensity){
+    # determine plotting region
+    args <- options[['pars']]
+    if(options[['highlightType']] == "minmax"){
+      args[['x']] <- c(options[['highlightmin']], options[['highlightmax']])
+    } else if(options[['highlightType']] == "lower"){
+      args[['x']] <- options[['highlightmax']]
+    } else if(options[['highlightType']] == "upper"){
+      args[['x']] <- options[['highlightmin']]
+    }
+    
+    
+    pdfValue <- do.call(options[['pdfFun']], args)
+    
+    segment_data <- data.frame(x = options[['range_x']][1] + (options[['range_x']][2]-options[['range_x']][1])/15,
+                               xend = args[['x']], y = pdfValue)
+    
+    # plot density
+    plot <- plot + 
+      ggplot2::geom_segment(data = segment_data, 
+                            mapping = ggplot2::aes(x = x, xend = xend, y = y, yend = y),
+                            linetype = 2) +
+      ggplot2::geom_text(data = data.frame(x = options[['range_x']][1], y = pdfValue, label = round(pdfValue, 2)),
+                         ggplot2::aes(x = x, y = y, label = label), size = 6) +
+      ggplot2::geom_linerange(x = args[['x']], ymin = 0, ymax = pdfValue, linetype = 2) +
+      JASPgraphs::geom_point(x = args[['x']], y = pdfValue)
+  }
+  
+  plot <- plot + ggplot2::ylab("Density") + 
+    ggplot2::scale_x_continuous(limits = options[['range_x']], breaks = JASPgraphs::axesBreaks(options[['range_x']]))
+  
+  plot <- JASPgraphs::themeJasp(plot)
+  
+  
+  state <- createJaspState(object = plot, dependencies = c("range", "highlightType", "min", "max", "lower_max",
+                                                           "upper_min", "highlightDensity", "highlightProbability"))
+  
+  pdfContainer[['pdfPlotState']] <- state
+  
+  return(plot)
 }
 
 .ldGeomLayersPDF <- function(jaspResults, options){
