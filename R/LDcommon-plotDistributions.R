@@ -344,17 +344,16 @@
 # }
 
 #### Plot empirical ----
-.ldPlotHistogram <- function(jaspResults, options, variable, ready){
+.ldPlotHistogram <- function(dataContainer, variable, options, ready){
   if(!options$histogram) return()
-  if(!is.null(jaspResults[['dataContainer']][['histogram']])) return()
+  if(!is.null(dataContainer[['histogram']])) return()
   
-  histPlot <- createJaspPlot(title = "Histogram", width = 600, height = 320)
+  histPlot <- createJaspPlot(title = "Histogram", width = 500, height = 320)
   
-  histPlot$dependOn(c("variable", "histogramBins", "histogram", "simulateNow"))
+  histPlot$dependOn(c("histogramBins", "histogram"))
   histPlot$position <- 2
   
-  
-  jaspResults[['dataContainer']][['histogram']] <- histPlot
+  dataContainer[['histogram']] <- histPlot
   
   if(!ready) return()
   
@@ -362,50 +361,45 @@
   
 }
 
-.ldFillPlotHistogram <- function(plot, options, variable){
-  range <- options[['rangeVariable']]
+.ldFillPlotHistogram <- function(histPlot, options, variable){
+  range <- range(variable)*1.1
   
   breaksCustom <- seq(range[1], range[2], length.out = options[['histogramBins']]+1)
 
-  p <- ggplot2::ggplot(data = NULL, ggplot2::aes(x = variable)) +
+  plot <- ggplot2::ggplot(data = NULL, ggplot2::aes(x = variable)) +
     ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::stat(..width..*..density..)),
                             breaks = breaksCustom, fill = "steelblue") +
     ggplot2::geom_rug() +
     ggplot2::scale_x_continuous(limits = range) + 
-    ggplot2::xlab("") +
+    ggplot2::xlab(options$variable) +
     ggplot2::ylab(paste0("Freq(", options[['variable']], " in bin)"))
   
-  p <- JASPgraphs::themeJasp(p)
-  plot[['plotObject']] <- p
-  
-
+  plot <- JASPgraphs::themeJasp(plot)
+  histPlot[['plotObject']] <- plot
 }
 
-.ldPlotECDF <- function(jaspResults, options, variable, ready){
+.ldPlotECDF <- function(dataContainer, variable, options, ready){
   if(!options[['ecdf']]) return()
-  if(!is.null(jaspResults[['dataContainer']][['ecdf']])) return()
+  if(!is.null(dataContainer[['ecdf']])) return()
   
+  ecdfPlot <- createJaspPlot(title = "Empirical Cumulative Distribution", width = 500, height = 320)
   
-  ecdfPlot <- createJaspPlot(title = "Empirical Cumulative Distribution", width = 600, height = 320)
-  
-  ecdfPlot$dependOn(c("variable", "ecdf", "simulateNow"))
+  ecdfPlot$dependOn(c("ecdf"))
   ecdfPlot$position <- 3
   
-  jaspResults[['dataContainer']][['ecdf']] <- ecdfPlot
+  dataContainer[['ecdf']] <- ecdfPlot
   
   if(!ready) return()
   
   .ldFillPlotECDF(ecdfPlot, options, variable)
-  
-
 }
 
 .ldFillPlotECDF <- function(plot, options, variable){
   p <- ggplot2::ggplot(data = NULL, ggplot2::aes(x = variable)) +
-    ggplot2::stat_ecdf(geom = "step") +
+    ggplot2::stat_ecdf(geom = "step", size = 1.5) +
     ggplot2::geom_rug() +
-    ggplot2::scale_x_continuous(limits = options[['rangeVariable']]) +
-    ggplot2::xlab("x") +
+    ggplot2::scale_x_continuous(limits = range(variable)*1.1) +
+    ggplot2::xlab(options$variable) +
     ggplot2::ylab(paste0("Freq(", options[['variable']], " \u2264 x)"))
   
   p <- JASPgraphs::themeJasp(p)

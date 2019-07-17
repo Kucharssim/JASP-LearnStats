@@ -32,33 +32,27 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
   qfContainer  <- .ldGetPlotContainer(jaspResults, options, "plotQF", "Quantile Function", 5)
   .ldFillQFContainer(qfContainer,   options, NULL, .ldFormulaGaussianQF)
   
-  
-  return()
-  
   #### Generate and Display data section ----
   #.simulateData(jaspResults, options)
   
-  ready <- FALSE
-  variable <- NULL
-  if(options[['variable']] != ""){
-    print("reading data")
+  ready <- options[['variable']] != ""
+
+  if(ready && is.null(dataset)){
     dataset <- .readDataSetToEnd(columns.as.numeric = options[['variable']])
     
     variable <- dataset[[.v(options[['variable']])]]
     variable <- variable[!is.na(variable)]
-    ready <- TRUE
-    options[['rangeVariable']] <- range(variable)
   }
   
-  if(is.null(jaspResults[['dataContainer']])){
-    jaspResults[['dataContainer']] <- createJaspContainer(title = paste0("Overview - ", options[['variable']]))
-    jaspResults[['dataContainer']]$dependOn(c("variable"))
-    jaspResults[['dataContainer']]$position <- 6
-  }
+  # overview of the data
+  dataContainer <- .ldGetDataContainer(jaspResults, options)
 
-  .ldSummaryContinuousTableMain(jaspResults, variable, options, ready)
-  .ldPlotHistogram(jaspResults, options, variable, ready)
-  .ldPlotECDF(jaspResults, options, variable, ready)
+  .ldSummaryContinuousTableMain(dataContainer, variable, options, ready)
+  .ldObservedMomentsTableMain  (dataContainer, variable, options, ready)
+  .ldPlotHistogram             (dataContainer, variable, options, ready)
+  .ldPlotECDF                  (dataContainer, variable, options, ready)
+  
+  return()
   
   #### Fit data and assess fit ----
   if(options[['methodUnbiased']]){

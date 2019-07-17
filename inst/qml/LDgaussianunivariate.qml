@@ -154,7 +154,11 @@ Form {
       Group{
           title: qsTr("Statistics")
           CheckBox{ name: "summary"; label: qsTr("Descriptives")}
-          CheckBox{ name: "moments"; label: qsTr("Observed moments")}
+          CheckBox
+          {
+              name: "moments"; label: qsTr("First"); childrenOnSameRow: true
+              IntegerField{name: "momentsUpTo"; afterLabel: qsTr("observed moments"); defaultValue: 2; min: 1; max: 10}
+          }
       }
 
       Group

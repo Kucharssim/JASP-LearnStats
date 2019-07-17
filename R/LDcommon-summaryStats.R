@@ -1,10 +1,25 @@
-.ldSummaryContinuousTableMain <- function(jaspResults, variable, options, ready) {
-  if(!is.null(jaspResults[['dataContainer']][['summary']])) return()
+.ldGetDataContainer <- function(jaspResults, options){
+  if(!is.null(jaspResults[['dataContainer']])){
+    dataContainer <- jaspResults[['dataContainer']]
+  } else{
+    dataContainer <- createJaspContainer(title = paste0("Overview - ", options[['variable']]))
+    dataContainer$position <- 6
+    dataContainer$dependOn(c("variable", "simulateNow"))
+    
+    jaspResults[['dataContainer']] <- dataContainer
+  }
+  
+  return(dataContainer)
+}
+
+#### Descriptives ----
+.ldSummaryContinuousTableMain <- function(dataContainer, variable, options, ready) {
   if(!options$summary) return()
+  if(!is.null(dataContainer[['summary']])) return()
   
   summaryTable <- createJaspTable(title = "Descriptives")
   summaryTable$position <- 1
-  summaryTable$dependOn(c("variable", "summary", "simulateNow"))
+  summaryTable$dependOn(c("summary"))
   summaryTable$addCitation("JASP Team (2018). JASP (Version 0.9.2) [Computer software].")
   
   summaryTable$addColumnInfo(name = "variable",   title = "Variable",       type = "string", combine = TRUE)
@@ -20,7 +35,7 @@
   #summaryTable$addColumnInfo(name = "skew",       title = "Skewness",       type = "number", format = "sf:4")
   #summaryTable$addColumnInfo(name = "kurt",       title = "Kurtosis",       type = "number", format = "sf:4")
   
-  jaspResults[['dataContainer']][['summary']] <- summaryTable
+  dataContainer[['summary']] <- summaryTable
   
   if(!ready) 
     return()
@@ -49,6 +64,39 @@
   return()
 }
 
+### Moments ----
+
+.ldObservedMomentsTableMain <- function(dataContainer, variable, options, ready){
+  if(!options$moments) return()
+  if(!is.null(dataContainer[['moments']])) return()
+  
+  momentsTable <- createJaspTable(title = "Observed Moments")
+  momentsTable$position <- 2
+  momentsTable$dependOn(c("moments", "momentsUpTo"))
+  
+  momentsTable$addColumnInfo(name = "moment", title = "Moment", type = "integer")
+  momentsTable$addColumnInfo(name = "raw",    title = "Raw",    type = "number")
+  momentsTable$addColumnInfo(name = "central",title = "Central",type = "number")
+  
+  momentsTable$setExpectedSize(rows = options$momentsUpTo)
+  
+  dataContainer[['moments']] <- momentsTable
+  
+  if(!ready) return()
+  
+  .ldFillObservedMomentsTableMain(momentsTable, variable, options)
+  return()
+}
+
+.ldFillObservedMomentsTableMain <- function(momentsTable, variable, options){
+  res <- data.frame(moment = 1:options$momentsUpTo, raw = NA, central = NA)
+  
+  res$raw     <- .computeObservedMoments(variable, max.moment = options$momentsUpTo, about.mean = FALSE)
+  res$central <- .computeObservedMoments(variable, max.moment = options$momentsUpTo, about.mean = TRUE)
+  
+  momentsTable$setData(res)
+}
+### Helper functions ----
 .summarySkewness <- function(x) {
   
   # Skewness function as in SPSS (for samlpes spaces):
