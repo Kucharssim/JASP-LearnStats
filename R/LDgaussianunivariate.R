@@ -15,37 +15,41 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-# LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
-# }
-
 LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
-  #jaspResults$title <- "Normal distribution"
   options <- .recodeOptionsLDGaussianUnivariate(options)
+  
+  #### Show distribution section ----
+  #.ldIntroText(jaspResults, options, .ldGaussianIntro)
+  .ldGaussianParsSupportMoments(jaspResults, options)
+   
+  
+  pdfContainer <- .ldGetPlotContainer(jaspResults, options, "plotPDF", "Probability Density Function", 3)
+  .ldFillPDFContainer(pdfContainer, options, NULL, .ldFormulaGaussianPDF)
+  
+  cdfContainer <- .ldGetPlotContainer(jaspResults, options, "plotCDF", "Cumulative Distribution Function", 4)
+  .ldFillCDFContainer(cdfContainer, options, NULL, .ldFormulaGaussianCDF)
+  
+  qfContainer  <- .ldGetPlotContainer(jaspResults, options, "plotQF", "Quantile Function", 5)
+  .ldFillQFContainer(qfContainer,   options, NULL, .ldFormulaGaussianQF)
+  
+  
+  return()
+  
+  #### Generate and Display data section ----
   #.simulateData(jaspResults, options)
-browser()
+  
   ready <- FALSE
   variable <- NULL
   if(options[['variable']] != ""){
     print("reading data")
     dataset <- .readDataSetToEnd(columns.as.numeric = options[['variable']])
-
+    
     variable <- dataset[[.v(options[['variable']])]]
     variable <- variable[!is.na(variable)]
     ready <- TRUE
     options[['rangeVariable']] <- range(variable)
   }
-
   
-  #.ldIntroText(jaspResults, options, .ldGaussianIntro)
-  #.ldGaussianFormulas(jaspResults, options)
-   
-  
-  plotsContainer <- .ldGetPlotsContainer(jaspResults, options)
-  
-  .ldPlotContinuousDistributionFunctions(plotsContainer, options)
-  
-  
-  return()
   if(is.null(jaspResults[['dataContainer']])){
     jaspResults[['dataContainer']] <- createJaspContainer(title = paste0("Overview - ", options[['variable']]))
     jaspResults[['dataContainer']]$dependOn(c("variable"))
@@ -56,6 +60,7 @@ browser()
   .ldPlotHistogram(jaspResults, options, variable, ready)
   .ldPlotECDF(jaspResults, options, variable, ready)
   
+  #### Fit data and assess fit ----
   if(options[['methodUnbiased']]){
     if(is.null(jaspResults[['methodUnbiased']])){
       jaspResults[['methodUnbiased']] <- createJaspContainer(title = "Unbiased estimator")
@@ -84,71 +89,7 @@ browser()
   return()
 }
 
-.ldIntroText <- function(jaspResults, options, introText){
-  if(!options$explanatoryText) return()
-  
-  intro <- createJaspHtml()
-  intro$dependOn(c("explanatoryText"))
-  intro$position <- 1
-  intro[['text']] <- introText()
-  jaspResults[['exp_Intro']] <- intro
-  
-  
-  return()  
-}
-
-.ldGaussianIntro <- function(){
-  intro <- "<h3> Demonstration of the Normal Distribution </h3>
-This demonstration is divided into four parts. The first part displays the Normal distribution, its probability density function, 
-cumulative distribution function, and quantile function. The second part allows to generate data from the Normal distribution and compute
-descriptive statistics and display descriptive plots. In the third part, the parameters of the Normal distribution can be estimated.
-The fourth part allows to check the fit of the Normal distribution to the data.
-  "
-  
-  return(intro)
-}
-
-.ldGaussianFormulas <- function(jaspResults, options){
-  if(options$formulas && is.null(jaspResults[['formulas']])){
-    formulas <- createJaspHtml(title = "Parameters, Support, and Moments")
-    formulas$dependOn(c("formulas", "parametrization"))
-    formulas$position <- 2
-    
-    text <- "<b>Parameters</b>
-    mean: &mu; \u2208 \u211D
-    "
-    
-    text2 <- "<b>Support</b>
-    x \u2208 \u211D"
-    
-    text3 <- "<b>Moments</b> 
-    E(X) = &mu;
-    Var(X) = "
-    
-    if(options[['parametrization']] == "sigma2"){
-      text <- paste(text,
-                    "variance: &sigma;<sup>2</sup> \u2208 \u211D<sup>+</sup>
-                    ")
-      text3 <- paste0(text3, "&sigma;<sup>2</sup>")
-    } else if(options[['parametrization']] == "sigma"){
-      text <- paste(text,
-                    "standard deviation: &sigma; \u2208 \u211D<sup>+</sup>")
-      text3 <- paste0(text3, "&sigma;<sup>2</sup>")
-    } else if(options[['parametrization']] == "tau2"){
-      text <- paste(text,
-                    "precision: &tau;<sup>2</sup> \u2208 \u211D<sup>+</sup>")
-      text3 <- paste0(text3, "1/&tau;<sup>2</sup>")
-    } else{
-      text <- paste(text,
-                    "square root of precision: &tau; \u2208 \u211D<sup>+</sup>")
-      text3 <- paste0(text3, "1/&tau;<sup>2</sup>")
-    }
-    
-    formulas$text <- paste(text, text2, text3, sep = "<br><br>")
-    
-    jaspResults[['formulas']] <- formulas
-  }
-}
+### options ----
 .recodeOptionsLDGaussianUnivariate <- function(options){
   if(options$parametrization == "sigma2"){
     options$sd <- sqrt(options$varValue)
@@ -187,20 +128,74 @@ The fourth part allows to check the fit of the Normal distribution to the data.
   options
 }
 
-
-.ldFormulaGaussianPDF <- function(jaspResults, options){
-  if(!options$formulaPDF) return()
-  if(!options$plotPDF) return()
-  pdfFormula <- createJaspHtml(title = "Probability Density Function", elementType = "h1")
-
-  pdfFormula$dependOn(c("parametrization", "formulaPDF", "plotPDF"))
-
-  .ldFillFormulaGaussianPDF(pdfFormula, options)
-
-  jaspResults[['pdfContainer']][['formula']] <- pdfFormula
+### text fill functions -----
+.ldIntroText <- function(jaspResults, options, introText){
+  if(!options$explanatoryText) return()
+  
+  intro <- createJaspHtml()
+  intro$dependOn(c("explanatoryText"))
+  intro$position <- 1
+  intro[['text']] <- introText()
+  jaspResults[['exp_Intro']] <- intro
+  
+  
+  return()  
 }
 
-.ldFillFormulaGaussianPDF <- function(pdfFormula, options){
+.ldGaussianIntro <- function(){
+  intro <- "<h3> Demonstration of the Normal Distribution </h3>
+This demonstration is divided into four parts. The first part displays the Normal distribution, its probability density function, 
+cumulative distribution function, and quantile function. The second part allows to generate data from the Normal distribution and compute
+descriptive statistics and display descriptive plots. In the third part, the parameters of the Normal distribution can be estimated.
+The fourth part allows to check the fit of the Normal distribution to the data.
+  "
+  
+  return(intro)
+}
+
+.ldGaussianParsSupportMoments <- function(jaspResults, options){
+  if(options$parsSupportMoments && is.null(jaspResults[['parsSupportMoments']])){
+    formulas <- createJaspHtml(title = "Parameters, Support, and Moments")
+    formulas$dependOn(c("parsSupportMoments", "parametrization"))
+    formulas$position <- 2
+    
+    text <- "<b>Parameters</b>
+    mean: &mu; \u2208 \u211D
+    "
+    
+    text2 <- "<b>Support</b>
+    x \u2208 \u211D"
+    
+    text3 <- "<b>Moments</b> 
+    E(X) = &mu;
+    Var(X) = "
+    
+    if(options[['parametrization']] == "sigma2"){
+      text <- paste(text,
+                    "variance: &sigma;<sup>2</sup> \u2208 \u211D<sup>+</sup>
+                    ")
+      text3 <- paste0(text3, "&sigma;<sup>2</sup>")
+    } else if(options[['parametrization']] == "sigma"){
+      text <- paste(text,
+                    "standard deviation: &sigma; \u2208 \u211D<sup>+</sup>")
+      text3 <- paste0(text3, "&sigma;<sup>2</sup>")
+    } else if(options[['parametrization']] == "tau2"){
+      text <- paste(text,
+                    "precision: &tau;<sup>2</sup> \u2208 \u211D<sup>+</sup>")
+      text3 <- paste0(text3, "1/&tau;<sup>2</sup>")
+    } else{
+      text <- paste(text,
+                    "square root of precision: &tau; \u2208 \u211D<sup>+</sup>")
+      text3 <- paste0(text3, "1/&tau;<sup>2</sup>")
+    }
+    
+    formulas$text <- paste(text, text2, text3, sep = "<br><br>")
+    
+    jaspResults[['parsSupportMoments']] <- formulas
+  }
+}
+
+.ldFormulaGaussianPDF <- function(options){
   if(options[['parametrization']] == "sigma2"){
     text <- "<MATH>
     f(x; <span style='color:red'>&mu;</span>, <span style='color:blue'>&sigma;&sup2;</span>) = 
@@ -227,10 +222,54 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
     </MATH>"
   }
 
-  pdfFormula[['text']] <- gsub(pattern = "\n", replacement = " ", x = text)
-
+  return(gsub(pattern = "\n", replacement = " ", x = text))
 }
 
+.ldFormulaGaussianCDF <- function(options){
+  if(options$parametrization == "sigma2"){
+    text <- "<MATH>
+    F(x; <span style='color:red'>&mu;</span>, <span style='color:blue'>&sigma;&sup2;</span>)
+    </MATH>"
+  } else if(options$parametrization == "sigma"){
+    text <- "<MATH>
+    F(x; <span style='color:red'>&mu;</span>, <span style='color:blue'>&sigma;</span>)
+    </MATH>"
+  } else if(options$parametrization == "tau2"){
+    text <- "<MATH>
+    F(x; <span style='color:red'>&mu;</span>, <span style='color:blue'>&tau;&sup2;</span>)
+    </MATH>"
+  } else {
+    text <- "<MATH>
+    F(x; <span style='color:red'>&mu;</span>, <span style='color:blue'>&tau;</span>)
+    </MATH>"
+  }
+  
+  return(gsub(pattern = "\n", replacement = " ", x = text))
+}
+
+.ldFormulaGaussianQF <- function(options){
+  if(options$parametrization == "sigma2"){
+    text <- "<MATH>
+    Q(p; <span style='color:red'>&mu;</span>, <span style='color:blue'>&sigma;&sup2;</span>)
+    </MATH>"
+  } else if(options$parametrization == "sigma"){
+    text <- "<MATH>
+    Q(p; <span style='color:red'>&mu;</span>, <span style='color:blue'>&sigma;</span>)
+    </MATH>"
+  } else if(options$parametrization == "tau2"){
+    text <- "<MATH>
+    Q(p; <span style='color:red'>&mu;</span>, <span style='color:blue'>&tau;&sup2;</span>)
+    </MATH>"
+  } else {
+    text <- "<MATH>
+    Q(p; <span style='color:red'>&mu;</span>, <span style='color:blue'>&tau;</span>)
+    </MATH>"
+  }
+  
+  return(gsub(pattern = "\n", replacement = " ", x = text))
+}
+
+#### Estimation functions ----
 .ldGaussianEstimatesTable <- function(methodContainer, options, ready, ci.possible){
   if(!is.null(methodContainer[['estParametersTable']])) return()
   

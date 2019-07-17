@@ -22,21 +22,20 @@ import JASP.Widgets 1.0
 
 Form {
   id: form
-   
-  Section{
-      expanded: true
+
+  Section
+  {
+    expanded: true
     title: "Show Distribution"
     Group
     {
-      title: "Parameters"
-      Layout.columnSpan: 2
-      Group{
+        Layout.columnSpan: 2
         DropDown
         {
             name: "parametrization"
-            id:   parametrizationChoice
+            id:   parametrization
             indexDefaultValue: 0
-            label: qsTr("Parameterization")
+            label: qsTr("Parameters")
             values: [
                 { label: "μ, σ²", value: "sigma2"},
                 { label: "μ, σ",  value: "sigma" },
@@ -45,39 +44,45 @@ Form {
               ]
         }
 
-        Group{
-            columns: 2
-            DoubleField{ name:  "mu"; label: qsTr("μ = "); id: mu; negativeValues: true }
-            DoubleField{ name: "varValue"; label: parametrizationChoice.currentText.replace("μ, ", "") + " ="; defaultValue: 1; min: 0; id: varValue }
-            //DoubleField{name: "varValue; label: {if(parametrizationChoice.currentText === "μ, σ²") {σ²}; else τ²}}
+        Group
+        {
+            columns: 1
+            DoubleField{ name:  "mu"; label: qsTr("μ"); id: mu; negativeValues: true }
+            DoubleField
+            {
+                name: "varValue"
+                label: ["σ²", "σ ", "τ²", "τ "][parametrization.currentIndex]
+                negativeValues: false
+                defaultValue: 1
+            }
         }
-      }
 
     }
     
     Group{
       title: qsTr("Display")
       CheckBox{ label: qsTr("Explanatory text"); name: "explanatoryText"}
-      CheckBox{ label: qsTr("Parameters, support, and moments"); name: "formulas" }
+      CheckBox{ label: qsTr("Parameters, support, and moments"); name: "parsSupportMoments" }
+      CheckBox{ label: qsTr("Formulas"); name: "formulas"}
       CheckBox
       {
         label: qsTr("Probability density function")
         id: plotPDF
         name: "plotPDF"
         checked: true
-        CheckBox{ label: qsTr("Formula"); name: "formulaPDF" }
+        //CheckBox{ label: qsTr("Formula"); name: "formulaPDF" }
       }
       
       CheckBox{
         label: qsTr("Cumulative distribution function")
         id: plotCDF
         name: "plotCDF"
-        CheckBox{ label: qsTr("Formula"); name: "formulaCDF" }
+        //CheckBox{ label: qsTr("Formula"); name: "formulaCDF" }
       }
       CheckBox{
           label: qsTr("Quantile function")
           name: "plotQF"
-          CheckBox{ label: qsTr("Formula"); name: "formulaQF" }
+          //CheckBox{ label: qsTr("Formula"); name: "formulaQF" }
       }
     }
     
@@ -130,7 +135,7 @@ Form {
   {
       title: qsTr("Generate and Display Data")
       Group{
-          title: qsTr("Generate new variable from Normal(μ = ") + mu.value + ", " + parametrizationChoice.currentText.replace("μ, ", "") + " = " + varValue.value + ")"
+          title: qsTr("Generate new variable from Normal(μ = ") + mu.value + ", " + parametrization.currentText.replace("μ, ", "") + " = " + varValue.value + ")"
           AddColumnField{ name: "newVariableName"; text: "Variable name: "; fieldWidth: 120; placeholderText: "e.g., random normal"}
           IntegerField{name: "sampleSize"; label: "Number of samples: "; min: 1; defaultValue: 100}
           Button{name: "simulateNowButton"; label: "Draw samples"; id: simulateNowButton; onClicked:{
