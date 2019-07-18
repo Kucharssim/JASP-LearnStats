@@ -18,15 +18,9 @@
 		{
 			"title": 							"Distributions",
 			"icon": 							"placeholder.svg"
-		},
+		}
 		{
 			"title":							"Normal",
-			"qml":								"LDnormal.qml",
-			"function":						"LDnormal",
-			"usesJaspResults":		true
-		},
-		{
-			"title":							"Univariate Normal",
 			"qml":								"LDgaussianunivariate.qml",
 			"function":						"LDgaussianunivariate",
 			"usesJaspResults":		true
