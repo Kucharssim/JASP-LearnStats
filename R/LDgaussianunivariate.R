@@ -33,6 +33,7 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
   .ldFillQFContainer(qfContainer,   options, NULL, .ldFormulaGaussianQF)
   
   #### Generate and Display data section ----
+  # simulate and read data
   #.simulateData(jaspResults, options)
   
   ready <- options[['variable']] != ""
@@ -52,9 +53,34 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
   .ldPlotHistogram             (dataContainer, variable, options, ready)
   .ldPlotECDF                  (dataContainer, variable, options, ready)
   
-  return()
   
   #### Fit data and assess fit ----
+  
+  #### Maximum Likelihood ----
+  if(options$methodMLE){
+    mleContainer <- .ldGetFitContainer(jaspResults, options, "mleContainer", "Maximum likelihood", 7)
+    
+    # parameter estimates
+    mleEstimatesTable  <- .ldGaussianEstimatesTable(mleContainer, options, TRUE, TRUE, "methodMLE")
+    mleResults   <- .ldMLEResults(mleContainer, variable, options, ready, "norm", .ldGaussianMethodMLEStructureResults)
+    .ldFillGaussianEstimatesTable(mleEstimatesTable, mleResults, options, ready)
+    
+    
+    # fit assessment
+    mleFitContainer    <- .ldGetFitContainer(mleContainer, options, "mleFitAssessment", "Fit Assessment", 8)
+    
+    # fit statistics
+    mleFitStatistics   <- .ldFitStatisticsTable(mleFitContainer, options, "methodMLE")
+    mleFitStatisticsResults <- .ldFitStatisticsResults(mleContainer, mleResults$fitdist, variable, options, ready)
+    .ldFillFitStatisticsTable(mleFitStatistics, mleFitStatisticsResults, options, ready)
+    # fit plots
+    .ldFitPlots(mleFitContainer, mleResults$fitdist$estimate, options, variable, ready)
+    
+  }
+  
+  return()
+  
+  #### Unbiased estimate ----
   if(options[['methodUnbiased']]){
     if(is.null(jaspResults[['methodUnbiased']])){
       jaspResults[['methodUnbiased']] <- createJaspContainer(title = "Unbiased estimator")
@@ -67,6 +93,7 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
     .ldFitAssessment(jaspResults[['methodUnbiased']], options, variable, ready)
   }
   
+  #### Method of moments ----
   if(options[['methodMoments']]){
     if(is.null(jaspResults[['methodMoments']])){
       jaspResults[['methodMoments']] <- createJaspContainer(title = "Method of Moments")
@@ -263,60 +290,69 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
   return(gsub(pattern = "\n", replacement = " ", x = text))
 }
 
-#### Estimation functions ----
-.ldGaussianEstimatesTable <- function(methodContainer, options, ready, ci.possible){
-  if(!is.null(methodContainer[['estParametersTable']])) return()
-  
+#### Table functions ----
+.ldGaussianEstimatesTable <- function(container, options, ci.possible, se.possible, method){
   if(!options$outputEstimates) return()
+  if(!is.null(container[['estParametersTable']])) return()
   
-  estParametersTable <- createJaspTable(title = "Estimated Parameters", dependencies = "variable")
+  tab <- createJaspTable(title = "Estimated Parameters")
+  tab$dependOn(c("outputEstimates", "outputSE", "ciInterval", "ciIntervalInterval", "parametrization", method))
+  tab$position <- 1
+  tab$showSpecifiedColumnsOnly <- TRUE
+  tab$setExpectedSize(rows = 2)
+
+  tab$addColumnInfo(name = "parName", title = "Parameter", type = "string")
+  tab$addColumnInfo(name = "estimate", title = "Estimate", type = "number")
   
-  estParametersTable$dependOn(c("variable", "parametrization", "outputEstimates", "ciInterval", "ciIntervalInterval", "simulateNow"))
-  estParametersTable$position <- 1
-  estParametersTable$addCitation("JASP Team (2018). JASP (Version 0.9.2) [Computer software].")
-  
-  estParametersTable$showSpecifiedColumnsOnly <- TRUE
-  
-  estParametersTable$addColumnInfo(name = "mu", title = "\u03BC\u0302", type = "number", format = "sf:4")
+  #"\u03BC\u0302"
+  if(options$outputSE && se.possible){
+    tab$addColumnInfo(name = "se", title = "SE", type = "number")
+  } else if(options$outputSE) {
+    tab$addFootnote("Standard errors are unavailable with this method")
+  }
   
   if(options$ciInterval && ci.possible){
-    estParametersTable$addColumnInfo(name = "mu.lower", title = "Lower", type = "number", format = "sf:4",
-                                     overtitle = sprintf("%s%% CI for \u03BC", options[['ciIntervalInterval']]*100))
-    estParametersTable$addColumnInfo(name = "mu.upper", title = "Upper", type = "number", format = "sf:4",
-                                     overtitle = sprintf("%s%% CI for \u03BC", options[['ciIntervalInterval']]*100))
+        tab$addColumnInfo(name = "lower", title = "Lower", type = "number",
+                          overtitle = sprintf("%s%% CI", options[['ciIntervalInterval']]*100))
+        tab$addColumnInfo(name = "upper", title = "Upper", type = "number",
+                          overtitle = sprintf("%s%% CI", options[['ciIntervalInterval']]*100))
   } else if(options$ciInterval){
-    estParametersTable$addFootnote("Confidence intervals are unavailable with this method.")
+        tab$addFootnote("Confidence intervals are unavailable with this method.")
   }
   
-  par2 <- c(sigma2 = "\u03C3\u0302<sup>2</sup>", sigma = "\u03C3\u0302", 
-            tau2 = "\u03C4\u0302<sup>2</sup>", tau = "\u03C4\u0302")[[options[['parametrization']]]]
+  container[['estParametersTable']] <- tab
   
-  estParametersTable$addColumnInfo(name = options[['parametrization']],
-                                   title = par2, type = "number", format = "sf:4")
+  return(tab)
+}
+
+.ldFillGaussianEstimatesTable <- function(table, results, options, ready){
+  if(!ready) return()
+  if(is.null(table)) return()
+
+  par1 <- c(mu = "\u03BC")
+  par2 <- c(sigma2 = "\u03C3\u00B2", sigma = "\u03C3", 
+            tau2   = "\u03C4\u00B2", tau   = "\u03C4")[options$parametrization]
+  res <- results$structured
+  res <- res[res$par %in% names(c(par1, par2)),]
+  res$parName <- c(par1, par2)
   
-  # par2 <- c(sigma2 = "\u03C3<sup>2</sup>", sigma = "\u03C3", 
-  #           tau2 = "\u03C4<sup>2</sup>", tau = "\u03C4")[[options[['parametrization']]]]
+  table$setData(res)
   
-  if(options$ciInterval && ci.possible){
-    estParametersTable$addColumnInfo(name = paste0(options[['parametrization']], ".lower"),
-                                     title = "Lower", type = "number", format = "sf:4",
-                                     overtitle = sprintf("%s%% CI for %s", 
-                                                         options[['ciIntervalInterval']]*100,
-                                                         par2))
-    estParametersTable$addColumnInfo(name = paste0(options[['parametrization']], ".upper"),
-                                     title = "Upper", type = "number", format = "sf:4",
-                                     overtitle = sprintf("%s%% CI for %s", 
-                                                         options[['ciIntervalInterval']]*100, 
-                                                         par2))
-  }
-  methodContainer[['estParametersTable']] <- estParametersTable
-  
-  if(!ready)
-    return()
-  
-  # fill
-  estParametersTable$addRows(as.list(methodContainer[['results']]$object[['table']]))
   return()
+}
+
+.ldGaussianMethodMLEStructureResults <- function(fit, options){
+  if(is.null(fit)) return()
+  
+  transformations <- c(mu = "mean", sigma2 = "sd^2", sigma = "sd", tau2 = "1/sd^2", tau = "1/sd")
+  
+  res <- sapply(transformations, function(tr) car::deltaMethod(fit$estimate, tr, fit$vcov, level = options$ciIntervalInterval))
+  rownames(res) <- c("estimate", "se", "lower", "upper")
+  res <- t(res)
+  res <- cbind(par = rownames(res), res)
+  res <- as.data.frame(res)
+  
+  return(res)
 }
 
 
@@ -438,84 +474,6 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
   return()
 }
 
-.ldFillAssessmentTable <- function(methodContainer, estParameters, options, variable, ready){
-  tests <- c(options$kolmogorovSmirnov, options$cramerVonMisses, options$andersonDarling, options$shapiroWilk)
-  if(!any(tests))
-     return()
-  
-  statisticsTable <- createJaspTable(title = "Statistics")
-  statisticsTable$position <- 6
-  statisticsTable$dependOn(c("variable", "kolmogorovSmirnov",
-                             "cramerVonMisses", "andersonDarling",
-                             "shapiroWilk", "simulateNow"))
-  
-  statisticsTable$addColumnInfo(name = "test", title = "Test", type = "string")
-  statisticsTable$addColumnInfo(name = "statistic", title = "Statistic", type = "number", format = "sf:4")
-  statisticsTable$addColumnInfo(name = "p.value", title = "p-value", type = "number", format = "sf:4")
-    
-  methodContainer[['fitAssessment']][['statisticsTable']] <- statisticsTable
-  
-  
-  
-  if(ready){
-    .ldAssessmentStatisticsResults(methodContainer, estParameters, options, variable)
-    statisticsTable$addRows(methodContainer[['fitAssessment']][['statisticsResults']]$object)
-  } else{
-    test <- c("Kolmogorov-Smirnov", "Cramer-von Misses", "Anderson-Darling", "Shapiro-Wilk")[tests]
-    statisticsTable[['test']] <- test
-  }
-  
-  return()
-}
-
-.ldAssessmentStatisticsResults <- function(methodContainer, estParameters, options, variable){
-  if(!is.null(methodContainer[['fitAssessment']][['statisticsResults']])) return()
-  
-  if(is.null(estParameters)) return()
-  
-  methodContainer[['fitAssessment']][['statisticsResults']] <- createJaspState()
-  methodContainer[['fitAssessment']][['statisticsResults']]$dependOn(c("variable", "kolmogorovSmirnov",
-                                                                       "cramerVonMisses", "andersonDarling",
-                                                                       "shapiroWilk", "simulateNow"))
-  
-  allTests <- c("kolmogorovSmirnov", "cramerVonMisses", "andersonDarling", "shapiroWilk")
-  whichTests <- allTests[c(options$kolmogorovSmirnov,
-                           options$cramerVonMisses,
-                           options$andersonDarling,
-                           options$shapiroWilk)]
-  estParameters <- methodContainer[['results']]$object[['par']]
-  
-  results <- list()
-  for(test in whichTests){
-    if(test == "kolmogorovSmirnov"){
-      res <- ks.test(variable, options[['cdfFun']], estParameters)
-      results[[test]] <- list(test      = "Kolmogorov-Smirnov", 
-                              statistic = res$statistic,
-                              p.value   = res$p.value)
-    } else if(test == "cramerVonMisses"){
-      # https://www.rdocumentation.org/packages/goftest/versions/1.0-4/topics/cvm.test
-      res <- goftest::cvm.test(variable, null = options[['cdfFun']], estParameters)
-      results[[test]] <- list(test = "Cramer-von Misses",
-                              statistic = res$statistic,
-                              p.value   = res$p.value)
-    } else if(test == "andersonDarling"){
-      res <- goftest::ad.test(variable, null = options[['cdfFun']], estParameters)
-      results[[test]] <- list(test = "Anderson-Darling",
-                              statistic = res$statistic,
-                              p.value   = res$p.value)
-    } else if(test == "shapiroWilk"){
-      res <- shapiro.test(variable)
-      results[[test]] <- list(test = "Shapiro-Wilk",
-                              statistic = res$statistic,
-                              p.value = res$p.value)
-    }
-  }
-  
-  methodContainer[['fitAssessment']][['statisticsResults']]$object <- results
-  
-  return()
-}
-
 .simulateData <- function(jaspResults, options){
   if(is.null(jaspResults[['simdata']])){
     sample <- do.call(options[['rFun']], c(options[['pars']], options[['sampleSize']]))
@@ -526,84 +484,8 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
   
   return()
 }
-# .ldGaussianMethodMomentsTableMain <- function(jaspResults, options, variable){
-#   jaspResults[['estimatesContainer']][['methodMoments']] <- createJaspContainer(title = "Method of Moments")
-#   
-#   # # observed moments
-#   # obsMomentsTable <- createJaspTable(title = "Observed Moments")
-#   # 
-#   # obsMomentsTable$dependOn(c("variable"))
-#   # obsMomentsTable$addCitation("JASP Team (2018). JASP (Version 0.9.2) [Computer software].")
-#   # 
-#   # noOfNeededMoments <- length(options[['pars']])
-#   # 
-#   # obsMomentsTable$addColumnInfo(name = "moment",     title = "Moment",       type = "integer")
-#   # obsMomentsTable$addColumnInfo(name = "aboutorigin",       title = "Raw",           type = "number", format = "sf:4")
-#   # obsMomentsTable$addColumnInfo(name = "aboutmean",        title = "Centered",       type = "number", format = "sf:4")
-#   # 
-#   # obsMomentsTable$setExpectedRows(noOfNeededMoments)
-#   # obsMomentsTable$addFootnote(message = "Raw k<sup>th</sup> moment is calculated as 1/n \u2211 x<sup>k</sup>.",
-#   #                             col_names="aboutorigin")
-#   # obsMomentsTable$addFootnote(message = "For k > 1, centered k<sup>th</sup> moment is calculated as 1/n \u2211 (x-x\u0305)<sup>k</sup>.",
-#   #                             col_names="aboutmean")
-#   # 
-#   # jaspResults[['estimatesContainer']][['methodMoments']][['obsMomentsTable']] <- obsMomentsTable
-#   # 
-#   # obsMomentsTable[['moment']]      <- 1:noOfNeededMoments
-#   # obsMomentsTable[['aboutorigin']] <- .computeMoments(x = variable, max.moment = noOfNeededMoments, about.mean = FALSE)
-#   # obsMomentsTable[['aboutmean']]   <- .computeMoments(x = variable, max.moment = noOfNeededMoments, about.mean = TRUE)
-#   # 
-#   
-#   
-#   # est Parameters
-#   estParametersTable <- createJaspTable(title = "Estimated Parameters")
-#   
-#   estParametersTable$dependOn(c("variable", "parametrization"))
-#   estParametersTable$addCitation("JASP Team (2018). JASP (Version 0.9.2) [Computer software].")
-# 
-#   estParametersTable$addColumnInfo(name = "par1", title = "\u03BC\u0302", type = "number", format = "sf:4")
-#   
-#   # state
-#   if(is.null(jaspResults[['methodMomentsResults']])){
-#     methodMomentsResults <- createJaspState()
-#     jaspResults[['methodMomentsResults']] <- methodMomentsResults
-#     methodMomentsResults$dependOn(c("variable"))
-#     methodMomentsResults$object <- list(.computeMoments(x = variable, max.moment = noOfNeededMoments, about.mean = TRUE))
-#   }
-#   
-#   # fill
-#   par <- jaspResults[['methodMomentsResults']]$object[[1]]
-# 
-#   if(options$parametrization == "sigma2"){
-#     
-#     estParametersTable$addColumnInfo(name = "par2", title = "\u03C3\u0302<sup>2</sup>", type = "number", format = "sf:4")
-#   } else if(options$parametrization == "sigma"){
-#     
-#     estParametersTable$addColumnInfo(name = "par2", title = "\u03C3\u0302",  type = "number", format = "sf:4")
-#     par[2] <- sqrt(par[2])
-#     
-#   } else if(options$parametrization == "tau2"){
-#     
-#     estParametersTable$addColumnInfo(name = "par2", title = "\u03C4\u0302<sup>2</sup>",   type = "number", format = "sf:4")
-#     par[2] <- 1/par[2]
-#     
-#   } else if(options$parametrization == "tau"){
-#     
-#     estParametersTable$addColumnInfo(name = "par2", title = "\u03C4\u0302",    type = "number", format = "sf:4")
-#     par[2] <- 1/sqrt(par[2])
-#     
-#   }
-#   
-#   estParametersTable$setExpectedRows(1)
-#   
-#   jaspResults[['estimatesContainer']][['methodMoments']][['estParametersTable']] <- estParametersTable
-#   
-#   estParametersTable$addRows(list(par1 = par[1], par2 = par[2]))
-#   
-#   
-#   return()
-# }
 
+#### Helper functions ----
 .sdGaussianUnbiased <- function(x){
   # https://en.wikipedia.org/wiki/Unbiased_estimation_of_standard_deviation
   x <- na.omit(x)

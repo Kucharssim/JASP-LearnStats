@@ -178,48 +178,53 @@ Form {
       Group
       {
           title: ""
+          CheckBox{ name: "methodMLE";      label: qsTr("Maximum likelihood")}
+          CheckBox{ name: "methodMoments";  label: qsTr("Method of moments") }
           CheckBox{ name: "methodUnbiased"; label: qsTr("Unbiased estimator")}
-          CheckBox{ name: "methodMoments"; label: qsTr("Method of moments") }
-          CheckBox
-          {
-              name: "methodML";      label: qsTr("Maximum Likelihood"); debug: true
-              Group{
-                  CheckBox{ name: "methodMLAnalytic"; label: qsTr("Analytic")    }
-                  CheckBox{ name: "methodMLNewton";   label: qsTr("Newton")      }
-                  CheckBox{ name: "methodMLGrid";     label: qsTr("Grid search") }
-              }
-          }
-          CheckBox
-          {
-              name: "methodBayes";   label: qsTr("Bayesian"); debug: true
-              Group{
-                  CheckBox{ name: "methodBayesAnalytic"; label: qsTr("Analytic") }
-                  CheckBox{ name: "methodBayesMAP";      label: qsTr("Maximum a posteriori") }
-                  CheckBox{ name: "methodBayesGibbs";    label: qsTr("Gibbs sampling") }
-              }
-              Group{title: qsTr("Priors")}
-          }
+          //CheckBox
+          //{
+          //   name: "methodML";      label: qsTr("Maximum Likelihood"); debug: true
+          //    Group{
+          //        CheckBox{ name: "methodMLAnalytic"; label: qsTr("Analytic")    }
+          //        CheckBox{ name: "methodMLNewton";   label: qsTr("Newton")      }
+          //        CheckBox{ name: "methodMLGrid";     label: qsTr("Grid search") }
+          //    }
+          //}
+          //CheckBox
+          //{
+          //    name: "methodBayes";   label: qsTr("Bayesian"); debug: true
+          //   Group{
+          //        CheckBox{ name: "methodBayesAnalytic"; label: qsTr("Analytic") }
+          //        CheckBox{ name: "methodBayesMAP";      label: qsTr("Maximum a posteriori") }
+          //        CheckBox{ name: "methodBayesGibbs";    label: qsTr("Gibbs sampling") }
+          //    }
+          //    Group{title: qsTr("Priors")}
+          //}
       }
 
       Group
       {
           title: qsTr("Output")
           debug: false
-          CheckBox{ name: "outputEstimates"; label: qsTr("Estimates"); checked: true }
-
-          CheckBox
-          { 
-              name: "ciInterval"; label: qsTr("Confidence interval"); childrenOnSameRow: true
-              PercentField{ name: "ciIntervalInterval"; label: ""; defaultValue: 95}
+          CheckBox{ name: "outputEstimates"; label: qsTr("Estimates"); checked: true
+            CheckBox{ name: "outputSE"; label: qsTr("Std. error"); checked: false}
+            CheckBox
+            {
+                name: "ciInterval"; label: qsTr("Confidence interval"); childrenOnSameRow: true
+                PercentField{ name: "ciIntervalInterval"; label: ""; defaultValue: 95}
+             }
           }
 
-          Group{
-              debug: true
-              title: qsTr("Plots")
-              CheckBox{ name: "plotEstimates";   label: qsTr("Estimates")   }
-              CheckBox{ name: "plotDiagnostics"; label: qsTr("Diagnostics") }
-              CheckBox{ name: "plotAdvanced";    label: qsTr("Advanced")    }
-          }
+          CheckBox{ name: "outputVarCov"; label: qsTr("Variance-covariance"); checked: false}
+          CheckBox{ name: "outputCor";    label: qsTr("Correlation"); checked: false}
+
+          //Group{
+          //    debug: true
+          //    title: qsTr("Plots")
+          //    CheckBox{ name: "plotEstimates";   label: qsTr("Estimates")   }
+          //    CheckBox{ name: "plotDiagnostics"; label: qsTr("Diagnostics") }
+          //    CheckBox{ name: "plotAdvanced";    label: qsTr("Advanced")    }
+          //}
       }
   }
   Section

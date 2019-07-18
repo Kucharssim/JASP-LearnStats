@@ -11,13 +11,19 @@
 		"license":									"GPL (>= 2)"
 	},
 
-	"requiredPackages":	["goftest"],
+	"requiredPackages":	["goftest", "fitdistrplus"],
 
 	"menu":
 	[
 		{
 			"title": 							"Distributions",
 			"icon": 							"placeholder.svg"
+		},
+		{
+			"title":							"Normal",
+			"qml":								"LDnormal.qml",
+			"function":						"LDnormal",
+			"usesJaspResults":		true
 		},
 		{
 			"title":							"Univariate Normal",
