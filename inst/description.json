@@ -46,7 +46,7 @@
 		{
 			"title":              "Gamma",
 			"qml":                "LDfDist.qml",
-			"function":           "LDfDist",
+			"function":           "LDgamma",
 			"usesJaspResults":    true
 		},
 		{
