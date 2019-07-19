@@ -19,51 +19,58 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
   options <- .recodeOptionsLDGaussianUnivariate(options)
   
   #### Show distribution section ----
-  #.ldIntroText(jaspResults, options, .ldGaussianIntro)
+  .ldIntroText(jaspResults, options, .ldGaussianIntro)
   .ldGaussianParsSupportMoments(jaspResults, options)
    
   
   pdfContainer <- .ldGetPlotContainer(jaspResults, options, "plotPDF", "Probability Density Function", 3)
-  .ldFillPDFContainer(pdfContainer, options, NULL, .ldFormulaGaussianPDF)
+  .ldFillPDFContainer(pdfContainer, options, .ldFormulaGaussianPDF)
   
   cdfContainer <- .ldGetPlotContainer(jaspResults, options, "plotCDF", "Cumulative Distribution Function", 4)
-  .ldFillCDFContainer(cdfContainer, options, NULL, .ldFormulaGaussianCDF)
+  .ldFillCDFContainer(cdfContainer, options, .ldFormulaGaussianCDF)
   
   qfContainer  <- .ldGetPlotContainer(jaspResults, options, "plotQF", "Quantile Function", 5)
-  .ldFillQFContainer(qfContainer,   options, NULL, .ldFormulaGaussianQF)
+  .ldFillQFContainer(qfContainer,   options, .ldFormulaGaussianQF)
   
   #### Generate and Display data section ----
   # simulate and read data
   #.simulateData(jaspResults, options)
   
   ready <- options[['variable']] != ""
-
+  errors <- FALSE
   if(ready && is.null(dataset)){
     dataset <- .readDataSetToEnd(columns.as.numeric = options[['variable']])
     
     variable <- dataset[[.v(options[['variable']])]]
     variable <- variable[!is.na(variable)]
+    errors <- .hasErrors(dataset, type = c("observations", "variance", "infinity", "limits"),
+                         observations.amount = "<2",
+                         limits.min = options$support$min, limits.max = options$support$max, 
+                         exitAnalysisIfErrors = FALSE)
   }
   
   # overview of the data
-  dataContainer <- .ldGetDataContainer(jaspResults, options)
+  dataContainer <- .ldGetDataContainer(jaspResults, options, errors)
 
-  .ldSummaryContinuousTableMain(dataContainer, variable, options, ready)
-  .ldObservedMomentsTableMain  (dataContainer, variable, options, ready)
-  .ldPlotHistogram             (dataContainer, variable, options, ready)
-  .ldPlotECDF                  (dataContainer, variable, options, ready)
+  readyDesc <- ready && (isFALSE(errors) || (is.null(errors$infinity) && is.null(errors$observations)))
+  .ldSummaryContinuousTableMain(dataContainer, variable, options, readyDesc)
+  .ldObservedMomentsTableMain  (dataContainer, variable, options, readyDesc)
+  .ldPlotHistogram             (dataContainer, variable, options, readyDesc)
+  .ldPlotECDF                  (dataContainer, variable, options, readyDesc)
   
   
   #### Fit data and assess fit ----
   
+  readyFit <- ready && isFALSE(errors)
   #### Maximum Likelihood ----
   if(options$methodMLE){
-    mleContainer <- .ldGetFitContainer(jaspResults, options, "mleContainer", "Maximum likelihood", 7)
+    mleContainer <- .ldGetFitContainer(jaspResults, options, "mleContainer", "Maximum likelihood", 7, errors)
     
     # parameter estimates
-    mleEstimatesTable  <- .ldGaussianEstimatesTable(mleContainer, options, TRUE, TRUE, "methodMLE")
-    mleResults   <- .ldMLEResults(mleContainer, variable, options, ready, "norm", .ldGaussianMethodMLEStructureResults)
-    .ldFillGaussianEstimatesTable(mleEstimatesTable, mleResults, options, ready)
+    mleEstimatesTable  <- .ldEstimatesTable(mleContainer, options, TRUE, TRUE, "methodMLE")
+    mleResults   <- .ldMLEResults(mleContainer, variable, options, readyFit, options$distNameInR,
+                                  .ldGaussianMethodMLEStructureResults)
+    .ldFillGaussianEstimatesTable(mleEstimatesTable, mleResults, options, readyFit)
     
     
     # fit assessment
@@ -71,42 +78,17 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
     
     # fit statistics
     mleFitStatistics   <- .ldFitStatisticsTable(mleFitContainer, options, "methodMLE")
-    mleFitStatisticsResults <- .ldFitStatisticsResults(mleContainer, mleResults$fitdist, variable, options, ready)
-    .ldFillFitStatisticsTable(mleFitStatistics, mleFitStatisticsResults, options, ready)
+    mleFitStatisticsResults <- .ldFitStatisticsResults(mleContainer, mleResults$fitdist, variable, options, readyFit)
+    .ldFillFitStatisticsTable(mleFitStatistics, mleFitStatisticsResults, options, readyFit)
     # fit plots
-    .ldFitPlots(mleFitContainer, mleResults$fitdist$estimate, options, variable, ready)
+    .ldFitPlots(mleFitContainer, mleResults$fitdist$estimate, options, variable, readyFit)
     
-  }
-  
-  return()
-  
-  #### Unbiased estimate ----
-  if(options[['methodUnbiased']]){
-    if(is.null(jaspResults[['methodUnbiased']])){
-      jaspResults[['methodUnbiased']] <- createJaspContainer(title = "Unbiased estimator")
-      jaspResults[['methodUnbiased']]$dependOn(c("methodUnbiased", "variable"))
-      jaspResults[['methodUnbiased']]$position <- 7
-    }
-    
-    .ldGaussianMethodUnbiasedResults(jaspResults, options, variable, ready)
-    .ldGaussianEstimatesTable(jaspResults[['methodUnbiased']], options, ready, TRUE)
-    .ldFitAssessment(jaspResults[['methodUnbiased']], options, variable, ready)
   }
   
   #### Method of moments ----
-  if(options[['methodMoments']]){
-    if(is.null(jaspResults[['methodMoments']])){
-      jaspResults[['methodMoments']] <- createJaspContainer(title = "Method of Moments")
-      jaspResults[['methodMoments']]$dependOn(c("methodMoments", "variable"))
-      jaspResults[['methodMoments']]$position <- 8
-    }
-    
-   .ldGaussianMethodMomentsResults(jaspResults, options, variable, ready)
-   .ldGaussianEstimatesTable(jaspResults[['methodMoments']], options, ready, FALSE)
-   .ldFitAssessment(jaspResults[['methodMoments']], options, variable, ready)
-  }
   
-    
+  #### Unbiased estimate ----
+  
   return()
 }
 
@@ -129,6 +111,7 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
   options[['cdfFun']] <- pnorm
   options[['qFun']]   <- qnorm
   options[['rFun']]   <- rnorm
+  options[['distNameInR']] <- "norm"
   
   options[['range_x']] <- c(-options[['range']], options[['range']])
   
@@ -145,24 +128,14 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
     options[['highlightmin']] <- options[['highlightmax']] <- NULL
   }
   
+  options$support <- list(min = -Inf, max = Inf)
+  options$lowerBound <- c(-Inf, 0)
+  options$upperBound <- c(Inf, Inf)
   
   options
 }
 
 ### text fill functions -----
-.ldIntroText <- function(jaspResults, options, introText){
-  if(!options$explanatoryText) return()
-  
-  intro <- createJaspHtml()
-  intro$dependOn(c("explanatoryText"))
-  intro$position <- 1
-  intro[['text']] <- introText()
-  jaspResults[['exp_Intro']] <- intro
-  
-  
-  return()  
-}
-
 .ldGaussianIntro <- function(){
   intro <- "<h3> Demonstration of the Normal Distribution </h3>
 This demonstration is divided into four parts. The first part displays the Normal distribution, its probability density function, 
@@ -291,39 +264,6 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
 }
 
 #### Table functions ----
-.ldGaussianEstimatesTable <- function(container, options, ci.possible, se.possible, method){
-  if(!options$outputEstimates) return()
-  if(!is.null(container[['estParametersTable']])) return()
-  
-  tab <- createJaspTable(title = "Estimated Parameters")
-  tab$dependOn(c("outputEstimates", "outputSE", "ciInterval", "ciIntervalInterval", "parametrization", method))
-  tab$position <- 1
-  tab$showSpecifiedColumnsOnly <- TRUE
-  tab$setExpectedSize(rows = 2)
-
-  tab$addColumnInfo(name = "parName", title = "Parameter", type = "string")
-  tab$addColumnInfo(name = "estimate", title = "Estimate", type = "number")
-  
-  #"\u03BC\u0302"
-  if(options$outputSE && se.possible){
-    tab$addColumnInfo(name = "se", title = "SE", type = "number")
-  } else if(options$outputSE) {
-    tab$addFootnote("Standard errors are unavailable with this method")
-  }
-  
-  if(options$ciInterval && ci.possible){
-        tab$addColumnInfo(name = "lower", title = "Lower", type = "number",
-                          overtitle = sprintf("%s%% CI", options[['ciIntervalInterval']]*100))
-        tab$addColumnInfo(name = "upper", title = "Upper", type = "number",
-                          overtitle = sprintf("%s%% CI", options[['ciIntervalInterval']]*100))
-  } else if(options$ciInterval){
-        tab$addFootnote("Confidence intervals are unavailable with this method.")
-  }
-  
-  container[['estParametersTable']] <- tab
-  
-  return(tab)
-}
 
 .ldFillGaussianEstimatesTable <- function(table, results, options, ready){
   if(!ready) return()
@@ -355,7 +295,7 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
   return(res)
 }
 
-
+# old ----
 .ldGaussianMethodMomentsResults <- function(jaspResults, options, variable, ready){
   if(!ready || !options[['methodMoments']])
     return()
@@ -490,12 +430,13 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
   # https://en.wikipedia.org/wiki/Unbiased_estimation_of_standard_deviation
   x <- na.omit(x)
   n <- length(x)
-  sdBiased <- sd(x)
+  logSDBiased <- log(sd(x))
   
   logCorrectionFactor <- 0.5*log(2) - 0.5*log(n-1) + lgamma(n/2) - lgamma((n-1)/2)
-  correctionFactor <- exp(logCorrectionFactor)
+
+  logSDUnbiased <- logSDBiased - logCorrectionFactor
   
-  return(sdBiased/correctionFactor)
+  return(exp(logSDUnbiased))
 }
 
 

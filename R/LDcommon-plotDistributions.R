@@ -1,3 +1,20 @@
+#
+# Copyright (C) 2019 University of Amsterdam
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
 .ldGetPlotContainer <- function(jaspResults, options, name, title, position){
   if(!is.null(jaspResults[[name]])){
     plotsContainer <- jaspResults[[name]]
@@ -17,20 +34,25 @@
   return(plotsContainer)
 }
 
-.ldFormulaPlot <- function(container, options, formulaText, depend = NULL){
+.ldFormulaPlot <- function(container, options, formulaText = NULL, depend = NULL){
   if(!options$formulas) return()
   if(!is.null(container[['formula']])) return()  
   
   formula <- createJaspHtml(title = "Formula", elementType = "h1")
   formula$position <- 3
   formula$dependOn(c("formulas", depend))
-  formula[['text']] <- formulaText(options)
+  
+  if(is.function(formulaText)){
+    formula[['text']] <- formulaText(options)
+  } else if(is.character(formulaText)){
+    formula[['text']] <- formulaText
+  }
   
   container[['formula']] <- formula
 }
 
 ### Plot PDF ----
-.ldFillPDFContainer <- function(pdfContainer, options, explanationText = NULL, formulaText = NULL){
+.ldFillPDFContainer <- function(pdfContainer, options, formulaText = NULL, explanationText = NULL){
   if(!options$plotPDF) return()
   
   .ldExplanationPDF(pdfContainer, options, explanationText)
@@ -40,7 +62,7 @@
   return()
 }
 
-.ldExplanationPDF <- function(pdfContainer, options, explanationText){
+.ldExplanationPDF <- function(pdfContainer, options, explanationText = NULL){
   if(!options$explanatoryText) return()
   if(!is.null(pdfContainer[['explanation']])) return()
   
@@ -49,8 +71,7 @@
   explanation$position <- 1
   
   if(is.null(explanationText)){
-    explanationText <- "The probability density function (PDF), usually denoted as f(x), is a function of a random variable X. The value of f(x) provides the relative likelihood that a realization of the random variable X yields a value equal to x.
-    The density plot displays the probability density function of a random variable. The y-axis displays the value of the density function for a particular value of the random variable (displayed on the x-axis)."
+    explanationText <- .ldAllTextsList$explanations$pdf
   }
   
   explanation[['text']] <- explanationText
@@ -153,7 +174,7 @@
 }
 
 ### Plot CDF ----
-.ldFillCDFContainer <- function(cdfContainer, options, explanationText = NULL, formulaText = NULL){
+.ldFillCDFContainer <- function(cdfContainer, options, formulaText = NULL, explanationText = NULL){
   if(!options$plotCDF) return()
   
   .ldExplanationCDF(cdfContainer, options, explanationText)
@@ -170,9 +191,7 @@
   explanation$position <- 1
   
   if(is.null(explanationText)){
-    explanationText <- "The cumulative distribution function (CDF), usually denoted as F(x), is a function of a random variable X. The value of F(x) provides the probability that a realization of the random variable X yields a value that is equal to or smaller than x.
-    The cumulative probability plot displays the cumulative distribution of a random variable. The y-axis displays the value of the cumulative distribution function for a particular value of the random variable (displayed on the x-axis).
-    "
+    explanationText <- .ldAllTextsList$explanations$cdf
   }
   
   explanation[['text']] <- explanationText
@@ -273,7 +292,7 @@
 }
 
 ### Plot QF ----
-.ldFillQFContainer <- function(qfContainer, options, explanationText = NULL, formulaText = NULL){
+.ldFillQFContainer <- function(qfContainer, options, formulaText = NULL, explanationText = NULL){
   if(!options$plotQF) return()
   
   .ldExplanationQF(qfContainer, options, explanationText)
@@ -288,14 +307,13 @@
   explanation <- createJaspHtml()
   explanation$dependOn(c("plotQF", "explanatoryText"))
   explanation$position <- 1
-  text <- "The quantile function, usually denoted as Q(p), is the inverse of the cumulative distribution function.
-  The function gives the quantile such that the probability of the random variable being less than or equal to that value equals the given probability p.   
-  The quantile plot displays the quantile function. The y-axis displays the quantile of which the probability that the random variable is less or equal to that value is equal to p (plotted on the x-axis).
   
-  "
-  explanation[['text']] <- text
+  if(is.null(explanationText)){
+    explanationText <- .ldAllTextsList$explanations$cdf
+  }
+  
+  explanation[['text']] <- explanationText
   qfContainer[['explanation']] <- explanation
-  
 }
 
 .ldPlotQF <- function(qfContainer, options){
@@ -329,19 +347,6 @@
   
   qfPlot[['plotObject']] <- plot
 }
-
-
-# .ldFillPlotDistribution <- function(plot, options, fun){
-#   p <- ggplot2::ggplot(data = data.frame(x = c(-options[['range']], options[['range']])), ggplot2::aes(x = x)) +
-#     ggplot2::stat_function(fun = fun, n = 101, args = options[['pars']], size = 1)  +
-#     ggplot2::ylab("Density")
-#   
-#   p <- JASPgraphs::themeJasp(p)
-# 
-#   plot[['plotObject']] <- p
-# 
-#   return()
-# }
 
 #### Plot empirical ----
 .ldPlotHistogram <- function(dataContainer, variable, options, ready){

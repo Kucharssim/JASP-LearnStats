@@ -16,9 +16,9 @@
 	"menu":
 	[
 		{
-			"title": 							"Distributions",
+			"title": 							"Continuous Distributions",
 			"icon": 							"placeholder.svg"
-		}
+		},
 		{
 			"title":							"Normal",
 			"qml":								"LDgaussianunivariate.qml",
@@ -32,10 +32,57 @@
 		  "usesJaspResults":    true
 		},
 		{
-		  "title":              "Fisher-Snedecor F",
+		  "title":              "F-distribution",
 		  "qml":                "LDfDist.qml",
 		  "function":           "LDfDist",
 		  "usesJaspResults":    true
+		},
+		{
+			"title":              "Beta",
+			"qml":                "LDfDist.qml",
+			"function":           "LDfDist",
+			"usesJaspResults":    true
+		},
+		{
+			"title":              "Gamma",
+			"qml":                "LDfDist.qml",
+			"function":           "LDfDist",
+			"usesJaspResults":    true
+		},
+		{
+			"title":              "Inverse gamma",
+			"qml":                "LDfDist.qml",
+			"function":           "LDfDist",
+			"usesJaspResults":    true
+		},
+		{
+			"title": 							"Discrete Distributions",
+			"icon": 							"placeholder.svg"
+		},
+		{
+			"title":              "Bernoulli",
+			"qml":                "LDfDist.qml",
+			"function":           "LDfDist",
+			"usesJaspResults":    true
+		},
+		{
+			"title":              "Binomial",
+			"qml":                "LDfDist.qml",
+			"function":           "LDfDist",
+			"usesJaspResults":    true
+		},
+		{
+			"title":              "Negative binomial",
+			"qml":                "LDfDist.qml",
+			"function":           "LDfDist",
+			"usesJaspResults":    true
+		},
+		{
+			"title":              "Poisson",
+			"qml":                "LDfDist.qml",
+			"function":           "LDfDist",
+			"usesJaspResults":    true
 		}
+
 	]
 }

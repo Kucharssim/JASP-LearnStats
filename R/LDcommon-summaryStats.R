@@ -1,14 +1,17 @@
-.ldGetDataContainer <- function(jaspResults, options){
+.ldGetDataContainer <- function(jaspResults, options, errors = FALSE){
   if(!is.null(jaspResults[['dataContainer']])){
     dataContainer <- jaspResults[['dataContainer']]
   } else{
-    dataContainer <- createJaspContainer(title = paste0("Overview - ", options[['variable']]))
+    dataContainer <- createJaspContainer(title = paste0("Overview - ", options[['variable']][1]))
     dataContainer$position <- 6
     dataContainer$dependOn(c("variable", "simulateNow"))
     
     jaspResults[['dataContainer']] <- dataContainer
   }
   
+  if(!isFALSE(errors) && (!is.null(errors$infinity) || !is.null(errors$observations))){
+    dataContainer$setError(errors$message)
+  }
   return(dataContainer)
 }
 
