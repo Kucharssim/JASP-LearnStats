@@ -19,7 +19,7 @@ LDgamma <- function(jaspResults, dataset, options, state=NULL){
   options <- .recodeOptionsLDgamma(options)
   
   #### Show gamma section ----
-  .ldIntroText(jaspResults, options, .ldGammaIntro)
+  .ldIntroText(jaspResults, options, "gamma distribution")
   .ldGammaParsSupportMoments(jaspResults, options)
   
   
@@ -94,26 +94,24 @@ LDgamma <- function(jaspResults, dataset, options, state=NULL){
 
 ### options ----
 .recodeOptionsLDgamma <- function(options){
-  if(options$parametrization == "sigma2"){
-    options$sd <- sqrt(options$varValue)
-  } else if(options$parametrization == "sigma"){
-    options$sd <- options$varValue
-  } else if(options$parametrization == "tau2"){
-    options$sd <- sqrt(1/options$varValue)
-  } else if(options$parametrization == "tau"){
-    options$sd <- 1/options$varValue
+  if(options$parametrization == "rate"){
+    options$rate <- options$par2
+  } else if(options$parametrization == "scale"){
+    options$rate <- 1/options$par2
+  } else {
+    options$rate <- options$shape / options$par2
   }
   
-  options[['parValNames']] <- c("mu", "varValue")
+  options[['parValNames']] <- c("shape", "par2")
   
-  options[['pars']]   <- list(mean = options[['mu']], sd = options[['sd']])
-  options[['pdfFun']] <- dnorm
-  options[['cdfFun']] <- pnorm
-  options[['qFun']]   <- qnorm
-  options[['rFun']]   <- rnorm
-  options[['distNameInR']] <- "norm"
+  options[['pars']]   <- list(shape = options[['shape']], sd = options[['rate']])
+  options[['pdfFun']] <- dgamma
+  options[['cdfFun']] <- pgamma
+  options[['qFun']]   <- qgamma
+  options[['rFun']]   <- rgamma
+  options[['distNameInR']] <- "gamma"
   
-  options[['range_x']] <- c(-options[['range']], options[['range']])
+  options[['range_x']] <- c(0, options[['range']])
   
   if(options[['highlightType']] == "minmax"){
     options[['highlightmin']] <- options[['min']]
@@ -128,25 +126,14 @@ LDgamma <- function(jaspResults, dataset, options, state=NULL){
     options[['highlightmin']] <- options[['highlightmax']] <- NULL
   }
   
-  options$support <- list(min = -Inf, max = Inf)
-  options$lowerBound <- c(-Inf, 0)
+  options$support <- list(min = 0, max = Inf)
+  options$lowerBound <- c(0, 0)
   options$upperBound <- c(Inf, Inf)
   
   options
 }
 
 ### text fill functions -----
-.ldGammaIntro <- function(){
-  intro <- "<h3> Demonstration of the Normal Gamma </h3>
-This demonstration is divided into four parts. The first part displays the Normal gamma, its probability density function, 
-cumulative gamma function, and quantile function. The second part allows to generate data from the Normal gamma and compute
-descriptive statistics and display descriptive plots. In the third part, the parameters of the Normal gamma can be estimated.
-The fourth part allows to check the fit of the Normal gamma to the data.
-  "
-  
-  return(intro)
-}
-
 .ldGammaParsSupportMoments <- function(jaspResults, options){
   if(options$parsSupportMoments && is.null(jaspResults[['parsSupportMoments']])){
     formulas <- createJaspHtml(title = "Parameters, Support, and Moments")
@@ -158,7 +145,7 @@ The fourth part allows to check the fit of the Normal gamma to the data.
     "
     
     text2 <- "<b>Support</b>
-    x \u2208 \u211D"
+    x \u2208 \u211D<sup>+</sup>"
     
     text3 <- "<b>Moments</b> 
     E(X) = &mu;

@@ -19,7 +19,7 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
   options <- .recodeOptionsLDGaussianUnivariate(options)
   
   #### Show distribution section ----
-  .ldIntroText(jaspResults, options, .ldGaussianIntro)
+  .ldIntroText(jaspResults, options, "Normal distribution")
   .ldGaussianParsSupportMoments(jaspResults, options)
    
   
@@ -136,17 +136,6 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
 }
 
 ### text fill functions -----
-.ldGaussianIntro <- function(){
-  intro <- "<h3> Demonstration of the Normal Distribution </h3>
-This demonstration is divided into four parts. The first part displays the Normal distribution, its probability density function, 
-cumulative distribution function, and quantile function. The second part allows to generate data from the Normal distribution and compute
-descriptive statistics and display descriptive plots. In the third part, the parameters of the Normal distribution can be estimated.
-The fourth part allows to check the fit of the Normal distribution to the data.
-  "
-  
-  return(intro)
-}
-
 .ldGaussianParsSupportMoments <- function(jaspResults, options){
   if(options$parsSupportMoments && is.null(jaspResults[['parsSupportMoments']])){
     formulas <- createJaspHtml(title = "Parameters, Support, and Moments")

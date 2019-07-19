@@ -19,7 +19,7 @@ LDdistribution <- function(jaspResults, dataset, options, state=NULL){
   options <- .recodeOptionsLDdistribution(options)
   
   #### Show distribution section ----
-  .ldIntroText(jaspResults, options, .ldDistributionIntro)
+  .ldIntroText(jaspResults, options, "name of distr")
   .ldDistributionParsSupportMoments(jaspResults, options)
   
   

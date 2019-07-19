@@ -26,7 +26,7 @@
   if(is.function(introText)){
     intro[['text']] <- introText()
   } else if(is.character(introText)){
-    intro[['text']] <- introText
+    intro[['text']] <- gsub(pattern = "%s", replacement = introText, x = .ldAllTextsList$explanations$intro)
   }
   
   jaspResults[['introText']] <- intro
@@ -52,7 +52,15 @@
     The function gives the quantile such that the probability of the random variable being less than or equal to that value equals the given probability p.   
     
     The quantile plot displays the quantile function.
-    The y-axis displays the quantile of which the probability that the random variable is less or equal to that value is equal to p (displayed on the x-axis)."
+    The y-axis displays the quantile of which the probability that the random variable is less or equal to that value is equal to p (displayed on the x-axis).",
+    
+    intro = "<h3> Demonstration of the %s </h3>
+    This demonstration is divided into four parts. 
+    The first part displays the %s, its probability density function, cumulative distribution function, and quantile function. 
+    The second part allows to generate data from the %s and compute descriptive statistics and display descriptive plots.
+    In the third part, the parameters of the %s can be estimated.
+    The fourth part allows to check the fit of the %s to the data.
+    "
   ),
   references   = list(
     jasp = " ",
