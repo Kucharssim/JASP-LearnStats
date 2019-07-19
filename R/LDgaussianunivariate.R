@@ -276,6 +276,13 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
   res <- res[res$par %in% names(c(par1, par2)),]
   res$parName <- c(par1, par2)
   
+  if(results$fitdist$convergence != 0){
+    table$addFootnote("The optimization did not converge, try adjusting the parameter values.", symbol = "<i>Warning.</i>")
+  }
+  if(!is.null(results$fitdist$optim.message)){
+    table$addFootnote(results$fitdist$message, symbol = "<i>Warning.</i>")
+  }
+  
   table$setData(res)
   
   return()

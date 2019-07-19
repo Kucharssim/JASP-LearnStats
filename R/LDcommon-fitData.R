@@ -64,6 +64,23 @@
     tab$addFootnote("Confidence intervals are unavailable with this method.")
   }
   
+  if(method == "methodMLE"){
+    tab$addCitation(.ldAllTextsList$references$fitdistrplus)
+    
+    if(options$ciInterval || options$outputSE){
+      tab$addCitation(.ldAllTextsList$references$car)
+    }
+    
+    if(options$ciInterval && !options$outputSE){
+      tab$addFootnote("Confidence intervals were calculated using the delta method.")
+    } else if(!options$ciInterval && options$outputSE){
+      tab$addFootnote("Standard errors were calculated using the delta method.")
+    } else if(options$ciInterval && options$outputSE){
+      tab$addFootnote("Standard errors and confidence intervals and were calculated using the delta method.")
+    }
+  }
+  
+  
   container[['estParametersTable']] <- tab
   
   return(tab)
