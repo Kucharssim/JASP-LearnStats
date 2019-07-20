@@ -70,7 +70,7 @@ LDgamma <- function(jaspResults, dataset, options, state=NULL){
     mleEstimatesTable  <- .ldEstimatesTable(mleContainer, options, TRUE, TRUE, "methodMLE")
     mleResults   <- .ldMLEResults(mleContainer, variable, options, readyFit, options$distNameInR,
                                   .ldGammaMethodMLEStructureResults)
-    .ldFillgammaEstimatesTable(mleEstimatesTable, mleResults, options, readyFit)
+    .ldFillGammaEstimatesTable(mleEstimatesTable, mleResults, options, readyFit)
     
     
     # fit assessment
@@ -94,17 +94,17 @@ LDgamma <- function(jaspResults, dataset, options, state=NULL){
 
 ### options ----
 .recodeOptionsLDgamma <- function(options){
-  if(options$parametrization == "rate"){
-    options$rate <- options$par2
-  } else if(options$parametrization == "scale"){
+  if(options$parametrization == "scale"){
     options$rate <- 1/options$par2
-  } else {
+  } else if(options$parametrization == "mean"){
     options$rate <- options$shape / options$par2
+  } else {
+    options$rate <- options$par2
   }
   
   options[['parValNames']] <- c("shape", "par2")
   
-  options[['pars']]   <- list(shape = options[['shape']], sd = options[['rate']])
+  options[['pars']]   <- list(shape = options[['shape']], rate = options[['rate']])
   options[['pdfFun']] <- dgamma
   options[['cdfFun']] <- pgamma
   options[['qFun']]   <- qgamma
@@ -140,34 +140,36 @@ LDgamma <- function(jaspResults, dataset, options, state=NULL){
     formulas$dependOn(c("parsSupportMoments", "parametrization"))
     formulas$position <- 2
     
-    text <- "<b>Parameters</b>
-    mean: &mu; \u2208 \u211D
-    "
+    text <- "<b>Parameters</b> </br>"
     
     text2 <- "<b>Support</b>
     x \u2208 \u211D<sup>+</sup>"
     
     text3 <- "<b>Moments</b> 
-    E(X) = &mu;
-    Var(X) = "
+    E(X) = %s
+    Var(X) = %s"
     
-    if(options[['parametrization']] == "sigma2"){
-      text <- paste(text,
-                    "variance: &sigma;<sup>2</sup> \u2208 \u211D<sup>+</sup>
-                    ")
-      text3 <- paste0(text3, "&sigma;<sup>2</sup>")
-    } else if(options[['parametrization']] == "sigma"){
-      text <- paste(text,
-                    "standard deviation: &sigma; \u2208 \u211D<sup>+</sup>")
-      text3 <- paste0(text3, "&sigma;<sup>2</sup>")
-    } else if(options[['parametrization']] == "tau2"){
-      text <- paste(text,
-                    "precision: &tau;<sup>2</sup> \u2208 \u211D<sup>+</sup>")
-      text3 <- paste0(text3, "1/&tau;<sup>2</sup>")
+    if(options[['parametrization']] == "scale"){
+      
+      text <- paste(text,       "shape: k \u2208 \u211D<sup>+</sup> </br>")
+      text <- paste(text, "scale: &theta; \u2208 \u211D<sup>+</sup>")
+      
+      text3 <- sprintf(text3, "k&theta;", "k&theta;<sup>2</sup>")
+      
+    } else if(options[['parametrization']] == "mean"){
+      
+      text <- paste(text,    "shape k \u2208 \u211D<sup>+</sup> </br>")
+      text <- paste(text, "mean: &mu; \u2208 \u211D<sup>+</sup>")
+      
+      text3 <- sprintf(text3, "&mu;", "&mu;<sup>2</sup>k<sup>-1</sup>")
+      
     } else{
-      text <- paste(text,
-                    "square root of precision: &tau; \u2208 \u211D<sup>+</sup>")
-      text3 <- paste0(text3, "1/&tau;<sup>2</sup>")
+      
+      text <- paste(text, "shape: &alpha; \u2208 \u211D<sup>+</sup> </br>")
+      text <- paste(text,   "rate: &beta; \u2208 \u211D<sup>+</sup>")
+      
+      text3 <- sprintf(text3, "&alpha;&beta;<sup>-1</sup>", "&alpha;&beta;<sup>-2</sup>")
+      
     }
     
     formulas$text <- paste(text, text2, text3, sep = "<br><br>")
@@ -177,29 +179,23 @@ LDgamma <- function(jaspResults, dataset, options, state=NULL){
 }
 
 .ldFormulaGammaPDF <- function(options){
-  if(options[['parametrization']] == "sigma2"){
+  if(options[['parametrization']] == "scale"){
     text <- "<MATH>
-    f(x; <span style='color:red'>&mu;</span>, <span style='color:blue'>&sigma;&sup2;</span>) = 
+    f(x; <span style='color:red'>&alpha;</span>, <span style='color:blue'>&beta;</span>) = 
 (2&pi;<span style='color:blue'>&sigma;&sup2;</span>)<sup>-&frac12;</sup> 
 exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:blue'>&sigma;&sup2;</span>]
     </MATH>"
-  } else if(options[['parametrization']] == "sigma"){
+  } else if(options[['parametrization']] == "mean"){
     text <- "<MATH>
-    f(x; <span style='color:red'>&mu;</span>, <span style='color:blue'>&sigma;</span>) = 
+    f(x; <span style='color:red'>k</span>, <span style='color:blue'>&mu;</span>) = 
     (2&pi;<span style='color:blue'>&sigma;</span>&sup2;)<sup>-&frac12;</sup> 
     exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:blue'>&sigma;</span>&sup2;]
     </MATH>"
-  } else if(options[['parametrization']] == "tau2"){
+  } else {
     text <- "<MATH>
-    f(x; <span style='color:red'>&mu;</span>, <span style='color:blue'>&tau;&sup2;</span>) = 
+    f(x; <span style='color:red'>k</span>, <span style='color:blue'>&theta;</span>) = 
     (<span style='color:blue'>&tau;&sup2;</span> &frasl; 2&pi;)<sup>&frac12;</sup> 
     exp[-(x-<span style='color:red'>&mu;</span>)&sup2; <span style='color:blue'>&tau;&sup2;</span> &frasl; 2]
-    </MATH>"
-  } else if(options[['parametrization']] == "tau"){
-    text <- "<MATH>
-    f(x; <span style='color:red'>&mu;</span>, <span style='color:blue'>&tau;</span>) = 
-    <span style='color:blue'>&tau;</span> &frasl; (2&pi;)<sup>&frac12;</sup> 
-    exp[-(x-<span style='color:red'>&mu;</span>)&sup2; <span style='color:blue'>&tau;</span>&sup2; &frasl; 2]
     </MATH>"
   }
   
@@ -207,17 +203,13 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
 }
 
 .ldFormulaGammaCDF <- function(options){
-  if(options$parametrization == "sigma2"){
+  if(options$parametrization == "scale"){
     text <- "<MATH>
     F(x; <span style='color:red'>&mu;</span>, <span style='color:blue'>&sigma;&sup2;</span>)
     </MATH>"
-  } else if(options$parametrization == "sigma"){
+  } else if(options$parametrization == "mean"){
     text <- "<MATH>
     F(x; <span style='color:red'>&mu;</span>, <span style='color:blue'>&sigma;</span>)
-    </MATH>"
-  } else if(options$parametrization == "tau2"){
-    text <- "<MATH>
-    F(x; <span style='color:red'>&mu;</span>, <span style='color:blue'>&tau;&sup2;</span>)
     </MATH>"
   } else {
     text <- "<MATH>
@@ -229,17 +221,13 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
 }
 
 .ldFormulaGammaQF <- function(options){
-  if(options$parametrization == "sigma2"){
+  if(options$parametrization == "scale"){
     text <- "<MATH>
     Q(p; <span style='color:red'>&mu;</span>, <span style='color:blue'>&sigma;&sup2;</span>)
     </MATH>"
-  } else if(options$parametrization == "sigma"){
+  } else if(options$parametrization == "mean"){
     text <- "<MATH>
     Q(p; <span style='color:red'>&mu;</span>, <span style='color:blue'>&sigma;</span>)
-    </MATH>"
-  } else if(options$parametrization == "tau2"){
-    text <- "<MATH>
-    Q(p; <span style='color:red'>&mu;</span>, <span style='color:blue'>&tau;&sup2;</span>)
     </MATH>"
   } else {
     text <- "<MATH>
@@ -256,9 +244,8 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
   if(!ready) return()
   if(is.null(table)) return()
   
-  par1 <- c(mu = "\u03BC")
-  par2 <- c(sigma2 = "\u03C3\u00B2", sigma = "\u03C3", 
-            tau2   = "\u03C4\u00B2", tau   = "\u03C4")[options$parametrization]
+  par1 <- c(shape = c(scale = "k", rate = "\u03B1", mean = "k")[[options$parametrization]])
+  par2 <- c(scale = "\u03B8", rate = "\u03B2", mean = "\u03BC")[options$parametrization]
   res <- results$structured
   res <- res[res$par %in% names(c(par1, par2)),]
   res$parName <- c(par1, par2)
@@ -278,7 +265,7 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
 .ldGammaMethodMLEStructureResults <- function(fit, options){
   if(is.null(fit)) return()
   
-  transformations <- c(mu = "mean", sigma2 = "sd^2", sigma = "sd", tau2 = "1/sd^2", tau = "1/sd")
+  transformations <- c(shape = "shape", scale = "1/rate",  rate = "rate", mean = "shape/rate")
   
   res <- sapply(transformations, function(tr) car::deltaMethod(fit$estimate, tr, fit$vcov, level = options$ciIntervalInterval))
   rownames(res) <- c("estimate", "se", "lower", "upper")

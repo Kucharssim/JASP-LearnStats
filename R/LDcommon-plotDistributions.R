@@ -356,7 +356,7 @@
   histPlot <- createJaspPlot(title = "Histogram", width = 500, height = 320)
   
   histPlot$dependOn(c("histogramBins", "histogram"))
-  histPlot$position <- 2
+  histPlot$position <- 3
   
   dataContainer[['histogram']] <- histPlot
   
@@ -390,7 +390,7 @@
   ecdfPlot <- createJaspPlot(title = "Empirical Cumulative Distribution", width = 500, height = 320)
   
   ecdfPlot$dependOn(c("ecdf"))
-  ecdfPlot$position <- 3
+  ecdfPlot$position <- 4
   
   dataContainer[['ecdf']] <- ecdfPlot
   
