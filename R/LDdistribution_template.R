@@ -16,7 +16,7 @@
 #
 
 LDdistribution <- function(jaspResults, dataset, options, state=NULL){
-  options <- .recodeOptionsLDdistribution(options)
+  options <- .ldRecodeOptionsDistribution(options)
   
   #### Show distribution section ----
   .ldIntroText(jaspResults, options, "name of distr")
@@ -93,7 +93,7 @@ LDdistribution <- function(jaspResults, dataset, options, state=NULL){
 }
 
 ### options ----
-.recodeOptionsLDdistribution <- function(options){
+.ldRecodeOptionsDistribution <- function(options){
   if(options$parametrization == "sigma2"){
     options$sd <- sqrt(options$varValue)
   } else if(options$parametrization == "sigma"){
@@ -136,17 +136,6 @@ LDdistribution <- function(jaspResults, dataset, options, state=NULL){
 }
 
 ### text fill functions -----
-.ldDistributionIntro <- function(){
-  intro <- "<h3> Demonstration of the Normal Distribution </h3>
-This demonstration is divided into four parts. The first part displays the Normal distribution, its probability density function, 
-cumulative distribution function, and quantile function. The second part allows to generate data from the Normal distribution and compute
-descriptive statistics and display descriptive plots. In the third part, the parameters of the Normal distribution can be estimated.
-The fourth part allows to check the fit of the Normal distribution to the data.
-  "
-  
-  return(intro)
-}
-
 .ldDistributionParsSupportMoments <- function(jaspResults, options){
   if(options$parsSupportMoments && is.null(jaspResults[['parsSupportMoments']])){
     formulas <- createJaspHtml(title = "Parameters, Support, and Moments")

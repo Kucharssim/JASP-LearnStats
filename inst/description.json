@@ -39,8 +39,8 @@
 		},
 		{
 			"title":              "Beta",
-			"qml":                "LDfDist.qml",
-			"function":           "LDfDist",
+			"qml":                "LDbeta.qml",
+			"function":           "LDbeta",
 			"usesJaspResults":    true
 		},
 		{
