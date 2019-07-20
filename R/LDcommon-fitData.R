@@ -97,7 +97,8 @@
                                            lower = options$lowerBound, upper = options$upperBound))
   
   if(inherits(results$fitdist, "try-error")){
-    mleContainer$setError(.ldAllTextsList$feedback$fitdistError)
+    #mleContainer$setError(.ldAllTextsList$feedback$fitdistError)
+    mleContainer$setError("Estimation failed: try adjusting parameter values, check outliers, or feasibility of the distribution fitting the data.")
     return()
   }
   results$structured <- structureFun(results$fitdist, options)

@@ -138,34 +138,21 @@ LDexponential <- function(jaspResults, dataset, options, state=NULL){
     formulas$dependOn(c("parsSupportMoments", "parametrization"))
     formulas$position <- 2
     
-    text <- "<b>Parameters</b>
-    mean: &mu; \u2208 \u211D
-    "
+    text <- "<b>Parameters</b>"
     
     text2 <- "<b>Support</b>
-    x \u2208 \u211D"
+    x \u2208 \u211D<sup>+</sup>"
     
     text3 <- "<b>Moments</b> 
-    E(X) = &mu;
-    Var(X) = "
+    E(X) = %s;
+    Var(X) = %s"
     
-    if(options[['parametrization']] == "sigma2"){
-      text <- paste(text,
-                    "variance: &sigma;<sup>2</sup> \u2208 \u211D<sup>+</sup>
-                    ")
-      text3 <- paste0(text3, "&sigma;<sup>2</sup>")
-    } else if(options[['parametrization']] == "sigma"){
-      text <- paste(text,
-                    "standard deviation: &sigma; \u2208 \u211D<sup>+</sup>")
-      text3 <- paste0(text3, "&sigma;<sup>2</sup>")
-    } else if(options[['parametrization']] == "tau2"){
-      text <- paste(text,
-                    "precision: &tau;<sup>2</sup> \u2208 \u211D<sup>+</sup>")
-      text3 <- paste0(text3, "1/&tau;<sup>2</sup>")
-    } else{
-      text <- paste(text,
-                    "square root of precision: &tau; \u2208 \u211D<sup>+</sup>")
-      text3 <- paste0(text3, "1/&tau;<sup>2</sup>")
+    if(options[['parametrization']] == "scale"){
+      text <- paste(text, "scale: &beta; \u2208 \u211D<sup>+</sup>")
+      text3 <- sprintf(text3, "&beta;", "&beta;<sup>2</sup>")
+    } else {
+      text <- paste(text, "rate: &lambda; \u2208 \u211D<sup>+</sup>")
+      text3 <- sprintf(text3, "&lambda;<sup>-1</sup>", "&lambda;<sup>-2</sup>")
     }
     
     formulas$text <- paste(text, text2, text3, sep = "<br><br>")
@@ -177,12 +164,12 @@ LDexponential <- function(jaspResults, dataset, options, state=NULL){
 .ldFormulaExponentialPDF <- function(options){
   if(options[['parametrization']] == "scale"){
     text <- "<MATH>
-    f(x; <span style='color:red'>&mu;</span>, <span style='color:blue'>&sigma;&sup2;</span>) = 
-(2&pi;<span style='color:blue'>&sigma;&sup2;</span>)<sup>-&frac12;</sup> 
-exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:blue'>&sigma;&sup2;</span>]
+    f(x; <span style='color:red'>&beta;</span>) = 
     </MATH>"
   } else {
-    
+    text <- "<MATH>
+    f(x; <span style='color:red'>&lambda;</span>) = <span style='color:red'>&lambda;</span>exp(-<span style='color:red'>&lambda;</span>x)
+    </MATH>"
   }
   
   return(gsub(pattern = "\n", replacement = " ", x = text))
@@ -191,7 +178,7 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
 .ldFormulaExponentialCDF <- function(options){
   if(options$parametrization == "scale"){
     text <- "<MATH>
-    F(x; <span style='color:red'>&mu;</span>, <span style='color:blue'>&sigma;&sup2;</span>)
+    F(x; <span style='color:red'>&beta;</span>) = 
     </MATH>"
   } else{
     
@@ -203,7 +190,7 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
 .ldFormulaExponentialQF <- function(options){
   if(options$parametrization == "rate"){
     text <- "<MATH>
-    Q(p; <span style='color:red'>&mu;</span>, <span style='color:blue'>&sigma;&sup2;</span>)
+    Q(p; <span style='color:red'>&beta;</span>) = 
     </MATH>"
   } else{
     
