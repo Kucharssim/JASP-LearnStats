@@ -32,7 +32,7 @@
   
   tab$addColumnInfo(name = "test", title = "Test", type = "string")
   tab$addColumnInfo(name = "statistic", title = "Statistic", type = "number")
-  tab$addColumnInfo(name = "p.value", title = "<i>p</i>", type = "pvalue")
+  tab$addColumnInfo(name = "p.value", title = "p", type = "pvalue")
   
   tab$addCitation(.ldAllTextsList$references$goftest)
   

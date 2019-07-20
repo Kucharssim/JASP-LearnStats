@@ -178,6 +178,7 @@ LDbeta <- function(jaspResults, dataset, options, state=NULL){
 
 .ldFillBetaEstimatesTable <- function(table, results, options, ready){
   if(!ready) return()
+  if(is.null(results)) return()
   if(is.null(table)) return()
   
   pars <- c(alpha = "\u03B1", beta = "\u03B2")

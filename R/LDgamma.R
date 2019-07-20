@@ -242,6 +242,7 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
 
 .ldFillGammaEstimatesTable <- function(table, results, options, ready){
   if(!ready) return()
+  if(is.null(results)) return()
   if(is.null(table)) return()
   
   par1 <- c(shape = c(scale = "k", rate = "\u03B1", mean = "k")[[options$parametrization]])

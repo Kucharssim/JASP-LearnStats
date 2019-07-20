@@ -256,6 +256,7 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
 
 .ldFillGaussianEstimatesTable <- function(table, results, options, ready){
   if(!ready) return()
+  if(is.null(results)) return()
   if(is.null(table)) return()
 
   par1 <- c(mu = "\u03BC")

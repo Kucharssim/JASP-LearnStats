@@ -56,6 +56,12 @@
 			"usesJaspResults":    true
 		},
 		{
+			"title":              "Exponential",
+			"qml":                "LDexponential.qml",
+			"function":           "LDexponential",
+			"usesJaspResults":    true
+		},
+		{
 			"title": 							"Discrete Distributions",
 			"icon": 							"placeholder.svg"
 		},

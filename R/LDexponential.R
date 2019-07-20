@@ -15,22 +15,22 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-LDdistribution <- function(jaspResults, dataset, options, state=NULL){
-  options <- .ldRecodeOptionsDistribution(options)
+LDexponential <- function(jaspResults, dataset, options, state=NULL){
+  options <- .ldRecodeOptionsExponential(options)
   
-  #### Show distribution section ----
-  .ldIntroText(jaspResults, options, "name of distr")
-  .ldDistributionParsSupportMoments(jaspResults, options)
+  #### Show exponential section ----
+  .ldIntroText(jaspResults, options, "exponential")
+  .ldExponentialParsSupportMoments(jaspResults, options)
   
   
   pdfContainer <- .ldGetPlotContainer(jaspResults, options, "plotPDF", "Probability Density Function", 3)
-  .ldFillPDFContainer(pdfContainer, options, .ldFormulaDistributionPDF)
+  .ldFillPDFContainer(pdfContainer, options, .ldFormulaExponentialPDF)
   
-  cdfContainer <- .ldGetPlotContainer(jaspResults, options, "plotCDF", "Cumulative Distribution Function", 4)
-  .ldFillCDFContainer(cdfContainer, options, .ldFormulaDistributionCDF)
+  cdfContainer <- .ldGetPlotContainer(jaspResults, options, "plotCDF", "Cumulative Exponential Function", 4)
+  .ldFillCDFContainer(cdfContainer, options, .ldFormulaExponentialCDF)
   
   qfContainer  <- .ldGetPlotContainer(jaspResults, options, "plotQF", "Quantile Function", 5)
-  .ldFillQFContainer(qfContainer,   options, .ldFormulaDistributionQF)
+  .ldFillQFContainer(qfContainer,   options, .ldFormulaExponentialQF)
   
   #### Generate and Display data section ----
   # simulate and read data
@@ -69,8 +69,8 @@ LDdistribution <- function(jaspResults, dataset, options, state=NULL){
     # parameter estimates
     mleEstimatesTable  <- .ldEstimatesTable(mleContainer, options, TRUE, TRUE, "methodMLE")
     mleResults   <- .ldMLEResults(mleContainer, variable, options, readyFit, options$distNameInR,
-                                  .ldDistributionMethodMLEStructureResults)
-    .ldFilldistributionEstimatesTable(mleEstimatesTable, mleResults, options, readyFit)
+                                  .ldExponentialMethodMLEStructureResults)
+    .ldFillExponentialEstimatesTable(mleEstimatesTable, mleResults, options, readyFit)
     
     
     # fit assessment
@@ -93,27 +93,23 @@ LDdistribution <- function(jaspResults, dataset, options, state=NULL){
 }
 
 ### options ----
-.ldRecodeOptionsDistribution <- function(options){
-  if(options$parametrization == "sigma2"){
-    options$sd <- sqrt(options$varValue)
-  } else if(options$parametrization == "sigma"){
-    options$sd <- options$varValue
-  } else if(options$parametrization == "tau2"){
-    options$sd <- sqrt(1/options$varValue)
-  } else if(options$parametrization == "tau"){
-    options$sd <- 1/options$varValue
+.ldRecodeOptionsExponential <- function(options){
+  if(options$parametrization == "scale"){
+    options$rate <- 1/options$par
+  } else {
+    options$rate <- options$par
   }
   
-  options[['parValNames']] <- c("mu", "varValue")
+  options[['parValNames']] <- c("par")
   
-  options[['pars']]   <- list(mean = options[['mu']], sd = options[['sd']])
-  options[['pdfFun']] <- dnorm
-  options[['cdfFun']] <- pnorm
-  options[['qFun']]   <- qnorm
-  options[['rFun']]   <- rnorm
-  options[['distNameInR']] <- "norm"
+  options[['pars']]   <- list(rate = options$rate)
+  options[['pdfFun']] <- dexp
+  options[['cdfFun']] <- pexp
+  options[['qFun']]   <- qexp
+  options[['rFun']]   <- rexp
+  options[['distNameInR']] <- "exp"
   
-  options[['range_x']] <- c(-options[['range']], options[['range']])
+  options[['range_x']] <- c(0, options[['range']])
   
   if(options[['highlightType']] == "minmax"){
     options[['highlightmin']] <- options[['min']]
@@ -128,15 +124,15 @@ LDdistribution <- function(jaspResults, dataset, options, state=NULL){
     options[['highlightmin']] <- options[['highlightmax']] <- NULL
   }
   
-  options$support <- list(min = -Inf, max = Inf)
-  options$lowerBound <- c(-Inf, 0)
-  options$upperBound <- c(Inf, Inf)
+  options$support <- list(min = 0, max = Inf)
+  options$lowerBound <- c(0)
+  options$upperBound <- c(Inf)
   
   options
 }
 
 ### text fill functions -----
-.ldDistributionParsSupportMoments <- function(jaspResults, options){
+.ldExponentialParsSupportMoments <- function(jaspResults, options){
   if(options$parsSupportMoments && is.null(jaspResults[['parsSupportMoments']])){
     formulas <- createJaspHtml(title = "Parameters, Support, and Moments")
     formulas$dependOn(c("parsSupportMoments", "parametrization"))
@@ -178,75 +174,39 @@ LDdistribution <- function(jaspResults, dataset, options, state=NULL){
   }
 }
 
-.ldFormulaDistributionPDF <- function(options){
-  if(options[['parametrization']] == "sigma2"){
+.ldFormulaExponentialPDF <- function(options){
+  if(options[['parametrization']] == "scale"){
     text <- "<MATH>
     f(x; <span style='color:red'>&mu;</span>, <span style='color:blue'>&sigma;&sup2;</span>) = 
 (2&pi;<span style='color:blue'>&sigma;&sup2;</span>)<sup>-&frac12;</sup> 
 exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:blue'>&sigma;&sup2;</span>]
     </MATH>"
-  } else if(options[['parametrization']] == "sigma"){
-    text <- "<MATH>
-    f(x; <span style='color:red'>&mu;</span>, <span style='color:blue'>&sigma;</span>) = 
-    (2&pi;<span style='color:blue'>&sigma;</span>&sup2;)<sup>-&frac12;</sup> 
-    exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:blue'>&sigma;</span>&sup2;]
-    </MATH>"
-  } else if(options[['parametrization']] == "tau2"){
-    text <- "<MATH>
-    f(x; <span style='color:red'>&mu;</span>, <span style='color:blue'>&tau;&sup2;</span>) = 
-    (<span style='color:blue'>&tau;&sup2;</span> &frasl; 2&pi;)<sup>&frac12;</sup> 
-    exp[-(x-<span style='color:red'>&mu;</span>)&sup2; <span style='color:blue'>&tau;&sup2;</span> &frasl; 2]
-    </MATH>"
-  } else if(options[['parametrization']] == "tau"){
-    text <- "<MATH>
-    f(x; <span style='color:red'>&mu;</span>, <span style='color:blue'>&tau;</span>) = 
-    <span style='color:blue'>&tau;</span> &frasl; (2&pi;)<sup>&frac12;</sup> 
-    exp[-(x-<span style='color:red'>&mu;</span>)&sup2; <span style='color:blue'>&tau;</span>&sup2; &frasl; 2]
-    </MATH>"
+  } else {
+    
   }
   
   return(gsub(pattern = "\n", replacement = " ", x = text))
 }
 
-.ldFormulaDistributionCDF <- function(options){
-  if(options$parametrization == "sigma2"){
+.ldFormulaExponentialCDF <- function(options){
+  if(options$parametrization == "scale"){
     text <- "<MATH>
     F(x; <span style='color:red'>&mu;</span>, <span style='color:blue'>&sigma;&sup2;</span>)
     </MATH>"
-  } else if(options$parametrization == "sigma"){
-    text <- "<MATH>
-    F(x; <span style='color:red'>&mu;</span>, <span style='color:blue'>&sigma;</span>)
-    </MATH>"
-  } else if(options$parametrization == "tau2"){
-    text <- "<MATH>
-    F(x; <span style='color:red'>&mu;</span>, <span style='color:blue'>&tau;&sup2;</span>)
-    </MATH>"
-  } else {
-    text <- "<MATH>
-    F(x; <span style='color:red'>&mu;</span>, <span style='color:blue'>&tau;</span>)
-    </MATH>"
+  } else{
+    
   }
   
   return(gsub(pattern = "\n", replacement = " ", x = text))
 }
 
-.ldFormulaDistributionQF <- function(options){
-  if(options$parametrization == "sigma2"){
+.ldFormulaExponentialQF <- function(options){
+  if(options$parametrization == "rate"){
     text <- "<MATH>
     Q(p; <span style='color:red'>&mu;</span>, <span style='color:blue'>&sigma;&sup2;</span>)
     </MATH>"
-  } else if(options$parametrization == "sigma"){
-    text <- "<MATH>
-    Q(p; <span style='color:red'>&mu;</span>, <span style='color:blue'>&sigma;</span>)
-    </MATH>"
-  } else if(options$parametrization == "tau2"){
-    text <- "<MATH>
-    Q(p; <span style='color:red'>&mu;</span>, <span style='color:blue'>&tau;&sup2;</span>)
-    </MATH>"
-  } else {
-    text <- "<MATH>
-    Q(p; <span style='color:red'>&mu;</span>, <span style='color:blue'>&tau;</span>)
-    </MATH>"
+  } else{
+    
   }
   
   return(gsub(pattern = "\n", replacement = " ", x = text))
@@ -254,17 +214,15 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
 
 #### Table functions ----
 
-.ldFillDistributionEstimatesTable <- function(table, results, options, ready){
+.ldFillExponentialEstimatesTable <- function(table, results, options, ready){
   if(!ready) return()
   if(is.null(results)) return()
   if(is.null(table)) return()
   
-  par1 <- c(mu = "\u03BC")
-  par2 <- c(sigma2 = "\u03C3\u00B2", sigma = "\u03C3", 
-            tau2   = "\u03C4\u00B2", tau   = "\u03C4")[options$parametrization]
+  par <- c(rate = "\u03BB", scale = "\u03B2")[options$parametrization]
   res <- results$structured
-  res <- res[res$par %in% names(c(par1, par2)),]
-  res$parName <- c(par1, par2)
+  res <- res[res$par %in% names(par),]
+  res$parName <- par
   
   if(results$fitdist$convergence != 0){
     table$addFootnote("The optimization did not converge, try adjusting the parameter values.", symbol = "<i>Warning.</i>")
@@ -278,10 +236,10 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
   return()
 }
 
-.ldDistributionMethodMLEStructureResults <- function(fit, options){
+.ldExponentialMethodMLEStructureResults <- function(fit, options){
   if(is.null(fit)) return()
   
-  transformations <- c(mu = "mean", sigma2 = "sd^2", sigma = "sd", tau2 = "1/sd^2", tau = "1/sd")
+  transformations <- c(rate = "rate", scale = "1/rate")
   
   res <- sapply(transformations, function(tr) car::deltaMethod(fit$estimate, tr, fit$vcov, level = options$ciIntervalInterval))
   rownames(res) <- c("estimate", "se", "lower", "upper")

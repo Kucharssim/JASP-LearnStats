@@ -92,10 +92,14 @@
   if(!is.null(mleContainer[['mleResults']])) return(mleContainer[['mleResults']]$object)
   
   results <- list()
-  results$fitdist <- fitdistrplus::fitdist(data = variable, distr = distName, method = "mle", start = options$pars,
+  results$fitdist <- try(fitdistrplus::fitdist(data = variable, distr = distName, method = "mle", start = options$pars,
                                            keepdata = FALSE, discrete = FALSE, optim.method = "L-BFGS-B",
-                                           lower = options$lowerBound, upper = options$upperBound)
+                                           lower = options$lowerBound, upper = options$upperBound))
   
+  if(inherits(results$fitdist, "try-error")){
+    mleContainer$setError(.ldAllTextsList$feedback$fitdistError)
+    return()
+  }
   results$structured <- structureFun(results$fitdist, options)
   
   mleContainer[['mleResults']] <- createJaspState(object = results, dependencies = c(options$parValNames, "ciIntervalInterval"))
