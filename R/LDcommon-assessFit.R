@@ -34,6 +34,8 @@
   tab$addColumnInfo(name = "statistic", title = "Statistic", type = "number")
   tab$addColumnInfo(name = "p.value", title = "<i>p</i>", type = "pvalue")
   
+  tab$addCitation(.ldAllTextsList$references$goftest)
+  
   fitContainer[['fitStatisticsTable']] <- tab
 
   return(tab)  
