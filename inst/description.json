@@ -11,16 +11,16 @@
 		"license":									"GPL (>= 2)"
 	},
 
-	"requiredPackages":	["goftest"],
+	"requiredPackages":	["goftest", "fitdistrplus"],
 
 	"menu":
 	[
 		{
-			"title": 							"Distributions",
+			"title": 							"Continuous Distributions",
 			"icon": 							"placeholder.svg"
 		},
 		{
-			"title":							"Univariate Normal",
+			"title":							"Normal",
 			"qml":								"LDgaussianunivariate.qml",
 			"function":						"LDgaussianunivariate",
 			"usesJaspResults":		true
@@ -32,10 +32,63 @@
 		  "usesJaspResults":    true
 		},
 		{
-		  "title":              "Fisher-Snedecor F",
+		  "title":              "F-distribution",
 		  "qml":                "LDfDist.qml",
 		  "function":           "LDfDist",
 		  "usesJaspResults":    true
+		},
+		{
+			"title":              "Beta",
+			"qml":                "LDbeta.qml",
+			"function":           "LDbeta",
+			"usesJaspResults":    true
+		},
+		{
+			"title":              "Gamma",
+			"qml":                "LDgamma.qml",
+			"function":           "LDgamma",
+			"usesJaspResults":    true
+		},
+		{
+			"title":              "Inverse gamma",
+			"qml":                "LDfDist.qml",
+			"function":           "LDfDist",
+			"usesJaspResults":    true
+		},
+		{
+			"title":              "Exponential",
+			"qml":                "LDexponential.qml",
+			"function":           "LDexponential",
+			"usesJaspResults":    true
+		},
+		{
+			"title": 							"Discrete Distributions",
+			"icon": 							"placeholder.svg"
+		},
+		{
+			"title":              "Bernoulli",
+			"qml":                "LDfDist.qml",
+			"function":           "LDfDist",
+			"usesJaspResults":    true
+		},
+		{
+			"title":              "Binomial",
+			"qml":                "LDfDist.qml",
+			"function":           "LDfDist",
+			"usesJaspResults":    true
+		},
+		{
+			"title":              "Negative binomial",
+			"qml":                "LDfDist.qml",
+			"function":           "LDfDist",
+			"usesJaspResults":    true
+		},
+		{
+			"title":              "Poisson",
+			"qml":                "LDfDist.qml",
+			"function":           "LDfDist",
+			"usesJaspResults":    true
 		}
+
 	]
 }

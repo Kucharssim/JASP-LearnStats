@@ -42,16 +42,18 @@ Form {
                 { label: "μ, τ²", value: "tau2"  },
                 { label: "μ, τ",  value: "tau"   }
               ]
+            visible: true
         }
 
         Group
         {
             columns: 1
-            DoubleField{ name:  "mu"; label: qsTr("μ"); id: mu; negativeValues: true }
+            DoubleField{ name:  "par1"; label: qsTr("par 1"); id: par1; negativeValues: true; defaultValue: 1 }
             DoubleField
             {
-                name: "varValue"
+                name: "par2"
                 label: ["σ²", "σ ", "τ²", "τ "][parametrization.currentIndex]
+                id: par2
                 negativeValues: false
                 defaultValue: 1
             }
@@ -59,31 +61,15 @@ Form {
 
     }
 
-    Group{
-      title: qsTr("Display")
-      CheckBox{ label: qsTr("Explanatory text"); name: "explanatoryText"}
-      CheckBox{ label: qsTr("Parameters, support, and moments"); name: "parsSupportMoments" }
-      CheckBox{ label: qsTr("Formulas"); name: "formulas"}
-      CheckBox
-      {
-        label: qsTr("Probability density function")
-        id: plotPDF
-        name: "plotPDF"
-        checked: true
-        //CheckBox{ label: qsTr("Formula"); name: "formulaPDF" }
-      }
-
-      CheckBox{
-        label: qsTr("Cumulative distribution function")
-        id: plotCDF
-        name: "plotCDF"
-        //CheckBox{ label: qsTr("Formula"); name: "formulaCDF" }
-      }
-      CheckBox{
-          label: qsTr("Quantile function")
-          name: "plotQF"
-          //CheckBox{ label: qsTr("Formula"); name: "formulaQF" }
-      }
+    Group
+    {
+        title: qsTr("Display")
+        CheckBox{ label: qsTr("Explanatory text"); name: "explanatoryText"}
+        CheckBox{ label: qsTr("Parameters, support, and moments"); name: "parsSupportMoments" }
+        CheckBox{ label: qsTr("Formulas"); name: "formulas"}
+        CheckBox{ label: qsTr("Probability density function"); id: plotPDF; name: "plotPDF"; checked: true }
+        CheckBox{ label: qsTr("Cumulative distribution function"); id: plotCDF; name: "plotCDF"; checked: false }
+        CheckBox{ label: qsTr("Quantile function"); id: plotQF; name: "plotQF"; checked: false }
     }
 
     Group
@@ -126,18 +112,17 @@ Form {
             }
         }
 
-
     }
-
   }
 
   Section
   {
       title: qsTr("Generate and Display Data")
-      Group{
-          title: qsTr("Generate new variable from Normal(μ = ") + mu.value + ", " + parametrization.currentText.replace("μ, ", "") + " = " + varValue.value + ")"
-          AddColumnField{ name: "newVariableName"; text: "Variable name: "; fieldWidth: 120; placeholderText: "e.g., random normal"}
-          IntegerField{name: "sampleSize"; label: "Number of samples: "; min: 1; defaultValue: 100}
+      Group
+      {
+          title: qsTr("Generate new variable from Normal(μ = ") + par1.value + ", " + parametrization.currentText.replace("μ, ", "") + " = " + par2.value + ")"
+          AddColumnField{ name: "newVariableName"; text: "Variable name: "; fieldWidth: 120; placeholderText: "e.g., random normal" }
+          IntegerField{   name: "sampleSize"; label: "Number of samples: "; min: 1; defaultValue: 100 }
           Button{name: "simulateNowButton"; label: "Draw samples"; id: simulateNowButton; onClicked:{
             if (simulateNow.checked) simulateNow.checked = false; else simulateNow.checked = true
           }}
@@ -146,14 +131,15 @@ Form {
       VariablesForm
       {
           height: 100
-          visible: true//drawSamples.checked === false
+          visible: true
           AvailableVariablesList { name: "allVariables" }
           AssignedVariablesList  { name: "variable"; label: qsTr("Get variable from data set"); allowedColumns: ["scale"]; singleVariable: true }
       }
 
-      Group{
+      Group
+      {
           title: qsTr("Statistics")
-          CheckBox{ name: "summary"; label: qsTr("Descriptives")}
+          CheckBox{ name: "summary"; label: qsTr("Descriptives") }
           CheckBox
           {
               name: "moments"; label: qsTr("First"); childrenOnSameRow: true
@@ -164,10 +150,12 @@ Form {
       Group
       {
           title: qsTr("Plots")
-          CheckBox{ name: "histogram"; label: qsTr("Histogram with"); childrenOnSameRow: true
-            IntegerField{ name: "histogramBins"; afterLabel: qsTr("bins"); defaultValue: 30 }
+          CheckBox
+          {
+              name: "histogram";  label: qsTr("Histogram with"); childrenOnSameRow: true
+              IntegerField{ name: "histogramBins"; afterLabel: qsTr("bins"); defaultValue: 30 }
           }
-          CheckBox{ name: "ecdf";      label: qsTr("Empirical cumulative distribution") }
+          CheckBox{ name: "ecdf"; label: qsTr("Empirical cumulative distribution") }
       }
   }
 
@@ -177,54 +165,27 @@ Form {
 
       Group
       {
-          title: ""
-          CheckBox{ name: "methodMLE";      label: qsTr("Maximum likelihood")}
-          CheckBox{ name: "methodMoments";  label: qsTr("Method of moments") }
-          CheckBox{ name: "methodUnbiased"; label: qsTr("Unbiased estimator")}
-          //CheckBox
-          //{
-          //   name: "methodML";      label: qsTr("Maximum Likelihood"); debug: true
-          //    Group{
-          //        CheckBox{ name: "methodMLAnalytic"; label: qsTr("Analytic")    }
-          //        CheckBox{ name: "methodMLNewton";   label: qsTr("Newton")      }
-          //        CheckBox{ name: "methodMLGrid";     label: qsTr("Grid search") }
-          //    }
-          //}
-          //CheckBox
-          //{
-          //    name: "methodBayes";   label: qsTr("Bayesian"); debug: true
-          //   Group{
-          //        CheckBox{ name: "methodBayesAnalytic"; label: qsTr("Analytic") }
-          //        CheckBox{ name: "methodBayesMAP";      label: qsTr("Maximum a posteriori") }
-          //        CheckBox{ name: "methodBayesGibbs";    label: qsTr("Gibbs sampling") }
-          //    }
-          //    Group{title: qsTr("Priors")}
-          //}
+          CheckBox{ name: "methodMLE";      label: qsTr("Maximum likelihood"); visible: true  }
+          CheckBox{ name: "methodMoments";  label: qsTr("Method of moments");  visible: false }
+          CheckBox{ name: "methodUnbiased"; label: qsTr("Unbiased estimator"); visible: false }
       }
 
       Group
       {
           title: qsTr("Output")
-          debug: false
-          CheckBox{ name: "outputEstimates"; label: qsTr("Estimates"); checked: true
-            CheckBox{ name: "outputSE"; label: qsTr("Std. error"); checked: false}
-            CheckBox
-            {
-                name: "ciInterval"; label: qsTr("Confidence interval"); childrenOnSameRow: true
-                PercentField{ name: "ciIntervalInterval"; label: ""; defaultValue: 95}
-             }
+          CheckBox
+          {
+              name: "outputEstimates"; label: qsTr("Estimates"); checked: true
+              CheckBox{ name: "outputSE"; label: qsTr("Std. error"); checked: false }
+              CheckBox
+              {
+                  name: "ciInterval"; label: qsTr("Confidence interval"); childrenOnSameRow: true
+                  PercentField{ name: "ciIntervalInterval"; label: ""; defaultValue: 95 }
+              }
           }
 
-          CheckBox{ name: "outputVarCov"; label: qsTr("Variance-covariance"); checked: false}
-          CheckBox{ name: "outputCor";    label: qsTr("Correlation"); checked: false}
-
-          //Group{
-          //    debug: true
-          //    title: qsTr("Plots")
-          //    CheckBox{ name: "plotEstimates";   label: qsTr("Estimates")   }
-          //    CheckBox{ name: "plotDiagnostics"; label: qsTr("Diagnostics") }
-          //    CheckBox{ name: "plotAdvanced";    label: qsTr("Advanced")    }
-          //}
+          CheckBox{ name: "outputVarCov"; label: qsTr("Variance-covariance"); checked: false; visible: false }
+          CheckBox{ name: "outputCor";    label: qsTr("Correlation"); checked: false; visible: false }
       }
   }
   Section
@@ -236,18 +197,19 @@ Form {
           title: qsTr("Plots")
           columns: 2
           CheckBox{ name: "estPDF"; label: qsTr("Histogram vs. theoretical pdf") }
-          CheckBox{ name: "qqplot"; label: qsTr("Q-Q plot")}
+          CheckBox{ name: "qqplot"; label: qsTr("Q-Q plot")                      }
           CheckBox{ name: "estCDF"; label: qsTr("Empirical vs. theoretical cdf") }
-          CheckBox{ name: "ppplot"; label: qsTr("P-P plot")}
+          CheckBox{ name: "ppplot"; label: qsTr("P-P plot")                      }
       }
 
       Group
       {
           title: qsTr("Statistics")
-          CheckBox{ name: "kolmogorovSmirnov"; label: qsTr("Kolmogorov-Smirnov")}
-          CheckBox{ name: "cramerVonMisses";   label: qsTr("Cramér–von Mises")  }
-          CheckBox{ name: "andersonDarling";   label: qsTr("Anderson-Darling")  }
-          CheckBox{ name: "shapiroWilk";        label: qsTr("Shapiro-Wilk")     }
+          CheckBox{ name: "kolmogorovSmirnov";  label: qsTr("Kolmogorov-Smirnov")}
+          CheckBox{ name: "cramerVonMisses";    label: qsTr("Cramér–von Mises")  }
+          CheckBox{ name: "andersonDarling";    label: qsTr("Anderson-Darling")  }
+          CheckBox{ name: "shapiroWilk";        label: qsTr("Shapiro-Wilk")      }
       }
+
   }
 }

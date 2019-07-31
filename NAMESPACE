@@ -1,0 +1,12 @@
+export(LDgaussianunivariate)
+export(LDstudent)
+export(LDfDist)
+export(LDfDist)
+export(LDgamma)
+export(LDfDist)
+export(LDfDist)
+export(LDfDist)
+export(LDfDist)
+export(LDfDist)
+  import('goftest');
+  import('fitdistrplus');
