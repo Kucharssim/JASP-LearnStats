@@ -90,16 +90,22 @@
 .ldMLEResults <- function(mleContainer, variable, options, ready, distName, structureFun){
   if(!ready) return()
   if(!is.null(mleContainer[['mleResults']])) return(mleContainer[['mleResults']]$object)
-  
+
   results <- list()
   results$fitdist <- try(fitdistrplus::fitdist(data = variable, distr = distName, method = "mle", start = options$pars,
                                            keepdata = FALSE, discrete = FALSE, optim.method = "L-BFGS-B",
                                            lower = options$lowerBound, upper = options$upperBound))
   
   if(inherits(results$fitdist, "try-error")){
-    #mleContainer$setError(.ldAllTextsList$feedback$fitdistError)
+    results$fitdist <- try(MASS::fitdistr(x = variable, densfun = options$pdfFun, start = options$pars, 
+                                           lower = options$lowerBound, upper = options$upperBound))
+  }
+  
+  if(inherits(results$fitdist, "try-error")){
     mleContainer$setError("Estimation failed: try adjusting parameter values, check outliers, or feasibility of the distribution fitting the data.")
     return()
+  } else{
+    results$fitdist$convergence <- 0
   }
   results$structured <- structureFun(results$fitdist, options)
   

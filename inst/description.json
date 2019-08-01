@@ -11,7 +11,7 @@
 		"license":									"GPL (>= 2)"
 	},
 
-	"requiredPackages":	["goftest", "fitdistrplus"],
+	"requiredPackages":	["goftest", "fitdistrplus", "invgamma"],
 
 	"menu":
 	[
@@ -27,14 +27,14 @@
 		},
 		{
 		  "title":              "Student's t",
-		  "qml":                "LDstudent.qml",
-		  "function":           "LDstudent",
+		  "qml":                "LDt.qml",
+		  "function":           "LDt",
 		  "usesJaspResults":    true
 		},
 		{
 		  "title":              "F-distribution",
-		  "qml":                "LDfDist.qml",
-		  "function":           "LDfDist",
+		  "qml":                "LDf.qml",
+		  "function":           "LDf",
 		  "usesJaspResults":    true
 		},
 		{
@@ -51,8 +51,8 @@
 		},
 		{
 			"title":              "Inverse gamma",
-			"qml":                "LDfDist.qml",
-			"function":           "LDfDist",
+			"qml":                "LDgammaInverse.qml",
+			"function":           "LDgammaInverse",
 			"usesJaspResults":    true
 		},
 		{
@@ -67,26 +67,26 @@
 		},
 		{
 			"title":              "Bernoulli",
-			"qml":                "LDfDist.qml",
-			"function":           "LDfDist",
+			"qml":                "LDbeta.qml",
+			"function":           "LDbeta",
 			"usesJaspResults":    true
 		},
 		{
 			"title":              "Binomial",
-			"qml":                "LDfDist.qml",
-			"function":           "LDfDist",
+			"qml":                "LDbeta.qml",
+			"function":           "LDbeta",
 			"usesJaspResults":    true
 		},
 		{
 			"title":              "Negative binomial",
-			"qml":                "LDfDist.qml",
-			"function":           "LDfDist",
+			"qml":                "LDbeta.qml",
+			"function":           "LDbeta",
 			"usesJaspResults":    true
 		},
 		{
 			"title":              "Poisson",
-			"qml":                "LDfDist.qml",
-			"function":           "LDfDist",
+			"qml":                "LDbeta.qml",
+			"function":           "LDbeta",
 			"usesJaspResults":    true
 		}
 

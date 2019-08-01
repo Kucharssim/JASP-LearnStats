@@ -1,3 +1,22 @@
+.simulateData <- function(jaspResults, options, as = "scale"){
+  if(is.null(jaspResults[['simdata']])){
+    sample <- do.call(options[['rFun']], c(options[['pars']], n = options[['sampleSize']]))
+    jaspResults[['simdata']] <- createJaspState(sample)
+    jaspResults[['simdata']]$dependOn(c("newVariableName", "simulateNow"))
+    
+    if(as == "scale"){
+      .setColumnDataAsScale  (options[["newVariableName"]], sample)
+    } else if(as == "ordinal"){
+      .setColumnDataAsOrdinal(options[["newVariableName"]], sample)
+    } else{
+      .setColumnDataAsNominal(options[["newVariableName"]], sample)
+    }
+    
+  }
+  
+  return()
+}
+
 .ldGetDataContainer <- function(jaspResults, options, errors = FALSE){
   if(!is.null(jaspResults[['dataContainer']])){
     dataContainer <- jaspResults[['dataContainer']]
