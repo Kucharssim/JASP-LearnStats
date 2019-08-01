@@ -34,7 +34,7 @@ LDexponential <- function(jaspResults, dataset, options, state=NULL){
   
   #### Generate and Display data section ----
   # simulate and read data
-  #.simulateData(jaspResults, options)
+  .simulateData(jaspResults, options)
   
   ready <- options[['variable']] != ""
   errors <- FALSE
