@@ -30,33 +30,12 @@ Form {
     Group
     {
         Layout.columnSpan: 2
-        DropDown
-        {
-            name: "parametrization"
-            id:   parametrization
-            indexDefaultValue: 0
-            label: qsTr("Parameters")
-            values: [
-                { label: "μ, σ²", value: "sigma2"},
-                { label: "μ, σ",  value: "sigma" },
-                { label: "μ, τ²", value: "tau2"  },
-                { label: "μ, τ",  value: "tau"   }
-              ]
-            visible: true
-        }
-
+        title: "Parameters"
         Group
         {
             columns: 1
-            DoubleField{ name:  "par1"; label: qsTr("par 1"); id: par1; negativeValues: true; defaultValue: 1 }
-            DoubleField
-            {
-                name: "par2"
-                label: ["σ²", "σ ", "τ²", "τ "][parametrization.currentIndex]
-                id: par2
-                negativeValues: false
-                defaultValue: 1
-            }
+            DoubleField{ name: "df"; label: qsTr("df"); id: df; min: 1; defaultValue: 1 }
+            DoubleField{ name: "ncp";  label: qsTr("ncp"); id: ncp; negativeValues: true; defaultValue: 0}
         }
 
     }
@@ -120,8 +99,8 @@ Form {
       title: qsTr("Generate and Display Data")
       Group
       {
-          title: qsTr("Generate new variable from Normal(μ = ") + par1.value + ", " + parametrization.currentText.replace("μ, ", "") + " = " + par2.value + ")"
-          AddColumnField{ name: "newVariableName"; text: "Variable name: "; fieldWidth: 120; placeholderText: "e.g., random normal" }
+          title: qsTr("Generate new variable from t(df = ") + df.value + ", ncp = " + ncp.value + ")"
+          AddColumnField{ name: "newVariableName"; text: "Variable name: "; fieldWidth: 120; placeholderText: "e.g., random t" }
           IntegerField{   name: "sampleSize"; label: "Number of samples: "; min: 1; defaultValue: 100 }
           Button{name: "simulateNowButton"; label: "Draw samples"; id: simulateNowButton; onClicked:{
             if (simulateNow.checked) simulateNow.checked = false; else simulateNow.checked = true
@@ -166,8 +145,6 @@ Form {
       Group
       {
           CheckBox{ name: "methodMLE";      label: qsTr("Maximum likelihood"); visible: true  }
-          CheckBox{ name: "methodMoments";  label: qsTr("Method of moments");  visible: false }
-          CheckBox{ name: "methodUnbiased"; label: qsTr("Unbiased estimator"); visible: false }
       }
 
       Group
@@ -184,8 +161,8 @@ Form {
               }
           }
 
-          CheckBox{ name: "outputVarCov"; label: qsTr("Variance-covariance"); checked: false; visible: false }
-          CheckBox{ name: "outputCor";    label: qsTr("Correlation"); checked: false; visible: false }
+          //CheckBox{ name: "outputVarCov"; label: qsTr("Variance-covariance"); checked: false; visible: false }
+          //CheckBox{ name: "outputCor";    label: qsTr("Correlation"); checked: false; visible: false }
       }
   }
   Section
@@ -208,7 +185,7 @@ Form {
           CheckBox{ name: "kolmogorovSmirnov";  label: qsTr("Kolmogorov-Smirnov")}
           CheckBox{ name: "cramerVonMisses";    label: qsTr("Cramér–von Mises")  }
           CheckBox{ name: "andersonDarling";    label: qsTr("Anderson-Darling")  }
-          CheckBox{ name: "shapiroWilk";        label: qsTr("Shapiro-Wilk")      }
+          //CheckBox{ name: "shapiroWilk";        label: qsTr("Shapiro-Wilk")      }
       }
 
   }

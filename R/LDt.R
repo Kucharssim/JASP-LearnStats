@@ -16,25 +16,25 @@
 #
 
 LDt <- function(jaspResults, dataset, options, state=NULL){
-  options <- .ldRecodeOptionsDistribution(options)
+  options <- .ldRecodeOptionsT(options)
   
-  #### Show distribution section ----
-  .ldIntroText(jaspResults, options, "name of distr")
-  .ldDistributionParsSupportMoments(jaspResults, options)
+  #### Show t section ----
+  .ldIntroText(jaspResults, options, "t-distribution")
+  .ldTParsSupportMoments(jaspResults, options)
   
   
   pdfContainer <- .ldGetPlotContainer(jaspResults, options, "plotPDF", "Probability Density Function", 3)
-  .ldFillPDFContainer(pdfContainer, options, .ldFormulaDistributionPDF)
+  .ldFillPDFContainer(pdfContainer, options, .ldFormulaTPDF)
   
   cdfContainer <- .ldGetPlotContainer(jaspResults, options, "plotCDF", "Cumulative Distribution Function", 4)
-  .ldFillCDFContainer(cdfContainer, options, .ldFormulaDistributionCDF)
+  .ldFillCDFContainer(cdfContainer, options, .ldFormulaTCDF)
   
   qfContainer  <- .ldGetPlotContainer(jaspResults, options, "plotQF", "Quantile Function", 5)
-  .ldFillQFContainer(qfContainer,   options, .ldFormulaDistributionQF)
+  .ldFillQFContainer(qfContainer,   options, .ldFormulaTQF)
   
   #### Generate and Display data section ----
   # simulate and read data
-  #.simulateData(jaspResults, options)
+  .simulateData(jaspResults, options)
   
   ready <- options[['variable']] != ""
   errors <- FALSE
@@ -69,8 +69,8 @@ LDt <- function(jaspResults, dataset, options, state=NULL){
     # parameter estimates
     mleEstimatesTable  <- .ldEstimatesTable(mleContainer, options, TRUE, TRUE, "methodMLE")
     mleResults   <- .ldMLEResults(mleContainer, variable, options, readyFit, options$distNameInR,
-                                  .ldDistributionMethodMLEStructureResults)
-    .ldFilldistributionEstimatesTable(mleEstimatesTable, mleResults, options, readyFit)
+                                  .ldTMethodMLEStructureResults)
+    .ldFillTEstimatesTable(mleEstimatesTable, mleResults, options, readyFit)
     
     
     # fit assessment
@@ -85,33 +85,19 @@ LDt <- function(jaspResults, dataset, options, state=NULL){
     
   }
   
-  #### Method of moments ----
-  
-  #### Unbiased estimate ----
-  
   return()
 }
 
 ### options ----
-.ldRecodeOptionsDistribution <- function(options){
-  if(options$parametrization == "sigma2"){
-    options$sd <- sqrt(options$varValue)
-  } else if(options$parametrization == "sigma"){
-    options$sd <- options$varValue
-  } else if(options$parametrization == "tau2"){
-    options$sd <- sqrt(1/options$varValue)
-  } else if(options$parametrization == "tau"){
-    options$sd <- 1/options$varValue
-  }
+.ldRecodeOptionsT <- function(options){
+  options[['parValNames']] <- c("df", "ncp")
   
-  options[['parValNames']] <- c("mu", "varValue")
-  
-  options[['pars']]   <- list(mean = options[['mu']], sd = options[['sd']])
-  options[['pdfFun']] <- dnorm
-  options[['cdfFun']] <- pnorm
-  options[['qFun']]   <- qnorm
-  options[['rFun']]   <- rnorm
-  options[['distNameInR']] <- "norm"
+  options[['pars']]   <- list(df = options[['df']], ncp = options[['ncp']])
+  options[['pdfFun']] <- dt
+  options[['cdfFun']] <- pt
+  options[['qFun']]   <- qt
+  options[['rFun']]   <- rt
+  options[['distNameInR']] <- "t"
   
   options[['range_x']] <- c(-options[['range']], options[['range']])
   
@@ -129,48 +115,29 @@ LDt <- function(jaspResults, dataset, options, state=NULL){
   }
   
   options$support <- list(min = -Inf, max = Inf)
-  options$lowerBound <- c(-Inf, 0)
+  options$lowerBound <- c(0,  -Inf)
   options$upperBound <- c(Inf, Inf)
   
   options
 }
 
 ### text fill functions -----
-.ldDistributionParsSupportMoments <- function(jaspResults, options){
+.ldTParsSupportMoments <- function(jaspResults, options){
   if(options$parsSupportMoments && is.null(jaspResults[['parsSupportMoments']])){
     formulas <- createJaspHtml(title = "Parameters, Support, and Moments")
     formulas$dependOn(c("parsSupportMoments", "parametrization"))
     formulas$position <- 2
     
     text <- "<b>Parameters</b>
-    mean: &mu; \u2208 \u211D
-    "
+    degree of freedom: df \u2208 \u211D<sup>+</sup>
+    non-centrality: ncp \u2208 \u211D"
     
     text2 <- "<b>Support</b>
     x \u2208 \u211D"
     
     text3 <- "<b>Moments</b> 
-    E(X) = &mu;
-    Var(X) = "
-    
-    if(options[['parametrization']] == "sigma2"){
-      text <- paste(text,
-                    "variance: &sigma;<sup>2</sup> \u2208 \u211D<sup>+</sup>
-                    ")
-      text3 <- paste0(text3, "&sigma;<sup>2</sup>")
-    } else if(options[['parametrization']] == "sigma"){
-      text <- paste(text,
-                    "standard deviation: &sigma; \u2208 \u211D<sup>+</sup>")
-      text3 <- paste0(text3, "&sigma;<sup>2</sup>")
-    } else if(options[['parametrization']] == "tau2"){
-      text <- paste(text,
-                    "precision: &tau;<sup>2</sup> \u2208 \u211D<sup>+</sup>")
-      text3 <- paste0(text3, "1/&tau;<sup>2</sup>")
-    } else{
-      text <- paste(text,
-                    "square root of precision: &tau; \u2208 \u211D<sup>+</sup>")
-      text3 <- paste0(text3, "1/&tau;<sup>2</sup>")
-    }
+    E(X) - does not exist unless df > 1
+    Var(X) - does not exist unless df > 2"
     
     formulas$text <- paste(text, text2, text3, sep = "<br><br>")
     
@@ -178,90 +145,39 @@ LDt <- function(jaspResults, dataset, options, state=NULL){
   }
 }
 
-.ldFormulaDistributionPDF <- function(options){
-  if(options[['parametrization']] == "sigma2"){
+.ldFormulaTPDF <- function(options){
     text <- "<MATH>
-    f(x; <span style='color:red'>&mu;</span>, <span style='color:blue'>&sigma;&sup2;</span>) = 
-(2&pi;<span style='color:blue'>&sigma;&sup2;</span>)<sup>-&frac12;</sup> 
-exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:blue'>&sigma;&sup2;</span>]
+    f(x; <span style='color:red'>&df;</span>, <span style='color:blue'>ncp</span>) =
     </MATH>"
-  } else if(options[['parametrization']] == "sigma"){
-    text <- "<MATH>
-    f(x; <span style='color:red'>&mu;</span>, <span style='color:blue'>&sigma;</span>) = 
-    (2&pi;<span style='color:blue'>&sigma;</span>&sup2;)<sup>-&frac12;</sup> 
-    exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:blue'>&sigma;</span>&sup2;]
-    </MATH>"
-  } else if(options[['parametrization']] == "tau2"){
-    text <- "<MATH>
-    f(x; <span style='color:red'>&mu;</span>, <span style='color:blue'>&tau;&sup2;</span>) = 
-    (<span style='color:blue'>&tau;&sup2;</span> &frasl; 2&pi;)<sup>&frac12;</sup> 
-    exp[-(x-<span style='color:red'>&mu;</span>)&sup2; <span style='color:blue'>&tau;&sup2;</span> &frasl; 2]
-    </MATH>"
-  } else if(options[['parametrization']] == "tau"){
-    text <- "<MATH>
-    f(x; <span style='color:red'>&mu;</span>, <span style='color:blue'>&tau;</span>) = 
-    <span style='color:blue'>&tau;</span> &frasl; (2&pi;)<sup>&frac12;</sup> 
-    exp[-(x-<span style='color:red'>&mu;</span>)&sup2; <span style='color:blue'>&tau;</span>&sup2; &frasl; 2]
-    </MATH>"
-  }
   
   return(gsub(pattern = "\n", replacement = " ", x = text))
 }
 
-.ldFormulaDistributionCDF <- function(options){
-  if(options$parametrization == "sigma2"){
-    text <- "<MATH>
-    F(x; <span style='color:red'>&mu;</span>, <span style='color:blue'>&sigma;&sup2;</span>)
+.ldFormulaTCDF <- function(options){
+  text <- "<MATH>
+    F(x; <span style='color:red'>&df;</span>, <span style='color:blue'>ncp</span>) =
     </MATH>"
-  } else if(options$parametrization == "sigma"){
-    text <- "<MATH>
-    F(x; <span style='color:red'>&mu;</span>, <span style='color:blue'>&sigma;</span>)
-    </MATH>"
-  } else if(options$parametrization == "tau2"){
-    text <- "<MATH>
-    F(x; <span style='color:red'>&mu;</span>, <span style='color:blue'>&tau;&sup2;</span>)
-    </MATH>"
-  } else {
-    text <- "<MATH>
-    F(x; <span style='color:red'>&mu;</span>, <span style='color:blue'>&tau;</span>)
-    </MATH>"
-  }
   
   return(gsub(pattern = "\n", replacement = " ", x = text))
 }
 
-.ldFormulaDistributionQF <- function(options){
-  if(options$parametrization == "sigma2"){
-    text <- "<MATH>
-    Q(p; <span style='color:red'>&mu;</span>, <span style='color:blue'>&sigma;&sup2;</span>)
+.ldFormulaTQF <- function(options){
+  text <- "<MATH>
+    Q(p; <span style='color:red'>&df;</span>, <span style='color:blue'>ncp</span>) =
     </MATH>"
-  } else if(options$parametrization == "sigma"){
-    text <- "<MATH>
-    Q(p; <span style='color:red'>&mu;</span>, <span style='color:blue'>&sigma;</span>)
-    </MATH>"
-  } else if(options$parametrization == "tau2"){
-    text <- "<MATH>
-    Q(p; <span style='color:red'>&mu;</span>, <span style='color:blue'>&tau;&sup2;</span>)
-    </MATH>"
-  } else {
-    text <- "<MATH>
-    Q(p; <span style='color:red'>&mu;</span>, <span style='color:blue'>&tau;</span>)
-    </MATH>"
-  }
   
   return(gsub(pattern = "\n", replacement = " ", x = text))
 }
 
 #### Table functions ----
 
-.ldFillDistributionEstimatesTable <- function(table, results, options, ready){
+.ldFillTEstimatesTable <- function(table, results, options, ready){
   if(!ready) return()
   if(is.null(results)) return()
   if(is.null(table)) return()
   
-  par1 <- c(mu = "\u03BC")
-  par2 <- c(sigma2 = "\u03C3\u00B2", sigma = "\u03C3", 
-            tau2   = "\u03C4\u00B2", tau   = "\u03C4")[options$parametrization]
+  par1 <- c(df = "df")
+  par2 <- c(ncp = "ncp")
   res <- results$structured
   res <- res[res$par %in% names(c(par1, par2)),]
   res$parName <- c(par1, par2)
@@ -278,10 +194,10 @@ exp[-(x-<span style='color:red'>&mu;</span>)&sup2; &frasl; 2<span style='color:b
   return()
 }
 
-.ldDistributionMethodMLEStructureResults <- function(fit, options){
+.ldTMethodMLEStructureResults <- function(fit, options){
   if(is.null(fit)) return()
   
-  transformations <- c(mu = "mean", sigma2 = "sd^2", sigma = "sd", tau2 = "1/sd^2", tau = "1/sd")
+  transformations <- c(df = "df", ncp = "ncp")
   
   res <- sapply(transformations, function(tr) car::deltaMethod(fit$estimate, tr, fit$vcov, level = options$ciIntervalInterval))
   rownames(res) <- c("estimate", "se", "lower", "upper")
