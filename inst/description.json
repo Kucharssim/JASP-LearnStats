@@ -38,6 +38,12 @@
 		  "usesJaspResults":    true
 		},
 		{
+			"title":              "Chi-squared",
+			"qml":                "LDchisq.qml",
+			"function":           "LDchisq",
+			"usesJaspResults":    true
+		},
+		{
 			"title":              "Beta",
 			"qml":                "LDbeta.qml",
 			"function":           "LDbeta",
