@@ -1,7 +1,7 @@
 {
 	"moduleDescription" :
 	{
-		"title" : 									"Learn Statistics",
+		"title" : 								  "Learn Statistics",
 		"icon":                     "placeholder.svg",
 		"description": 							"Learn statistics with JASP",
 		"version":									"0.1",
@@ -79,8 +79,8 @@
 		},
 		{
 			"title":              "Binomial",
-			"qml":                "LDbeta.qml",
-			"function":           "LDbeta",
+			"qml":                "LDbinomial.qml",
+			"function":           "LDbinomial",
 			"usesJaspResults":    true
 		},
 		{

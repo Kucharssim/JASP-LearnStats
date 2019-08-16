@@ -215,6 +215,8 @@
 
 .ldFillPlotCDF <- function(cdfPlot, options){
   
+  dat <- data.frame(x = options[['range_x']][1]:options[['range_x']][2])
+  dat$y <- 
   plot <- ggplot2::ggplot(data = data.frame(x = options[['range_x']]), ggplot2::aes(x = x)) +
     ggplot2::stat_function(fun = options[['cdfFun']], n = 101, args = options[['pars']], size = 1)
   
@@ -246,7 +248,7 @@
                          ggplot2::aes(x = x, y = y, label = label), size = 6)
   }
   
-  if(options$highlightProbability){
+  if(options$highlightProbability){ 
     # determine plotting region
     args <- options[['pars']]
     # argsPDF <- options[['pars']]
@@ -346,6 +348,259 @@
   plot <- JASPgraphs::themeJasp(plot)
   
   qfPlot[['plotObject']] <- plot
+}
+
+### Plot PMF ----
+.ldFillPMFContainer <- function(pmfContainer, options, formulaText = NULL, explanationText = NULL){
+  if(!options$plotPMF) return()
+  
+  .ldExplanationPDF(pmfContainer, options, explanationText)
+  .ldPlotPMF(pmfContainer, options)
+  .ldFormulaPlot(pmfContainer, options, formulaText, "plotPMF")
+  
+  return()
+}
+
+.ldExplanationPMF <- function(pmfContainer, options, explanationText = NULL){
+  if(!options$explanatoryText) return()
+  if(!is.null(pmfContainer[['explanation']])) return()
+  
+  explanation <- createJaspHtml()
+  explanation$dependOn(c("plotPMF", "explanatoryText"))
+  explanation$position <- 1
+  
+  if(is.null(explanationText)){
+    explanationText <- .ldAllTextsList$explanations$pmf
+  }
+  
+  explanation[['text']] <- explanationText
+  pmfContainer[['explanation']] <- explanation
+  
+}
+
+.ldPlotPMF <- function(pmfContainer, options){
+  if(!is.null(pmfContainer[['pmfPlot']])) return()
+  
+  pmfPlot <- createJaspPlot(title = "Density Plot", width = 600, height = 320)
+  pmfPlot$position <- 2 # after explanation, before formula
+  pmfPlot$dependOn(c('plotPMF', 'range', 'highlightType',
+                     'highlightDensity', 'highlightProbability', 
+                     'min', 'max', 'lower_max', 'upper_min'))
+  pmfContainer[['pmfPlot']] <- pmfPlot
+  
+  .ldFillPlotPMF(pmfPlot, options)
+  
+  return()
+}
+
+.ldFillPlotPMF <- function(pmfPlot, options){
+  
+  args <- options[['pars']]
+  args[['x']] <- options[['range_x']][1]:options[['range_x']][2]
+  
+  dat <- data.frame(x = args[['x']], y = do.call(options[['pdfFun']], args))
+  
+  # basic plot
+  plot <- ggplot2::ggplot(data = dat, ggplot2::aes(x = x, y = y)) +
+    ggplot2::geom_bar(stat="identity", fill = "grey", colour = "black")
+  
+  # highlight probability
+  if(options$highlightProbability){
+    # determine plotting region
+    args <- options[['pars']]
+    argsPDF <- options[['pars']]
+    if(options[['highlightType']] == "minmax"){
+      args[['q']] <- c(options[['highlightmin']], options[['highlightmax']])
+    } else if(options[['highlightType']] == "lower"){
+      args[['q']] <- c(-Inf, options[['highlightmax']])
+    } else if(options[['highlightType']] == "upper"){
+      args[['q']] <- c(options[['highlightmin']], Inf)
+    }
+    
+    # calculate value under the curve
+    cdfValue <- do.call(options[['cdfFun']], args)
+    cdfValue <- cdfValue[2] - cdfValue[1]
+    
+    # round value under the curve for plotting
+    cdfValueRound <- round(cdfValue, 2)
+    if(c(0, 1) %in% cdfValueRound){
+      cdfValueRound <- round(cdfValue, 3)
+    }
+    
+    # calculate position of the geom_text
+    args[['q']] <- c(options[['highlightmin']], options[['highlightmax']])
+    argsPDF[['x']] <- args[['q']][1]:args[['q']][2]
+    x <- argsPDF[['x']][which.max(do.call(options[['pdfFun']], argsPDF))]
+    argsPDF[['x']] <- x
+    y <- do.call(options[['pdfFun']], argsPDF) * 1.2
+    # browser()
+    plot <- plot + 
+      ggplot2::geom_bar(ggplot2::aes(x = x, y = y), 
+                        data = subset(dat, x > options[['highlightmin']] & x <= options[['highlightmax']]),
+                        fill = "steelblue", stat = "identity") +
+      ggplot2::geom_text(data = data.frame(x = x, y = y, label = cdfValueRound),
+                         mapping = ggplot2::aes(x = x, y = y, label = label), size = 8, parse = TRUE)
+  }
+  
+  # highlight density
+  if(options$highlightDensity){
+    # determine plotting region
+    args <- options[['pars']]
+    if(options[['highlightType']] == "minmax"){
+      args[['x']] <- c(options[['highlightmin']], options[['highlightmax']])
+    } else if(options[['highlightType']] == "lower"){
+      args[['x']] <- options[['highlightmax']]
+    } else if(options[['highlightType']] == "upper"){
+      args[['x']] <- options[['highlightmin']]
+    }
+    
+    segment_data <- subset(dat, x %in% args[['x']])
+    segment_data$xend <- segment_data$x
+    segment_data$x <- options[['range_x']][1] - 1#(options[['range_x']][2]-options[['range_x']][1])/15
+    segment_data$label <- round(segment_data$y, 2)
+    
+    # plot density
+    plot <- plot + 
+      ggplot2::geom_bar(ggplot2::aes(x = xend, y = y), stat = "identity",
+                        data = segment_data, 
+                        alpha = 0, colour = "black", size = 1.5, width = 1) +
+      ggplot2::geom_segment(data = segment_data,
+                            mapping = ggplot2::aes(x = x, xend = xend, y = y, yend = y),
+                            linetype = 2) +
+      ggplot2::geom_text(data = segment_data,
+                         ggplot2::aes(x = x-1, y = y, label = label), size = 6)
+  }
+  
+  plot <- plot + ggplot2::ylab("Probability (X = x)") #+ 
+    #ggplot2::scale_x_discrete(limits = options[['range_x']], breaks = JASPgraphs::axesBreaks(options[['range_x']]))
+    
+  plot <- JASPgraphs::themeJasp(plot)
+  
+  pmfPlot[['plotObject']] <- plot
+}
+
+### Plot CMF ----
+.ldFillCMFContainer <- function(cmfContainer, options, formulaText = NULL, explanationText = NULL){
+  if(!options$plotCMF) return()
+  
+  .ldExplanationCMF(cmfContainer, options, explanationText)
+  .ldPlotCMF(cmfContainer, options)
+  .ldFormulaPlot(cmfContainer, options, formulaText, "plotCMF")
+}
+
+.ldExplanationCMF <- function(cmfContainer, options, explanationText = NULL){
+  if(!options$explanatoryText) return()
+  if(!is.null(cmfContainer[['explanation']])) return()
+  
+  explanation <- createJaspHtml()
+  explanation$dependOn(c("plotCMF", "explanatoryText"))
+  explanation$position <- 1
+  
+  if(is.null(explanationText)){
+    explanationText <- .ldAllTextsList$explanations$cmf
+  }
+  
+  explanation[['text']] <- explanationText
+  cmfContainer[['explanation']] <- explanation
+}
+
+.ldPlotCMF <- function(cmfContainer, options){
+  if(!is.null(cmfContainer[['cmfPlot']])) return()
+  
+  cmfPlot <- createJaspPlot(title = "Cumulative Probability Plot", width = 600, height = 320)
+  cmfPlot$position <- 2 # after explanation, before formula
+  cmfPlot$dependOn(c('plotCMF', 'range', 'highlightType',
+                     'highlightDensity', 'highlightProbability', 
+                     'min', 'max', 'lower_max', 'upper_min'))
+  cmfContainer[['cmfPlot']] <- cmfPlot
+  
+  .ldFillPlotCMF(cmfPlot, options)
+  
+  return()
+}
+
+.ldFillPlotCMF <- function(cmfPlot, options){
+  
+  args <- options[['pars']]
+  args[['q']] <- options[['range_x']][1]:options[['range_x']][2]
+  
+  dat <- data.frame(x = args[['q']], y = do.call(options[['cdfFun']], args))
+  
+  # basic plot
+  plot <- ggplot2::ggplot(data = dat, ggplot2::aes(x = x, y = y)) +
+    ggplot2::geom_bar(stat="identity", fill = "grey", colour = "black")
+  
+  
+  if(options$highlightDensity && FALSE){
+    # determine plotting region
+    args <- options[['pars']]
+    if(options[['highlightType']] == "minmax"){
+      args[['q']] <- c(options[['highlightmin']], options[['highlightmax']])
+    } else if(options[['highlightType']] == "lower"){
+      args[['q']] <- options[['highlightmax']]
+    } else if(options[['highlightType']] == "upper"){
+      args[['q']] <- options[['highlightmin']]
+    }
+    pdfArgs <- args
+    pdfArgs[['x']] <- pdfArgs[['q']]
+    pdfArgs[['q']] <- NULL
+    
+    pdfValue <- do.call(options[['pdfFun']], pdfArgs)
+    cmfValue <- do.call(options[['cmfFun']], args)
+    intercept <- cmfValue - args[['q']]*pdfValue
+    slopeText <-  round(pdfValue, 2) #bquote(paste(beta, " = ", .(round(slope, 2))))
+    
+    line_data <- data.frame(slope = pdfValue, intercept = intercept)
+    
+    plot <- plot + 
+      ggplot2::geom_abline(slope = pdfValue, intercept = intercept, linetype = 1) +
+      ggplot2::geom_text(data = data.frame(x = args[['q']], y = 1.1*cmfValue, label = round(pdfValue, 2)),
+                         ggplot2::aes(x = x, y = y, label = label), size = 6)
+  }
+  
+  if(options$highlightProbability && FALSE){
+    # determine plotting region
+    args <- options[['pars']]
+    # argsPDF <- options[['pars']]
+    if(options[['highlightType']] == "minmax"){
+      args[['q']] <- c(options[['highlightmin']], options[['highlightmax']])
+    } else if(options[['highlightType']] == "lower"){
+      args[['q']] <- c(options[['highlightmax']])
+    } else if(options[['highlightType']] == "upper"){
+      args[['q']] <- c(options[['highlightmin']])
+    }
+    
+    # calculate value under the curve
+    cmfValue <- do.call(options[['cmfFun']], args)
+    
+    # round value under the curve for plotting
+    cmfValueRound <- round(cmfValue, 2)
+    # if(cmfValueRound %in% c(0, 1)){
+    #   cmfValueRound <- round(cmfValue, 3)
+    # }
+    
+    segment_data <- data.frame(xoffset = options[['range_x']][1] + (options[['range_x']][2]-options[['range_x']][1])/15,
+                               x = options[['range_x']][1], xend = args[['q']], y = cmfValue, label = cmfValueRound)
+    
+    
+    plot <- plot + 
+      ggplot2::geom_segment(data = segment_data,
+                            mapping = ggplot2::aes(x = xoffset, xend = xend, y = y, yend = y), linetype = 2) +
+      ggplot2::geom_text(data = segment_data,
+                         ggplot2::aes(x = x, y = y, label = label), size = 6) +
+      ggplot2::geom_linerange(x = args[['q']], ymin = 0, ymax = cmfValue, linetype = 2) + 
+      JASPgraphs::geom_point(x = args[['q']], y = cmfValue)
+  }
+  
+  plot <- plot + 
+    ggplot2::ylab("Probability (X \u2264 x)") +
+    #ggplot2::scale_x_continuous(limits = options[['range_x']], 
+    #                            breaks = JASPgraphs::axesBreaks(options[['range_x']])) +
+    ggplot2::scale_y_continuous(limits = c(0, 1))
+  
+  plot <- JASPgraphs::themeJasp(plot)
+  
+  cmfPlot[['plotObject']] <- plot
 }
 
 #### Plot empirical ----
