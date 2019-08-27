@@ -456,7 +456,7 @@
     
     segment_data <- subset(dat, x %in% args[['x']])
     segment_data$xend <- segment_data$x
-    segment_data$x <- options[['range_x']][1] - 1#(options[['range_x']][2]-options[['range_x']][1])/15
+    segment_data$x <- options[['range_x']][1]#(options[['range_x']][2]-options[['range_x']][1])/15
     segment_data$label <- round(segment_data$y, 2)
     
     # plot density
@@ -468,11 +468,14 @@
                             mapping = ggplot2::aes(x = x, xend = xend, y = y, yend = y),
                             linetype = 2) +
       ggplot2::geom_text(data = segment_data,
-                         ggplot2::aes(x = x-1, y = y, label = label), size = 6)
+                         ggplot2::aes(x = x-0.75, y = y, label = label), size = 6)
   }
   
-  plot <- plot + ggplot2::ylab("Probability (X = x)") #+ 
-    #ggplot2::scale_x_discrete(limits = options[['range_x']], breaks = JASPgraphs::axesBreaks(options[['range_x']]))
+  plot <- plot + 
+    ggplot2::ylab("Probability (X = x)") + 
+    ggplot2::scale_x_continuous(limits = options[['range_x']] + c(-1.5, 1.5),
+                                expand = c(0, 0),
+                                breaks = JASPgraphs::axesBreaks(options[['range_x']]))
     
   plot <- JASPgraphs::themeJasp(plot)
   
@@ -593,9 +596,10 @@
   }
   
   plot <- plot + 
-    ggplot2::ylab("Probability (X \u2264 x)") +
-    #ggplot2::scale_x_continuous(limits = options[['range_x']], 
-    #                            breaks = JASPgraphs::axesBreaks(options[['range_x']])) +
+    ggplot2::ylab("Probability (X \u2264 x)") + 
+    ggplot2::scale_x_continuous(limits = options[['range_x']] + c(-1.5, 1.5),
+                                expand = c(0, 0),
+                                breaks = JASPgraphs::axesBreaks(options[['range_x']])) +
     ggplot2::scale_y_continuous(limits = c(0, 1))
   
   plot <- JASPgraphs::themeJasp(plot)
