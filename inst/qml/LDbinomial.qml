@@ -47,13 +47,27 @@ Form {
         CheckBox{ label: qsTr("Formulas"); name: "formulas"}
         CheckBox{ label: qsTr("Probability mass function"); id: plotPMF; name: "plotPMF"; checked: true }
         CheckBox{ label: qsTr("Cumulative distribution function"); id: plotCMF; name: "plotCMF"; checked: false }
-        CheckBox{ label: qsTr("Quantile function"); id: plotQF; name: "plotQF"; checked: false; visible: false }
     }
 
     Group
     {
         title: qsTr("Options")
         enabled: plotPMF.checked || plotCMF.checked
+        Group
+        {
+            title: qsTr("Range")
+            columns: 2
+            IntegerField
+            { 
+                name: "min_x"; label: qsTr("From"); id: min_x;
+                defaultValue: 0; min: 0; max: max_x.value
+            }
+            IntegerField
+            { 
+                name: "max_x"; label: qsTr("to"); id: max_x;
+                defaultValue: size.value; min: min_x.value; max: size.value
+            }
+        }
         DoubleField{ name:  "range"; label: qsTr("Range"); defaultValue: 3; id: range; visible: false}
         Group
         {
@@ -61,31 +75,21 @@ Form {
             Group
             {
                 columns: 2
-                CheckBox{ name: "highlightDensity"; label: qsTr("Density"); id: highlightDensity }
-                CheckBox{ name: "highlightProbability"; label: qsTr("Probability"); id: highlightProbability }
+                CheckBox{ name: "highlightDensity"; label: qsTr("Mass"); id: highlightDensity }
+                CheckBox{ name: "highlightProbability"; label: qsTr("Cumulative Probability"); id: highlightProbability }
             }
-            RadioButtonGroup
+            Group
             {
-                name: "highlightType"
-                title: qsTr("Limits")
-                enabled: highlightDensity.checked || highlightProbability.checked
-                RadioButton
-                {
-                    value: "minmax"; label: qsTr("from"); childrenOnSameRow: true; checked: true
-                    DoubleField{ name: "min"; label: ""; afterLabel: qsTr("to"); negativeValues: false; defaultValue: 0}
-                    DoubleField{ name: "max"; label: ""; negativeValues: false; defaultValue: 1; max: size.value}
+                columns: 2
+                IntegerField
+                { 
+                    name: "min"; label: qsTr("Limits"); afterLabel: qsTr("≤ X ≤"); id: min;
+                    negativeValues: false; defaultValue: 0; max: max.value
                 }
-
-                RadioButton
-                {
-                    value: "lower"; label: qsTr("from 0"); childrenOnSameRow: true
-                    DoubleField{ name: "lower_max"; label: qsTr("to"); negativeValues: false; defaultValue: 1 }
-                }
-
-                RadioButton
-                {
-                    value: "upper"; label: qsTr("from"); childrenOnSameRow: true
-                    DoubleField{ name: "upper_min"; label: ""; afterLabel: qsTr("to ") + size.value; defaultValue: 1; negativeValues: false; max: size.value}
+                IntegerField
+                { 
+                    name: "max"; label: ""; id: max;
+                    min: min.value; defaultValue: size.value; max: size.value
                 }
             }
         }
@@ -130,8 +134,8 @@ Form {
           title: qsTr("Plots")
           CheckBox
           {
-              name: "histogram";  label: qsTr("Histogram with"); childrenOnSameRow: true
-              IntegerField{ name: "histogramBins"; afterLabel: qsTr("bins"); defaultValue: 30 }
+              name: "histogram";  label: qsTr("Histogram"); childrenOnSameRow: true
+              //IntegerField{ name: "histogramBins"; afterLabel: qsTr("bins"); defaultValue: 30 }
           }
           CheckBox{ name: "ecdf"; label: qsTr("Empirical cumulative distribution") }
       }

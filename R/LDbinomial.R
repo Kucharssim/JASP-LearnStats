@@ -29,13 +29,10 @@ LDbinomial <- function(jaspResults, dataset, options, state=NULL){
   cmfContainer <- .ldGetPlotContainer(jaspResults, options, "plotCMF", "Cumulative Distribution Function", 4)
   .ldFillCMFContainer(cmfContainer, options, .ldFormulaBinomialCDF)
   
-  return()
-  qfContainer  <- .ldGetPlotContainer(jaspResults, options, "plotQF", "Quantile Function", 5)
-  .ldFillQFContainer(qfContainer,   options, .ldFormulaBinomialQF)
   
   #### Generate and Display data section ----
   # simulate and read data
-  #.simulateData(jaspResults, options)
+  .simulateData(jaspResults, options)
   
   ready <- options[['variable']] != ""
   errors <- FALSE
@@ -56,7 +53,7 @@ LDbinomial <- function(jaspResults, dataset, options, state=NULL){
   readyDesc <- ready && (isFALSE(errors) || (is.null(errors$infinity) && is.null(errors$observations)))
   .ldSummaryContinuousTableMain(dataContainer, variable, options, readyDesc)
   .ldObservedMomentsTableMain  (dataContainer, variable, options, readyDesc)
-  .ldPlotHistogram             (dataContainer, variable, options, readyDesc)
+  .ldPlotHistogram             (dataContainer, variable, options, readyDesc, "discrete")
   .ldPlotECDF                  (dataContainer, variable, options, readyDesc)
   
   
@@ -106,21 +103,11 @@ LDbinomial <- function(jaspResults, dataset, options, state=NULL){
   options[['rFun']]   <- rbinom
   options[['distNameInR']] <- "binom"
   
-  options[['range_x']] <- c(0, options[['size']])
+  options[['range_x']] <- c(options[['min_x']], options[['max_x']])
   
-  if(options[['highlightType']] == "minmax"){
-    options[['highlightmin']] <- options[['min']]
-    options[['highlightmax']] <- options[['max']]
-  } else if(options[['highlightType']] == "lower"){
-    options[['highlightmin']] <- options[['range_x']][1]
-    options[['highlightmax']] <- options[['lower_max']]
-  } else if(options[['highlightType']] == "upper"){
-    options[['highlightmin']] <- options[['upper_min']]
-    options[['highlightmax']] <- options[['range_x']][2]
-  } else{
-    options[['highlightmin']] <- options[['highlightmax']] <- NULL
-  }
-  
+  options[['highlightmin']] <- options[['min']]
+  options[['highlightmax']] <- options[['max']]
+ 
   options$support <- list(min = 0, max = Inf)
   options$lowerBound <- c(0)
   options$upperBound <- c(1)

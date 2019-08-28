@@ -383,9 +383,10 @@
   
   pmfPlot <- createJaspPlot(title = "Density Plot", width = 600, height = 320)
   pmfPlot$position <- 2 # after explanation, before formula
-  pmfPlot$dependOn(c('plotPMF', 'range', 'highlightType',
+  pmfPlot$dependOn(c('plotPMF', 
+                     'min_x', 'max_x',
                      'highlightDensity', 'highlightProbability', 
-                     'min', 'max', 'lower_max', 'upper_min'))
+                     'min', 'max'))
   pmfContainer[['pmfPlot']] <- pmfPlot
   
   .ldFillPlotPMF(pmfPlot, options)
@@ -407,19 +408,11 @@
   # highlight probability
   if(options$highlightProbability){
     # determine plotting region
-    args <- options[['pars']]
-    argsPDF <- options[['pars']]
-    if(options[['highlightType']] == "minmax"){
-      args[['q']] <- c(options[['highlightmin']], options[['highlightmax']])
-    } else if(options[['highlightType']] == "lower"){
-      args[['q']] <- c(-Inf, options[['highlightmax']])
-    } else if(options[['highlightType']] == "upper"){
-      args[['q']] <- c(options[['highlightmin']], Inf)
-    }
+    args[['x']] <- options[['highlightmin']]:options[['highlightmax']]
+    datHigh <- data.frame(x = args[['x']], pmf = do.call(options[['pdfFun']], args))
     
     # calculate value under the curve
-    cdfValue <- do.call(options[['cdfFun']], args)
-    cdfValue <- cdfValue[2] - cdfValue[1]
+    cdfValue <- sum(datHigh$pmf)
     
     # round value under the curve for plotting
     cdfValueRound <- round(cdfValue, 2)
@@ -428,15 +421,19 @@
     }
     
     # calculate position of the geom_text
-    args[['q']] <- c(options[['highlightmin']], options[['highlightmax']])
-    argsPDF[['x']] <- args[['q']][1]:args[['q']][2]
-    x <- argsPDF[['x']][which.max(do.call(options[['pdfFun']], argsPDF))]
-    argsPDF[['x']] <- x
-    y <- do.call(options[['pdfFun']], argsPDF) * 1.2
-    # browser()
+    datShown <- datHigh[datHigh$x %in% dat$x, ]
+    if(ncol(datShown) > 0) {
+      x <- datShown$x[which.max(datShown$pmf)]
+      y <- datShown$pmf[which.max(datShown$pmf)] + 0.1 * max(dat$y)
+    } else{ # the entire highlight region is outside of displayed range
+      x <- NA
+      y <- NA
+      cdfValueRound <- NA
+    }
+    
     plot <- plot + 
-      ggplot2::geom_bar(ggplot2::aes(x = x, y = y), 
-                        data = subset(dat, x > options[['highlightmin']] & x <= options[['highlightmax']]),
+      ggplot2::geom_bar(ggplot2::aes(x = x, y = pmf), 
+                        data = datShown,
                         fill = "steelblue", stat = "identity") +
       ggplot2::geom_text(data = data.frame(x = x, y = y, label = cdfValueRound),
                          mapping = ggplot2::aes(x = x, y = y, label = label), size = 8, parse = TRUE)
@@ -446,13 +443,7 @@
   if(options$highlightDensity){
     # determine plotting region
     args <- options[['pars']]
-    if(options[['highlightType']] == "minmax"){
-      args[['x']] <- c(options[['highlightmin']], options[['highlightmax']])
-    } else if(options[['highlightType']] == "lower"){
-      args[['x']] <- options[['highlightmax']]
-    } else if(options[['highlightType']] == "upper"){
-      args[['x']] <- options[['highlightmin']]
-    }
+    args[['x']] <- c(options[['highlightmin']], options[['highlightmax']])
     
     segment_data <- subset(dat, x %in% args[['x']])
     segment_data$xend <- segment_data$x
@@ -537,21 +528,19 @@
   if(options$highlightDensity && FALSE){
     # determine plotting region
     args <- options[['pars']]
-    if(options[['highlightType']] == "minmax"){
-      args[['q']] <- c(options[['highlightmin']], options[['highlightmax']])
-    } else if(options[['highlightType']] == "lower"){
-      args[['q']] <- options[['highlightmax']]
-    } else if(options[['highlightType']] == "upper"){
-      args[['q']] <- options[['highlightmin']]
-    }
+    args[['q']] <- c(options[['highlightmin']], options[['highlightmax']])
+    
     pdfArgs <- args
     pdfArgs[['x']] <- pdfArgs[['q']]
     pdfArgs[['q']] <- NULL
     
     pdfValue <- do.call(options[['pdfFun']], pdfArgs)
     cmfValue <- do.call(options[['cmfFun']], args)
-    intercept <- cmfValue - args[['q']]*pdfValue
-    slopeText <-  round(pdfValue, 2) #bquote(paste(beta, " = ", .(round(slope, 2))))
+
+    pdfValueRound <-  round(pdfValue, 2)
+    if(c(0, 1) %in% pdfValueRound){
+      pdfValueRound <- round(pdfValue, 3)
+    }
     
     line_data <- data.frame(slope = pdfValue, intercept = intercept)
     
@@ -608,35 +597,47 @@
 }
 
 #### Plot empirical ----
-.ldPlotHistogram <- function(dataContainer, variable, options, ready){
+.ldPlotHistogram <- function(dataContainer, variable, options, ready, as = "scale"){
   if(!options$histogram) return()
   if(!is.null(dataContainer[['histogram']])) return()
   
   histPlot <- createJaspPlot(title = "Histogram", width = 500, height = 320)
   
-  histPlot$dependOn(c("histogramBins", "histogram"))
+  if(as != "scale"){
+    histPlot$dependOn(c("histogram"))
+  } else{
+    histPlot$dependOn(c("histogramBins", "histogram"))
+  }
   histPlot$position <- 3
   
   dataContainer[['histogram']] <- histPlot
   
   if(!ready) return()
   
-  .ldFillPlotHistogram(histPlot, options, variable)
+  .ldFillPlotHistogram(histPlot, options, variable, as)
   
 }
 
-.ldFillPlotHistogram <- function(histPlot, options, variable){
-  range <- range(variable)*1.1
+.ldFillPlotHistogram <- function(histPlot, options, variable, as = "scale"){
+  range <- range(variable)
   
-  breaksCustom <- seq(range[1], range[2], length.out = options[['histogramBins']]+1)
-
-  plot <- ggplot2::ggplot(data = NULL, ggplot2::aes(x = variable)) +
-    ggplot2::geom_histogram(ggplot2::aes(y = ggplot2::stat(..width..*..density..)),
-                            breaks = breaksCustom, fill = "steelblue") +
-    ggplot2::geom_rug() +
-    ggplot2::scale_x_continuous(limits = range) + 
+  if(as == "scale"){
+    histData <- hist(variable, 
+                     breaks = seq(range[1], range[2], length.out = options[['histogramBins']]+1), 
+                     plot = FALSE)
+    dat <- data.frame(counts = histData$counts, density = histData$density, mids = histData$mids)
+  } else if(as == "discrete"){
+    mids <- range[1]:range[2]
+    counts <- sapply(mids, function(i) sum(variable == i))
+    dat  <- data.frame(counts = counts, mids = mids)
+  }
+  plot <- ggplot2::ggplot(data = dat, ggplot2::aes(x = mids, y = counts/sum(counts))) +
+    ggplot2::geom_bar(stat="identity", fill = "grey", colour = "black") +
+    ggplot2::scale_x_continuous(limits = range, 
+                                expand = c(0.1, 0.1),
+                                breaks = JASPgraphs::axesBreaks(range)) + 
     ggplot2::xlab(options$variable) +
-    ggplot2::ylab(paste0("Freq(", options[['variable']], " in bin)"))
+    ggplot2::ylab(paste0("Rel. Freq(", options[['variable']], " in bin)"))
   
   plot <- JASPgraphs::themeJasp(plot)
   histPlot[['plotObject']] <- plot
