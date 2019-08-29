@@ -43,7 +43,7 @@
   tab$dependOn(c("outputEstimates", "outputSE", "ciInterval", "ciIntervalInterval", "parametrization", method))
   tab$position <- 1
   tab$showSpecifiedColumnsOnly <- TRUE
-  tab$setExpectedSize(rows = length(options$pars))
+  tab$setExpectedSize(rows = length(options$pars) - length(options$fix.pars))
   
   tab$addColumnInfo(name = "parName", title = "Parameter", type = "string")
   tab$addColumnInfo(name = "estimate", title = "Estimate", type = "number")
@@ -76,7 +76,7 @@
     } else if(!options$ciInterval && options$outputSE){
       tab$addFootnote("Standard errors were calculated using the delta method.")
     } else if(options$ciInterval && options$outputSE){
-      tab$addFootnote("Standard errors and confidence intervals and were calculated using the delta method.")
+      tab$addFootnote("Standard errors and confidence intervals were calculated using the delta method.")
     }
   }
   
@@ -90,23 +90,36 @@
 .ldMLEResults <- function(mleContainer, variable, options, ready, distName, structureFun){
   if(!ready) return()
   if(!is.null(mleContainer[['mleResults']])) return(mleContainer[['mleResults']]$object)
-
+  
+  starts <- options$pars
+  if(!is.null(options$fix.pars)){
+    starts[names(options$fix.pars)] <- NULL 
+  }
+  
   results <- list()
-  results$fitdist <- try(fitdistrplus::fitdist(data = variable, distr = distName, method = "mle", start = options$pars,
-                                           keepdata = FALSE, discrete = FALSE, optim.method = "L-BFGS-B",
-                                           lower = options$lowerBound, upper = options$upperBound))
+  results$fitdist <- try(fitdistrplus::fitdist(data = variable, distr = distName, method = "mle", 
+                                               start = starts, fix.arg = options$fix.pars,
+                                               keepdata = FALSE, optim.method = "L-BFGS-B",
+                                               lower = options$lowerBound, upper = options$upperBound))
   
   if(inherits(results$fitdist, "try-error")){
-    results$fitdist <- try(MASS::fitdistr(x = variable, densfun = options$pdfFun, start = options$pars, 
-                                           lower = options$lowerBound, upper = options$upperBound))
+    results$fitdist <- try(MASS::fitdistr(x = variable, densfun = options$pdfFun, start = starts, 
+                                          lower = options$lowerBound, upper = options$upperBound))
+  }
+  
+  if(inherits(results$fitdist, "try-error")){
+    results$fitdist <- try(fitdistrplus::fitdist(data = variable, distr = distName, method = "mle", 
+                                                 start = starts, fix.arg = options$fix.pars,
+                                                 keepdata = FALSE))
+  } else{
+    results$fitdist$convergence <- 0
   }
   
   if(inherits(results$fitdist, "try-error")){
     mleContainer$setError("Estimation failed: try adjusting parameter values, check outliers, or feasibility of the distribution fitting the data.")
     return()
-  } else{
-    results$fitdist$convergence <- 0
-  }
+  } 
+  
   results$structured <- structureFun(results$fitdist, options)
   
   mleContainer[['mleResults']] <- createJaspState(object = results, dependencies = c(options$parValNames, "ciIntervalInterval"))

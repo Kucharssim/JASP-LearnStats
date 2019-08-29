@@ -633,7 +633,7 @@
   }
   plot <- ggplot2::ggplot(data = dat, ggplot2::aes(x = mids, y = counts/sum(counts))) +
     ggplot2::geom_bar(stat="identity", fill = "grey", colour = "black") +
-    ggplot2::scale_x_continuous(limits = range, 
+    ggplot2::scale_x_continuous(limits = range + c(-0.5, 0.5), 
                                 expand = c(0.1, 0.1),
                                 breaks = JASPgraphs::axesBreaks(range)) + 
     ggplot2::xlab(options$variable) +

@@ -17,6 +17,19 @@
   return()
 }
 
+.ldCheckInteger <- function(variable, errors){
+  is_integer <- all((variable %% 1) == 0)
+  
+  if(isFALSE(errors)){
+    errors <- !is_integer
+  } else if(!is_integer){
+    errors[['integer']] <- TRUE
+    errors[['message']] <- paste(errors[['message']], "<ul><li>Variable has to be discrete (i.e., integer).</li></ul>")
+  }
+  
+  return(errors)
+}
+
 .ldGetDataContainer <- function(jaspResults, options, errors = FALSE){
   if(!is.null(jaspResults[['dataContainer']])){
     dataContainer <- jaspResults[['dataContainer']]
@@ -28,7 +41,7 @@
     jaspResults[['dataContainer']] <- dataContainer
   }
   
-  if(!isFALSE(errors) && (!is.null(errors$infinity) || !is.null(errors$observations))){
+  if(!isFALSE(errors) && (!is.null(errors$infinity) || !is.null(errors$observations) || !is.null(errors$integer))){
     dataContainer$setError(errors$message)
   }
   return(dataContainer)

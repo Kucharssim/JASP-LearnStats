@@ -32,7 +32,7 @@ LDbinomial <- function(jaspResults, dataset, options, state=NULL){
   
   #### Generate and Display data section ----
   # simulate and read data
-  .simulateData(jaspResults, options)
+  #.simulateData(jaspResults, options)
   
   ready <- options[['variable']] != ""
   errors <- FALSE
@@ -45,6 +45,7 @@ LDbinomial <- function(jaspResults, dataset, options, state=NULL){
                          observations.amount = "<2",
                          limits.min = options$support$min, limits.max = options$support$max, 
                          exitAnalysisIfErrors = FALSE)
+    errors <- .ldCheckInteger(variable, errors)
   }
   
   # overview of the data
@@ -68,12 +69,12 @@ LDbinomial <- function(jaspResults, dataset, options, state=NULL){
     mleEstimatesTable  <- .ldEstimatesTable(mleContainer, options, TRUE, TRUE, "methodMLE")
     mleResults   <- .ldMLEResults(mleContainer, variable, options, readyFit, options$distNameInR,
                                   .ldBinomialMethodMLEStructureResults)
-    .ldFillbinomialEstimatesTable(mleEstimatesTable, mleResults, options, readyFit)
+    .ldFillBinomialEstimatesTable(mleEstimatesTable, mleResults, options, readyFit)
     
-    
+    return()
     # fit assessment
     mleFitContainer    <- .ldGetFitContainer(mleContainer, options, "mleFitAssessment", "Fit Assessment", 8)
-    
+
     # fit statistics
     mleFitStatistics   <- .ldFitStatisticsTable(mleFitContainer, options, "methodMLE")
     mleFitStatisticsResults <- .ldFitStatisticsResults(mleContainer, mleResults$fitdist, variable, options, readyFit)
@@ -96,7 +97,8 @@ LDbinomial <- function(jaspResults, dataset, options, state=NULL){
   options[['parValNames']] <- c("prob", "size")
   
   options[['pars']]   <- list(prob = options[['prob']], size = options[['size']])
-  
+  options[['fix.pars']] <- list(size = options[['size']])
+    
   options[['pdfFun']] <- dbinom
   options[['cdfFun']] <- pbinom
   options[['qFun']]   <- qbinom
@@ -108,7 +110,7 @@ LDbinomial <- function(jaspResults, dataset, options, state=NULL){
   options[['highlightmin']] <- options[['min']]
   options[['highlightmax']] <- options[['max']]
  
-  options$support <- list(min = 0, max = Inf)
+  options$support <- list(min = 0, max = options[['size']])
   options$lowerBound <- c(0)
   options$upperBound <- c(1)
   
@@ -173,12 +175,8 @@ LDbinomial <- function(jaspResults, dataset, options, state=NULL){
   if(is.null(results)) return()
   if(is.null(table)) return()
   
-  par1 <- c(mu = "\u03BC")
-  par2 <- c(sigma2 = "\u03C3\u00B2", sigma = "\u03C3", 
-            tau2   = "\u03C4\u00B2", tau   = "\u03C4")[options$parametrization]
   res <- results$structured
-  res <- res[res$par %in% names(c(par1, par2)),]
-  res$parName <- c(par1, par2)
+  res$parName <- c("p")
   
   if(results$fitdist$convergence != 0){
     table$addFootnote("The optimization did not converge, try adjusting the parameter values.", symbol = "<i>Warning.</i>")
@@ -187,6 +185,7 @@ LDbinomial <- function(jaspResults, dataset, options, state=NULL){
     table$addFootnote(results$fitdist$message, symbol = "<i>Warning.</i>")
   }
   
+  table$addFootnote(message = sprintf("Parameter n was fixed at value %s.", options[['size']]))
   table$setData(res)
   
   return()
@@ -195,7 +194,7 @@ LDbinomial <- function(jaspResults, dataset, options, state=NULL){
 .ldBinomialMethodMLEStructureResults <- function(fit, options){
   if(is.null(fit)) return()
   
-  transformations <- c(mu = "mean", sigma2 = "sd^2", sigma = "sd", tau2 = "1/sd^2", tau = "1/sd")
+  transformations <- c(prob = "prob")
   
   res <- sapply(transformations, function(tr) car::deltaMethod(fit$estimate, tr, fit$vcov, level = options$ciIntervalInterval))
   rownames(res) <- c("estimate", "se", "lower", "upper")
