@@ -18,7 +18,7 @@
 .ldFitStatisticsTable <- function(fitContainer, options, method){
   if(!is.null(fitContainer[['fitStatisticsTable']])) return()
   
-  allTests <- c("kolmogorovSmirnov", "cramerVonMisses", "andersonDarling", "shapiroWilk")
+  allTests <- c("kolmogorovSmirnov", "cramerVonMisses", "andersonDarling", "shapiroWilk", "chiSquare")
   optionsTests <- allTests %in% names(options)
   whichTests <- unlist(options[allTests[optionsTests]])
   
@@ -46,23 +46,33 @@
   if(is.null(fit)) return()
   if(!is.null(fitContainer[['fitStatisticsResults']])) return(fitContainer[['fitStatisticsResults']]$object)
   
-  #browser()
-  allTests <- c("kolmogorovSmirnov", "cramerVonMisses", "andersonDarling", "shapiroWilk")
+  allTests <- c("kolmogorovSmirnov", "cramerVonMisses", "andersonDarling", "shapiroWilk", "chiSquare")
   tests <- allTests[allTests %in% names(options)]
   
   res <- data.frame(test = tests, statistic = numeric(length = length(tests)), p.value = numeric(length = length(tests)))
+  
+  pars <- c(as.list(fit$estimate), options$fix.pars)
+  
   for(test in tests){
     arg <- switch (test,
-                   "kolmogorovSmirnov" = c(list(x = variable, y = options$cdfFun), as.list(fit$estimate)),
+                   "kolmogorovSmirnov" = c(list(x = variable, y = options$cdfFun), pars),
                    "shapiroWilk" = list(x = variable),
-                   c(list(x = variable, null = options$cdfFun), as.list(fit$estimate))
+                   "chiSquare" = list(x = as.numeric(table(variable)), 
+                                      p = do.call(options[['pdfFun']],
+                                                  utils::modifyList(pars,
+                                                                    list(x = as.numeric(names(table(variable))))
+                                                                    )
+                                                  ),
+                                      rescale.p = TRUE),
+                   c(list(x = variable, null = options$cdfFun), pars)
     )
     fun <- switch (test,
                    "kolmogorovSmirnov" = ks.test,
                    "cramerVonMisses"   = goftest::cvm.test,
                    "andersonDarling"   = goftest::ad.test,
                    "shapiroWilk"       = shapiro.test,
-    )
+                   "chiSquare"         = chisq.test
+                   )
     compute <- do.call(fun, arg)
     res[res$test == test, "statistic"] <- as.numeric(compute$statistic)
     res[res$test == test, "p.value"]   <- as.numeric(compute$p.value)
@@ -79,9 +89,10 @@
   if(is.null(table)) return()
 
   
-  allTests <- c("kolmogorovSmirnov", "cramerVonMisses", "andersonDarling", "shapiroWilk")
+  allTests <- c("kolmogorovSmirnov", "cramerVonMisses", "andersonDarling", "shapiroWilk", "chiSquare")
   tests <- allTests[allTests %in% names(options)]
-  testNames <- c("Kolmogorov-Smirnov", "Cramer von Misses", "Anderson-Darling", "Shapiro-Wilk")[allTests %in% names(options)]
+  testNames <- c("Kolmogorov-Smirnov", "Cramer von Misses", "Anderson-Darling",
+                 "Shapiro-Wilk", "Chi-square")[allTests %in% names(options)]
   
   whichTests <- unlist(options[tests])
   

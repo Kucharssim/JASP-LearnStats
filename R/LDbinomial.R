@@ -42,7 +42,7 @@ LDbinomial <- function(jaspResults, dataset, options, state=NULL){
     variable <- dataset[[.v(options[['variable']])]]
     variable <- variable[!is.na(variable)]
     errors <- .hasErrors(dataset, type = c("observations", "variance", "infinity", "limits"),
-                         observations.amount = "<2",
+                         observations.amount = "<1",
                          limits.min = options$support$min, limits.max = options$support$max, 
                          exitAnalysisIfErrors = FALSE)
     errors <- .ldCheckInteger(variable, errors)
@@ -71,7 +71,6 @@ LDbinomial <- function(jaspResults, dataset, options, state=NULL){
                                   .ldBinomialMethodMLEStructureResults)
     .ldFillBinomialEstimatesTable(mleEstimatesTable, mleResults, options, readyFit)
     
-    return()
     # fit assessment
     mleFitContainer    <- .ldGetFitContainer(mleContainer, options, "mleFitAssessment", "Fit Assessment", 8)
 
@@ -79,6 +78,7 @@ LDbinomial <- function(jaspResults, dataset, options, state=NULL){
     mleFitStatistics   <- .ldFitStatisticsTable(mleFitContainer, options, "methodMLE")
     mleFitStatisticsResults <- .ldFitStatisticsResults(mleContainer, mleResults$fitdist, variable, options, readyFit)
     .ldFillFitStatisticsTable(mleFitStatistics, mleFitStatisticsResults, options, readyFit)
+    return()
     # fit plots
     .ldFitPlots(mleFitContainer, mleResults$fitdist$estimate, options, variable, readyFit)
     

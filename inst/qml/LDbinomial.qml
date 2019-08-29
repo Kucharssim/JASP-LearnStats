@@ -187,10 +187,11 @@ Form {
       Group
       {
           title: qsTr("Statistics")
-          CheckBox{ name: "kolmogorovSmirnov";  label: qsTr("Kolmogorov-Smirnov")}
-          CheckBox{ name: "cramerVonMisses";    label: qsTr("Cramér–von Mises")  }
-          CheckBox{ name: "andersonDarling";    label: qsTr("Anderson-Darling")  }
+          //CheckBox{ name: "kolmogorovSmirnov";  label: qsTr("Kolmogorov-Smirnov")}
+          //CheckBox{ name: "cramerVonMisses";    label: qsTr("Cramér–von Mises")  }
+          //CheckBox{ name: "andersonDarling";    label: qsTr("Anderson-Darling")  }
           //CheckBox{ name: "shapiroWilk";        label: qsTr("Shapiro-Wilk")      }
+          CheckBox{ name: "chiSquare"; label: qsTr("Chi-square")}
       }
 
   }
