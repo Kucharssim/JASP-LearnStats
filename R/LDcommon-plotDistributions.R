@@ -398,12 +398,13 @@
   
   args <- options[['pars']]
   args[['x']] <- options[['range_x']][1]:options[['range_x']][2]
+  xlim <- options[['range_x']] + c(-1, 1)
   
   dat <- data.frame(x = args[['x']], y = do.call(options[['pdfFun']], args))
   
   # basic plot
   plot <- ggplot2::ggplot(data = dat, ggplot2::aes(x = x, y = y)) +
-    ggplot2::geom_bar(stat="identity", fill = "grey", colour = "black")
+    ggplot2::geom_bar(stat="identity", fill = "grey", colour = "black", width = 0.8)
   
   # highlight probability
   if(options$highlightProbability){
@@ -433,7 +434,7 @@
     
     plot <- plot + 
       ggplot2::geom_bar(ggplot2::aes(x = x, y = pmf), 
-                        data = datShown,
+                        data = datShown, width = 0.8,
                         fill = "steelblue", stat = "identity") +
       ggplot2::geom_text(data = data.frame(x = x, y = y, label = cdfValueRound),
                          mapping = ggplot2::aes(x = x, y = y, label = label), size = 8, parse = TRUE)
@@ -447,24 +448,33 @@
     
     segment_data <- subset(dat, x %in% args[['x']])
     segment_data$xend <- segment_data$x
-    segment_data$x <- options[['range_x']][1]#(options[['range_x']][2]-options[['range_x']][1])/15
+    segment_data$x    <- xlim[1] -0.05 * diff(options[['range_x']])
+    segment_data$xseg <- xlim[1] -0.01 * diff(options[['range_x']])
     segment_data$label <- round(segment_data$y, 2)
     
+    # make 10% margin to write values along axis
+    xlim <- xlim + c(-0.1, 0) * diff(options[['range_x']]) 
     # plot density
     plot <- plot + 
       ggplot2::geom_bar(ggplot2::aes(x = xend, y = y), stat = "identity",
                         data = segment_data, 
-                        alpha = 0, colour = "black", size = 1.5, width = 1) +
+                        alpha = 0, colour = "black", size = 1.5, width = 0.8) +
       ggplot2::geom_segment(data = segment_data,
-                            mapping = ggplot2::aes(x = x, xend = xend, y = y, yend = y),
+                            mapping = ggplot2::aes(x = xseg, xend = xend, y = y, yend = y),
                             linetype = 2) +
       ggplot2::geom_text(data = segment_data,
-                         ggplot2::aes(x = x-0.75, y = y, label = label), size = 6)
+                         ggplot2::aes(x = x, y = y, label = label), size = 6)
   }
   
+  breaks <- pretty(options[['range_x']])
+  # display only pretty integers
+  breaks <- breaks[breaks %% 1 == 0]
   plot <- plot + 
     ggplot2::ylab("Probability (X = x)") + 
-    ggplot2::scale_x_discrete(breaks = options[['range_x']][1]:options[['range_x']][2])
+    ggplot2::scale_x_continuous(limits = xlim,
+                                breaks = breaks,
+                                labels = breaks,
+                                expand = c(0, 0))
     
   plot <- JASPgraphs::themeJasp(plot)
   
@@ -627,12 +637,13 @@
     range <- range(variable)
     mids <- range[1]:range[2]
     counts <- sapply(mids, function(i) sum(variable == i))
-    dat  <- data.frame(counts = counts, mids = as.factor(mids))
+    dat  <- data.frame(counts = counts, mids = mids)
   } else if(as == "factor"){
     levs <- levels(variable)
     mids <- seq_along(levs)
+    range <- range(mids)
     counts <- sapply(levs, function(i) sum(variable == i))
-    dat <- data.frame(counts = counts, mids = as.factor(mids), labs = levs)
+    dat <- data.frame(counts = counts, mids = mids, labs = levs)
   }
   
   plot <- ggplot2::ggplot(data = dat, ggplot2::aes(x = mids, y = counts/sum(counts))) +
@@ -641,14 +652,21 @@
     ggplot2::ylab(paste0("Rel. Freq(", options[['variable']], " in bin)"))
   
   if(as == "scale"){
-    plot <- plot + ggplot2::scale_x_continuous(limits = range + c(-0.5, 0.5), 
-                                               expand = c(0.1, 0.1),
+    plot <- plot + ggplot2::scale_x_continuous(limits = range, 
+                                               expand = c(0.05, 0),
                                                breaks = JASPgraphs::axesBreaks(range))
   } else if (as == "discrete"){
-    plot <- plot + ggplot2::scale_x_discrete(limits = range + c(-0.5, 0.5), 
-                                             expand = c(0.1, 0.1))
+    breaks <- pretty(range)
+    breaks <- breaks[breaks %% 1 == 0]
+    plot <- plot + ggplot2::scale_x_continuous(limits = range + c(-1, 1),
+                                               breaks = breaks,
+                                               labels = breaks,
+                                               expand = c(0, 0))
   } else if (as == "factor"){
-    plot <- plot + ggplot2::scale_x_discrete(labels = dat$labs)
+    plot <- plot + ggplot2::scale_x_continuous(limits = range + c(-1, 1),
+                                               labels = dat$labs,
+                                               breaks = dat$mids,
+                                               expand = c(0, 0))
   }
   
   plot <- JASPgraphs::themeJasp(plot)

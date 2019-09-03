@@ -177,7 +177,8 @@
     ggplot2::geom_histogram(ggplot2::aes(y = ..density..), fill = "grey", col = "black") +
     ggplot2::stat_function(fun = options[['pdfFun']], args = as.list(estParameters), size = 1.5) + 
     ggplot2::geom_rug() +
-    ggplot2::scale_x_continuous(limits = range(variable)) +
+    ggplot2::scale_x_continuous(limits = range(variable)
+                                breaks = pretty(range(variable))) +
     ggplot2::ylab("Density") + ggplot2::xlab(options[['variable']])
   
   p <- JASPgraphs::themeJasp(p)
@@ -236,7 +237,7 @@
     ggplot2::stat_ecdf(geom = "step") +
     ggplot2::geom_rug() +
     ggplot2::stat_function(fun = options[['cdfFun']], args = as.list(estParameters), size = 1.5) + 
-    ggplot2::scale_x_continuous(limits = range(variable)) +
+    ggplot2::scale_x_continuous(limits = range(variable), breaks = pretty(range(variable))) +
     ggplot2::scale_y_continuous(limits = 0:1) + 
     ggplot2::ylab("Probability (X \u2264 x)") + ggplot2::xlab(options[['variable']])
   
