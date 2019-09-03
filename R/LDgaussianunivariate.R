@@ -113,7 +113,7 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
   options[['rFun']]   <- rnorm
   options[['distNameInR']] <- "norm"
   
-  options[['range_x']] <- c(-options[['range']], options[['range']])
+  options[['range_x']] <- c(options[['min_x']], options[['max_x']])
   
   if(options[['highlightType']] == "minmax"){
     options[['highlightmin']] <- options[['min']]

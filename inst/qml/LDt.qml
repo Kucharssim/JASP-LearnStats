@@ -55,7 +55,21 @@ Form {
     {
         title: qsTr("Options")
         enabled: plotPDF.checked || plotCDF.checked
-        DoubleField{ name:  "range"; label: qsTr("Range"); defaultValue: 3; id: range}
+        Group
+        {
+            title: qsTr("Range")
+            columns: 2
+            IntegerField
+            { 
+                name: "min_x"; label: qsTr("From"); id: min_x;
+                defaultValue: -3; negativeValues: true; max: max_x.value
+            }
+            IntegerField
+            { 
+                name: "max_x"; label: qsTr("to"); id: max_x;
+                defaultValue: 3; min: min_x.value
+            }
+        }
         Group
         {
             title: qsTr("Highlight")

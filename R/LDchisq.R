@@ -103,7 +103,7 @@ LDchisq <- function(jaspResults, dataset, options, state=NULL){
   options[['rFun']]   <- rchisq
   options[['distNameInR']] <- "chisq"
   
-  options[['range_x']] <- c(0, options[['range']])
+  options[['range_x']] <- c(options[['min_x']], options[['max_x']])
   
   if(options[['highlightType']] == "minmax"){
     options[['highlightmin']] <- options[['min']]

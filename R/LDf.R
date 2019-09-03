@@ -26,7 +26,7 @@ LDf <- function(jaspResults, dataset, options, state=NULL){
   pdfContainer <- .ldGetPlotContainer(jaspResults, options, "plotPDF", "Probability Density Function", 3)
   .ldFillPDFContainer(pdfContainer, options, .ldFormulaFPDF)
   
-  cdfContainer <- .ldGetPlotContainer(jaspResults, options, "plotCDF", "Cumulative F Function", 4)
+  cdfContainer <- .ldGetPlotContainer(jaspResults, options, "plotCDF", "Cumulative Distribution Function", 4)
   .ldFillCDFContainer(cdfContainer, options, .ldFormulaFCDF)
   
   qfContainer  <- .ldGetPlotContainer(jaspResults, options, "plotQF", "Quantile Function", 5)
@@ -103,7 +103,7 @@ LDf <- function(jaspResults, dataset, options, state=NULL){
   options[['rFun']]   <- rf
   options[['distNameInR']] <- "f"
   
-  options[['range_x']] <- c(0, options[['range']])
+  options[['range_x']] <- c(options[['min_x']], options[['max_x']])
   
   if(options[['highlightType']] == "minmax"){
     options[['highlightmin']] <- options[['min']]

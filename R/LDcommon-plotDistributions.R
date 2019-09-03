@@ -84,7 +84,7 @@
   
   pdfPlot <- createJaspPlot(title = "Density Plot", width = 600, height = 320)
   pdfPlot$position <- 2 # after explanation, before formula
-  pdfPlot$dependOn(c('plotPDF', 'range', 'highlightType',
+  pdfPlot$dependOn(c('plotPDF', 'min_x', 'max_x', 'highlightType',
                      'highlightDensity', 'highlightProbability', 
                      'min', 'max', 'lower_max', 'upper_min'))
   pdfContainer[['pdfPlot']] <- pdfPlot
@@ -203,7 +203,7 @@
   
   cdfPlot <- createJaspPlot(title = "Cumulative Probability Plot", width = 600, height = 320)
   cdfPlot$position <- 2 # after explanation, before formula
-  cdfPlot$dependOn(c('plotCDF', 'range', 'highlightType',
+  cdfPlot$dependOn(c('plotCDF', 'min_x', 'max_x', 'highlightType',
                      'highlightDensity', 'highlightProbability', 
                      'min', 'max', 'lower_max', 'upper_min'))
   cdfContainer[['cdfPlot']] <- cdfPlot
@@ -215,8 +215,8 @@
 
 .ldFillPlotCDF <- function(cdfPlot, options){
   
-  dat <- data.frame(x = options[['range_x']][1]:options[['range_x']][2])
-  dat$y <- 
+  #dat <- data.frame(x = options[['range_x']][1]:options[['range_x']][2])
+  #dat$y <- 
   plot <- ggplot2::ggplot(data = data.frame(x = options[['range_x']]), ggplot2::aes(x = x)) +
     ggplot2::stat_function(fun = options[['cdfFun']], n = 101, args = options[['pars']], size = 1)
   
@@ -511,7 +511,7 @@
   
   cmfPlot <- createJaspPlot(title = "Cumulative Probability Plot", width = 600, height = 320)
   cmfPlot$position <- 2 # after explanation, before formula
-  cmfPlot$dependOn(c('plotCMF', 'range', 'highlightType',
+  cmfPlot$dependOn(c('plotCMF', 'min_x', 'max_x', 'highlightType',
                      'highlightDensity', 'highlightProbability', 
                      'min', 'max', 'lower_max', 'upper_min'))
   cmfContainer[['cmfPlot']] <- cmfPlot
