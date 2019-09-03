@@ -44,7 +44,7 @@ Form {
         title: qsTr("Display")
         CheckBox{ label: qsTr("Explanatory text"); name: "explanatoryText"}
         CheckBox{ label: qsTr("Parameters, support, and moments"); name: "parsSupportMoments" }
-        CheckBox{ label: qsTr("Formulas"); name: "formulas"}
+        CheckBox{ label: qsTr("Formulas"); name: "formulas"; visible: false}
         CheckBox{ label: qsTr("Probability mass function"); id: plotPMF; name: "plotPMF"; checked: true }
         CheckBox{ label: qsTr("Cumulative distribution function"); id: plotCMF; name: "plotCMF"; checked: false }
     }

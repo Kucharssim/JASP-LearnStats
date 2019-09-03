@@ -63,26 +63,23 @@ Form {
       title: qsTr("Display")
       CheckBox{ label: qsTr("Explanatory text"); name: "explanatoryText"}
       CheckBox{ label: qsTr("Parameters, support, and moments"); name: "parsSupportMoments" }
-      CheckBox{ label: qsTr("Formulas"); name: "formulas"}
+      CheckBox{ label: qsTr("Formulas"); name: "formulas"; visible: false}
       CheckBox
       {
         label: qsTr("Probability density function")
         id: plotPDF
         name: "plotPDF"
         checked: true
-        //CheckBox{ label: qsTr("Formula"); name: "formulaPDF" }
       }
 
       CheckBox{
         label: qsTr("Cumulative distribution function")
         id: plotCDF
         name: "plotCDF"
-        //CheckBox{ label: qsTr("Formula"); name: "formulaCDF" }
       }
       CheckBox{
           label: qsTr("Quantile function")
           name: "plotQF"
-          //CheckBox{ label: qsTr("Formula"); name: "formulaQF" }
       }
     }
 
