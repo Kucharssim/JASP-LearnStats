@@ -1,12 +1,15 @@
 export(LDgaussianunivariate)
-export(LDstudent)
-export(LDfDist)
-export(LDfDist)
+export(LDt)
+export(LDf)
+export(LDchisq)
+export(LDbeta)
 export(LDgamma)
-export(LDfDist)
-export(LDfDist)
-export(LDfDist)
-export(LDfDist)
-export(LDfDist)
+export(LDgammaInverse)
+export(LDexponential)
+export(LDbeta)
+export(LDbinomial)
+export(LDbeta)
+export(LDbeta)
   import('goftest');
   import('fitdistrplus');
+  import('invgamma');
