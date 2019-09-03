@@ -91,8 +91,8 @@
 		},
 		{
 			"title":              "Poisson",
-			"qml":                "LDbeta.qml",
-			"function":           "LDbeta",
+			"qml":                "LDpoisson.qml",
+			"function":           "LDpoisson",
 			"usesJaspResults":    true
 		}
 

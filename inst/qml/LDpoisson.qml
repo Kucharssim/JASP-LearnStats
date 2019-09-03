@@ -29,16 +29,10 @@ Form {
     title: qsTr("Show Distribution")
     Group
     {
-        title: qsTr("Free parameter")
-        DoubleField{ name: "prob"; label: qsTr("p"); id: prob; min: 0; max: 1; defaultValue: 0.5 }
+        title: qsTr("Parameter")
+        Layout.columnSpan: 2
+        DoubleField{ name: "lambda"; label: qsTr("λ"); id: prob; min: 0; defaultValue: 1 }
     }
-
-    Group
-    {
-        title: qsTr("Fixed parameter")
-        IntegerField{ name: "size"; label: qsTr("n"); id: size; defaultValue: 10 }
-    }
-
     Group
     {
         title: qsTr("Display")
@@ -65,7 +59,7 @@ Form {
             IntegerField
             { 
                 name: "max_x"; label: qsTr("to"); id: max_x;
-                defaultValue: size.value; min: min_x.value; max: size.value
+                defaultValue: 5; min: min_x.value
             }
         }
         DoubleField{ name:  "range"; label: qsTr("Range"); defaultValue: 3; id: range; visible: false}
@@ -89,7 +83,7 @@ Form {
                 IntegerField
                 { 
                     name: "max"; label: ""; id: max;
-                    min: min.value; defaultValue: size.value; max: size.value
+                    min: min.value; defaultValue: 5
                 }
             }
         }

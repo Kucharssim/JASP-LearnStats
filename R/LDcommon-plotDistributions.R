@@ -354,7 +354,7 @@
 .ldFillPMFContainer <- function(pmfContainer, options, formulaText = NULL, explanationText = NULL){
   if(!options$plotPMF) return()
   
-  .ldExplanationPDF(pmfContainer, options, explanationText)
+  .ldExplanationPMF(pmfContainer, options, explanationText)
   .ldPlotPMF(pmfContainer, options)
   .ldFormulaPlot(pmfContainer, options, formulaText, "plotPMF")
   
@@ -381,7 +381,7 @@
 .ldPlotPMF <- function(pmfContainer, options){
   if(!is.null(pmfContainer[['pmfPlot']])) return()
   
-  pmfPlot <- createJaspPlot(title = "Density Plot", width = 600, height = 320)
+  pmfPlot <- createJaspPlot(title = "Probability Mass Plot", width = 600, height = 320)
   pmfPlot$position <- 2 # after explanation, before formula
   pmfPlot$dependOn(c('plotPMF', 
                      'min_x', 'max_x',
@@ -491,7 +491,7 @@
   explanation$position <- 1
   
   if(is.null(explanationText)){
-    explanationText <- .ldAllTextsList$explanations$cmf
+    explanationText <- .ldAllTextsList$explanations$cdf
   }
   
   explanation[['text']] <- explanationText

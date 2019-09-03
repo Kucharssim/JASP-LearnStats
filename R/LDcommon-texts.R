@@ -42,6 +42,12 @@
     The density plot displays the probability density function of a random variable.
     The y-axis displays the value of the density function for a particular value of the random variable (displayed on the x-axis).",
     
+    pmf = "The probability mass function (PMF), usually denoted as f(x), is a function of a random variable X.
+    The value of f(x) provides the probability that a realization of the random variable X yields a value equal to x.
+    
+    The probability mass plot displays the probability mass function of a random variable.
+    The y-axis displays the value of the probability mass function for a particular value of the random variable (displayed on the x-axis).",
+    
     cdf = "The cumulative distribution function (CDF), usually denoted as F(x), is a function of a random variable X.
     The value of F(x) provides the probability that a realization of the random variable X yields a value that is equal to or smaller than x.
     
