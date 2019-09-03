@@ -190,8 +190,8 @@ Form {
       {
           title: ""
           CheckBox{ name: "methodMLE";      label: qsTr("Maximum likelihood")}
-          CheckBox{ name: "methodMoments";  label: qsTr("Method of moments") }
-          CheckBox{ name: "methodUnbiased"; label: qsTr("Unbiased estimator")}
+          CheckBox{ name: "methodMoments";  label: qsTr("Method of moments") ; visible: false}
+          CheckBox{ name: "methodUnbiased"; label: qsTr("Unbiased estimator"); visible: false}
           //CheckBox
           //{
           //   name: "methodML";      label: qsTr("Maximum Likelihood"); debug: true
@@ -226,8 +226,8 @@ Form {
              }
           }
 
-          CheckBox{ name: "outputVarCov"; label: qsTr("Variance-covariance"); checked: false}
-          CheckBox{ name: "outputCor";    label: qsTr("Correlation"); checked: false}
+          CheckBox{ name: "outputVarCov"; label: qsTr("Variance-covariance"); checked: false; visible: false}
+          CheckBox{ name: "outputCor";    label: qsTr("Correlation"); checked: false; visible: false}
 
           //Group{
           //    debug: true
