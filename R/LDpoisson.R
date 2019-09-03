@@ -171,7 +171,7 @@ LDpoisson <- function(jaspResults, dataset, options, state=NULL){
   if(is.null(table)) return()
   
   res <- results$structured
-  res$parName <- c("lambda")
+  res$parName <- c("\u03BB")
   
   if(results$fitdist$convergence != 0){
     table$addFootnote("The optimization did not converge, try adjusting the parameter values.", symbol = "<i>Warning.</i>")
