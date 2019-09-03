@@ -32,7 +32,7 @@ LDbinomial <- function(jaspResults, dataset, options, state=NULL){
   
   #### Generate and Display data section ----
   # simulate and read data
-  #.simulateData(jaspResults, options)
+  .simulateData(jaspResults, options)
   
   ready <- options[['variable']] != ""
   errors <- FALSE
@@ -78,7 +78,7 @@ LDbinomial <- function(jaspResults, dataset, options, state=NULL){
     mleFitStatistics   <- .ldFitStatisticsTable(mleFitContainer, options, "methodMLE")
     mleFitStatisticsResults <- .ldFitStatisticsResults(mleContainer, mleResults$fitdist, variable, options, readyFit)
     .ldFillFitStatisticsTable(mleFitStatistics, mleFitStatisticsResults, options, readyFit)
-    return()
+    #return()
     # fit plots
     .ldFitPlots(mleFitContainer, mleResults$fitdist$estimate, options, variable, readyFit)
     

@@ -105,7 +105,8 @@
 }
 ### Fill plots----
 .ldFitPlots <- function(fitContainer, estimates, options, variable, ready){
-  if(is.null(fitContainer[['estPDF']]) && options$estPDF){
+  estimates <- c(estimates, options$fix.pars)
+  if(is.null(fitContainer[['estPDF']]) && isTRUE(options$estPDF)){
     pdfplot <- createJaspPlot(title = "Histogram vs. Theoretical PDF")
     pdfplot$dependOn(c("estPDF"))
     pdfplot$position <- 2
@@ -113,6 +114,16 @@
     
     if(ready)
       .ldFillEstPDFPlot(pdfplot, estimates, options, variable)
+  }
+  
+  if(is.null(fitContainer[['estPMF']]) && isTRUE(options$estPMF)){
+    pmfplot <- createJaspPlot(title = "Histogram vs. Theoretical PMF")
+    pmfplot$dependOn(c("estPMF"))
+    pmfplot$position <- 2
+    fitContainer[['estPMF']] <- pmfplot
+    
+    if(ready)
+      .ldFillEstPMFPlot(pmfplot, estimates, options, variable)
   }
   
   if(is.null(fitContainer[['qqplot']]) && options$qqplot){
@@ -150,7 +161,7 @@
 
 .ldFillQQPlot <- function(qqplot, estParameters, options, variable){
   p <- ggplot2::ggplot(data = NULL, ggplot2::aes(sample = variable)) +
-    ggplot2::stat_qq(distribution = options[['qFun']], dparams = estParameters) +
+    ggplot2::stat_qq(distribution = options[['qFun']], dparams = estParameters, shape = 21, fill = "grey", size = 3) +
     ggplot2::stat_qq_line(distribution = options[['qFun']], dparams = estParameters) +
     ggplot2::xlab("Theoretical") + ggplot2::ylab("Sample")
   
@@ -163,7 +174,7 @@
 
 .ldFillEstPDFPlot <- function(pdfplot, estParameters, options, variable){
   p <- ggplot2::ggplot(data = NULL, ggplot2::aes(x = variable)) +
-    ggplot2::geom_histogram(ggplot2::aes(y = ..density..), fill = "steelblue") +
+    ggplot2::geom_histogram(ggplot2::aes(y = ..density..), fill = "grey", col = "black") +
     ggplot2::stat_function(fun = options[['pdfFun']], args = as.list(estParameters), size = 1.5) + 
     ggplot2::geom_rug() +
     ggplot2::scale_x_continuous(limits = range(variable)) +
@@ -172,6 +183,29 @@
   p <- JASPgraphs::themeJasp(p)
   
   pdfplot$plotObject <- p
+  
+  return()
+}
+
+.ldFillEstPMFPlot <- function(pmfplot, estimates, options, variable){
+  range <- range(variable)
+  
+  mids <- range[1]:range[2]
+  counts <- sapply(mids, function(i) sum(variable == i))
+  dat  <- data.frame(counts = counts, mids = mids, pmf = do.call(options$pdfFun, c(list(x = mids), estimates)))
+  
+  p <- ggplot2::ggplot(data = dat, ggplot2::aes(x = mids, y = counts/sum(counts))) +
+    ggplot2::geom_bar(stat="identity", fill = "grey", colour = "black") +
+    JASPgraphs::geom_point(ggplot2::aes(x = mids, y = pmf)) +
+    ggplot2::scale_x_continuous(limits = range + c(-0.5, 0.5), 
+                                expand = c(0.1, 0.1),
+                                breaks = JASPgraphs::axesBreaks(range)) + 
+    ggplot2::xlab(options$variable) +
+    ggplot2::ylab(paste0("Probability Mass"))
+  
+  p <- JASPgraphs::themeJasp(p)
+  
+  pmfplot$plotObject <- p
   
   return()
 }
@@ -186,7 +220,7 @@
   
   p <- ggplot2::ggplot(data = NULL) +
     ggplot2::geom_abline(slope = 1, intercept = 0) +
-    ggplot2::geom_point(ggplot2::aes(x = TheoreticalProp, y = ObservedProp)) +
+    JASPgraphs::geom_point(ggplot2::aes(x = TheoreticalProp, y = ObservedProp)) +
     ggplot2::xlab("Theoretical") + ggplot2::ylab("Sample") +
     ggplot2::scale_x_continuous(limits = 0:1) + ggplot2::scale_y_continuous(limits = 0:1)
   
