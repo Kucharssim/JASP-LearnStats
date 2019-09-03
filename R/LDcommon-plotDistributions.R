@@ -464,9 +464,7 @@
   
   plot <- plot + 
     ggplot2::ylab("Probability (X = x)") + 
-    ggplot2::scale_x_continuous(limits = options[['range_x']] + c(-1.5, 1.5),
-                                expand = c(0, 0),
-                                breaks = JASPgraphs::axesBreaks(options[['range_x']]))
+    ggplot2::scale_x_discrete(breaks = options[['range_x']][1]:options[['range_x']][2])
     
   plot <- JASPgraphs::themeJasp(plot)
   
@@ -619,25 +617,39 @@
 }
 
 .ldFillPlotHistogram <- function(histPlot, options, variable, as = "scale"){
-  range <- range(variable)
-  
   if(as == "scale"){
+    range <- range(variable)
     histData <- hist(variable, 
                      breaks = seq(range[1], range[2], length.out = options[['histogramBins']]+1), 
                      plot = FALSE)
     dat <- data.frame(counts = histData$counts, density = histData$density, mids = histData$mids)
   } else if(as == "discrete"){
+    range <- range(variable)
     mids <- range[1]:range[2]
     counts <- sapply(mids, function(i) sum(variable == i))
-    dat  <- data.frame(counts = counts, mids = mids)
+    dat  <- data.frame(counts = counts, mids = as.factor(mids))
+  } else if(as == "factor"){
+    levs <- levels(variable)
+    mids <- seq_along(levs)
+    counts <- sapply(levs, function(i) sum(variable == i))
+    dat <- data.frame(counts = counts, mids = as.factor(mids), labs = levs)
   }
+  
   plot <- ggplot2::ggplot(data = dat, ggplot2::aes(x = mids, y = counts/sum(counts))) +
     ggplot2::geom_bar(stat="identity", fill = "grey", colour = "black") +
-    ggplot2::scale_x_continuous(limits = range + c(-0.5, 0.5), 
-                                expand = c(0.1, 0.1),
-                                breaks = JASPgraphs::axesBreaks(range)) + 
     ggplot2::xlab(options$variable) +
     ggplot2::ylab(paste0("Rel. Freq(", options[['variable']], " in bin)"))
+  
+  if(as == "scale"){
+    plot <- plot + ggplot2::scale_x_continuous(limits = range + c(-0.5, 0.5), 
+                                               expand = c(0.1, 0.1),
+                                               breaks = JASPgraphs::axesBreaks(range))
+  } else if (as == "discrete"){
+    plot <- plot + ggplot2::scale_x_discrete(limits = range + c(-0.5, 0.5), 
+                                             expand = c(0.1, 0.1))
+  } else if (as == "factor"){
+    plot <- plot + ggplot2::scale_x_discrete(labels = dat$labs)
+  }
   
   plot <- JASPgraphs::themeJasp(plot)
   histPlot[['plotObject']] <- plot

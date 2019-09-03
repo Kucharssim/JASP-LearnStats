@@ -44,6 +44,11 @@
   if(!isFALSE(errors) && (!is.null(errors$infinity) || !is.null(errors$observations) || !is.null(errors$integer))){
     dataContainer$setError(errors$message)
   }
+  
+  if(!isFALSE(errors) && (!is.null(errors$factorLevels))){
+    dataContainer$setError(errors$message)
+  }
+  
   return(dataContainer)
 }
 
@@ -75,12 +80,12 @@
   if(!ready) 
     return()
   
-  .ldFillSummaryContinuousTableMain(summaryTable, variable, options, ready)
+  .ldFillSummaryContinuousTableMain(summaryTable, variable, options)
   
   return()
 }
 
-.ldFillSummaryContinuousTableMain <- function(summaryTable, variable, options, ready){
+.ldFillSummaryContinuousTableMain <- function(summaryTable, variable, options){
   
   summaryTable$addRows(list(variable   = options[['variable']],
                             sampleSize = sum(!is.na(variable)),
@@ -99,6 +104,46 @@
   return()
 }
 
+.ldSummaryFactorTableMain <- function(dataContainer, variable, options, ready) {
+  if(!options$summary) return()
+  if(!is.null(dataContainer[['summary']])) return()
+  
+  summaryTable <- createJaspTable(title = "Descriptives")
+  summaryTable$position <- 1
+  summaryTable$dependOn(c("summary"))
+  summaryTable$addCitation("JASP Team (2018). JASP (Version 0.9.2) [Computer software].")
+  
+  summaryTable$addColumnInfo(name = "level", title = "", type = "string")
+  summaryTable$addColumnInfo(name = "freq",  title = "n", type = "integer")
+  summaryTable$addColumnInfo(name = "rel.freq",  title = "Rel. Frequency", type = "number")
+  
+  summaryTable$setExpectedSize(rows = length(levels(variable)) + 1)
+  
+  dataContainer[['summary']] <- summaryTable
+  
+  if(!ready) 
+    return()
+  
+  .ldFillSummaryFactorTableMain(summaryTable, variable, options)
+  
+  return()
+}
+
+.ldFillSummaryFactorTableMain <- function(summaryTable, variable, options){
+  for(l in levels(variable)){
+    summaryTable$addRows(list(
+      level = l,
+      freq  = sum(variable == l),
+      rel.freq = sum(variable == l)/length(variable)
+    ))
+  }
+  
+  summaryTable$addRows(list(
+    level = "Total",
+    freq = length(variable),
+    rel.freq = "."
+  ))
+}
 ### Moments ----
 
 .ldObservedMomentsTableMain <- function(dataContainer, variable, options, ready){

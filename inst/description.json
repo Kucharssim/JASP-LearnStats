@@ -73,8 +73,8 @@
 		},
 		{
 			"title":              "Bernoulli",
-			"qml":                "LDbeta.qml",
-			"function":           "LDbeta",
+			"qml":                "LDbernoulli.qml",
+			"function":           "LDbernoulli",
 			"usesJaspResults":    true
 		},
 		{
