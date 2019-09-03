@@ -100,7 +100,7 @@ Form {
       Group
       {
           title: qsTr("Generate new variable from χ²(k = ") + df.value + ", λ =" + ncp.value + ")"
-          AddColumnField{ name: "newVariableName"; text: "Variable name: "; fieldWidth: 120; placeholderText: "e.g., random normal" }
+          AddColumnField{ name: "newVariableName"; text: "Variable name: "; fieldWidth: 120; placeholderText: "e.g., random chisq" }
           IntegerField{   name: "sampleSize"; label: "Number of samples: "; min: 1; defaultValue: 100 }
           Button{name: "simulateNowButton"; label: "Draw samples"; id: simulateNowButton; onClicked:{
             if (simulateNow.checked) simulateNow.checked = false; else simulateNow.checked = true

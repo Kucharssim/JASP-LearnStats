@@ -82,8 +82,8 @@ Form {
       title: qsTr("Generate and Display Data")
       Group
       {
-          title: qsTr("Generate new variable from Binomial(p = ") + prob.value + ")"
-          AddColumnField{ name: "newVariableName"; text: "Variable name: "; fieldWidth: 120; placeholderText: "e.g., random binomial" }
+          title: qsTr("Generate new variable from Bernoulli(p = ") + prob.value + ")"
+          AddColumnField{ name: "newVariableName"; text: "Variable name: "; fieldWidth: 120; placeholderText: "e.g., random bernoulli" }
           IntegerField{   name: "sampleSize"; label: "Number of samples: "; min: 1; defaultValue: 100 }
           Button{name: "simulateNowButton"; label: "Draw samples"; id: simulateNowButton; onClicked:{
             if (simulateNow.checked) simulateNow.checked = false; else simulateNow.checked = true

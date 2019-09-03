@@ -110,8 +110,8 @@ Form {
       title: qsTr("Generate and Display Data")
       Group
       {
-          title: qsTr("Generate new variable from Normal(μ = ") + par1.value + ", " + parametrization.currentText.replace("μ, ", "") + " = " + par2.value + ")"
-          AddColumnField{ name: "newVariableName"; text: "Variable name: "; fieldWidth: 120; placeholderText: "e.g., random normal" }
+          title: qsTr("Generate new variable from Exponential(") + ["λ = ", "β = "][parametrization.currentIndex] + par.value + ")"
+          AddColumnField{ name: "newVariableName"; text: "Variable name: "; fieldWidth: 120; placeholderText: "e.g., random exponential" }
           IntegerField{   name: "sampleSize"; label: "Number of samples: "; min: 1; defaultValue: 100 }
           Button{name: "simulateNowButton"; label: "Draw samples"; id: simulateNowButton; onClicked:{
             if (simulateNow.checked) simulateNow.checked = false; else simulateNow.checked = true

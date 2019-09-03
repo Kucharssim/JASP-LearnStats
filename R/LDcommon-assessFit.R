@@ -177,7 +177,7 @@
     ggplot2::geom_histogram(ggplot2::aes(y = ..density..), fill = "grey", col = "black") +
     ggplot2::stat_function(fun = options[['pdfFun']], args = as.list(estParameters), size = 1.5) + 
     ggplot2::geom_rug() +
-    ggplot2::scale_x_continuous(limits = range(variable)
+    ggplot2::scale_x_continuous(limits = range(variable),
                                 breaks = pretty(range(variable))) +
     ggplot2::ylab("Density") + ggplot2::xlab(options[['variable']])
   

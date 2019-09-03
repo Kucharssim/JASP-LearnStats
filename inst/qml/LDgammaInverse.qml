@@ -126,8 +126,9 @@ Form {
       title: qsTr("Generate and Display Data")
       Group
       {
-          title: qsTr("Generate new variable from gamma")
-          AddColumnField{ name: "newVariableName"; text: "Variable name: "; fieldWidth: 120; placeholderText: "e.g., random gamma" }
+          title: qsTr("Generate new variable from InvGamma(") + ["k = ", "α = ", "k = "][parametrization.currentIndex] +
+          shape.value + [",θ = ", ",β = ", ",μ = "][parametrization.currentIndex] + par2.value + ")"
+          AddColumnField{ name: "newVariableName"; text: "Variable name: "; fieldWidth: 120; placeholderText: "e.g., random invgamma" }
           IntegerField{   name: "sampleSize"; label: "Number of samples: "; min: 1; defaultValue: 100 }
           Button{name: "simulateNowButton"; label: "Draw samples"; id: simulateNowButton; onClicked:{
             if (simulateNow.checked) simulateNow.checked = false; else simulateNow.checked = true
