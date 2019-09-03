@@ -34,7 +34,7 @@ Form {
         Group
         {
             columns: 1
-            DoubleField{ name: "df"; label: qsTr("k"); id: df; min: 1; defaultValue: 4 }
+            DoubleField{ name: "df"; label: qsTr("k"); id: df; min: 1; defaultValue: 5 }
             DoubleField{ name: "ncp";  label: qsTr("λ"); id: ncp; negativeValues: true; defaultValue: 0}
         }
 
@@ -67,7 +67,7 @@ Form {
             IntegerField
             { 
                 name: "max_x"; label: qsTr("to"); id: max_x;
-                defaultValue: 3; min: min_x.value
+                defaultValue: 15; min: min_x.value
             }
         }
         Group
