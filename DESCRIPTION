@@ -1,8 +1,8 @@
 Package: DevelopmentModule
 Type: Package
-Title: Learn Statistics Module for JASP
+Title: Distributions (Beta) Module for JASP
 Version: 0.1
-Date: 2019-09-03
+Date: 2019-09-04
 Author: JASP Team
 Website: www.jasp-stats.org
 Maintainer: JASP Team <info@jasp-stats.org>
