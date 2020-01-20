@@ -379,11 +379,16 @@
 }
 
 .ldFillPlotPMF <- function(pmfPlot, options){
-  
   args <- options[['pars']]
   args[['x']] <- options[['range_x']][1]:options[['range_x']][2]
-  xlim <- options[['range_x']] + c(-1, 1)
   
+  # make a room next to the y-axis
+  xlim <- options[['range_x']] + c(-0.1, 0.1) * diff(options[['range_x']]) + c(-0.8, 0.8)
+  
+  # if(diff(options[['range_x']]) <= 2){
+  #   xlim[1] <- floor(xlim[1]) - 1
+  #   xlim[2] <- ceiling(xlim[2]) + 1
+  # }
   dat <- data.frame(x = args[['x']], y = do.call(options[['pdfFun']], args))
   
   # basic plot
@@ -432,12 +437,12 @@
     
     segment_data <- subset(dat, x %in% args[['x']])
     segment_data$xend <- segment_data$x
-    segment_data$x    <- xlim[1] -0.05 * diff(options[['range_x']])
-    segment_data$xseg <- xlim[1] -0.01 * diff(options[['range_x']])
+    segment_data$x    <- xlim[1] + 0.05 * diff(options[['range_x']])
+    segment_data$xseg <- xlim[1] + 0.1 * diff(options[['range_x']])
     segment_data$label <- round(segment_data$y, 2)
     
     # make 10% margin to write values along axis
-    xlim <- xlim + c(-0.1, 0) * diff(options[['range_x']]) 
+    #xlim <- xlim + c(-0.1, 0) * diff(options[['range_x']]) 
     # plot density
     plot <- plot + 
       ggplot2::geom_bar(ggplot2::aes(x = xend, y = y), stat = "identity",
@@ -450,7 +455,7 @@
                          ggplot2::aes(x = x, y = y, label = label), size = 6)
   }
   
-  breaks <- pretty(options[['range_x']])
+  breaks <- JASPgraphs::getPrettyAxisBreaks(options[['range_x']])
   # display only pretty integers
   breaks <- breaks[breaks %% 1 == 0]
   plot <- plot + 
@@ -506,81 +511,90 @@
 }
 
 .ldFillPlotCMF <- function(cmfPlot, options){
-  
   args <- options[['pars']]
   args[['q']] <- options[['range_x']][1]:options[['range_x']][2]
   
   dat <- data.frame(x = args[['q']], y = do.call(options[['cdfFun']], args))
   
+  # make a room next to the y-axis
+  xlim <- options[['range_x']] + c(-0.1, 0.1) * diff(options[['range_x']]) + c(-0.8, 0.8)
+  
   # basic plot
   plot <- ggplot2::ggplot(data = dat, ggplot2::aes(x = x, y = y)) +
-    ggplot2::geom_bar(stat="identity", fill = "grey", colour = "black")
+    ggplot2::geom_bar(stat="identity", fill = "grey", colour = "black", width = 0.8)
   
   
-  if(options$highlightDensity && FALSE){
-    # determine plotting region
-    args <- options[['pars']]
-    args[['q']] <- c(options[['highlightmin']], options[['highlightmax']])
+  # determine plotting region
+  args <- options[['pars']]
+  args[['q']] <- c(options[['highlightmin']], options[['highlightmax']])
+  
+  pdfArgs <- args
+  pdfArgs[['x']] <- pdfArgs[['q']]
+  pdfArgs[['q']] <- NULL
     
-    pdfArgs <- args
-    pdfArgs[['x']] <- pdfArgs[['q']]
-    pdfArgs[['q']] <- NULL
-    
-    pdfValue <- do.call(options[['pdfFun']], pdfArgs)
-    cmfValue <- do.call(options[['cmfFun']], args)
+  pdfValue <- do.call(options[['pdfFun']], pdfArgs)
+  cmfValue <- do.call(options[['cdfFun']], args)
 
-    pdfValueRound <-  round(pdfValue, 2)
-    if(c(0, 1) %in% pdfValueRound){
-      pdfValueRound <- round(pdfValue, 3)
+  pdfValueRound <-  round(pdfValue, 2)
+  cmfValueRound <- round(cmfValue, 2)
+  
+  # is there anything to highlight on the plot? (i.e., is the highlighted region inside the range of x)
+  highlights <- any(args[['q']] %in% dat$x)
+  
+  if(options$highlightDensity && highlights){
+    # redraw the bars with tip colored highlighting the increment at the selected x
+    datDens <- dat
+    datDens$col <- "grey"
+    if(options$highlightmin %in% datDens$x) {
+      datDens[dat$x == options$highlightmin, "y"] <- cmfValue[1] - pdfValue[1]
+      datDens <- rbind(datDens, data.frame(x = options$highlightmin, y = pdfValue[1], col = "blue"))
     }
+    if(options$highlightmax %in% datDens$x){
+      datDens[datDens$x == options$highlightmax, "y"] <- cmfValue[2] - pdfValue[2]
+      datDens <- rbind(datDens, data.frame(x = options$highlightmax, y = pdfValue[2], col = "blue"))
+    }
+    datDens$col <- factor(datDens$col, levels = c("blue","grey"))
+    segment_data <- data.frame(xseg = args[['q']], 
+                               xend = xlim[2] - 0.1*diff(options[['range_x']]),
+                               x    = xlim[2] - 0.05*diff(options[['range_x']]),
+                               ymin = cmfValue - pdfValue, ymax = cmfValue, ymid = cmfValue - 0.5*pdfValue,
+                               labelDensity = pdfValueRound)
     
-    line_data <- data.frame(slope = pdfValue, intercept = intercept)
+    plot <- plot +
+      ggplot2::geom_bar(data = datDens, ggplot2::aes(x = x, y = y, fill = col), width = 0.8, stat = "identity", color = "black") +
+      ggplot2::geom_segment(data = segment_data, ggplot2::aes(x = xseg, xend = xend, y = ymid, yend = ymid), linetype = 2) + 
+      ggplot2::geom_text(data = segment_data, ggplot2::aes(x = x, y = ymid, label = labelDensity), size = 6) +
+      ggplot2::scale_fill_manual(values = c("steelblue", "grey"), guide = FALSE)
+  }
+  
+  if(options$highlightProbability && highlights){
+    segment_data <- subset(dat, x %in% args[['q']])
+    segment_data$xend <- segment_data$x
+    
+    segment_data$x    <- xlim[1] + 0.05 * diff(options[['range_x']])
+    segment_data$xseg <- xlim[1] + 0.1 * diff(options[['range_x']])
+    segment_data$label <- round(segment_data$y, 2)
     
     plot <- plot + 
-      ggplot2::geom_abline(slope = pdfValue, intercept = intercept, linetype = 1) +
-      ggplot2::geom_text(data = data.frame(x = args[['q']], y = 1.1*cmfValue, label = round(pdfValue, 2)),
+      ggplot2::geom_bar(ggplot2::aes(x = xend, y = y), stat = "identity",
+                        data = segment_data, 
+                        alpha = 0, colour = "black", size = 1.5, width = 0.8) +
+      ggplot2::geom_segment(data = segment_data,
+                            mapping = ggplot2::aes(x = xseg, xend = xend, y = y, yend = y),
+                            linetype = 2) +
+      ggplot2::geom_text(data = segment_data,
                          ggplot2::aes(x = x, y = y, label = label), size = 6)
   }
   
-  if(options$highlightProbability && FALSE){
-    # determine plotting region
-    args <- options[['pars']]
-    # argsPDF <- options[['pars']]
-    if(options[['highlightType']] == "minmax"){
-      args[['q']] <- c(options[['highlightmin']], options[['highlightmax']])
-    } else if(options[['highlightType']] == "lower"){
-      args[['q']] <- c(options[['highlightmax']])
-    } else if(options[['highlightType']] == "upper"){
-      args[['q']] <- c(options[['highlightmin']])
-    }
-    
-    # calculate value under the curve
-    cmfValue <- do.call(options[['cmfFun']], args)
-    
-    # round value under the curve for plotting
-    cmfValueRound <- round(cmfValue, 2)
-    # if(cmfValueRound %in% c(0, 1)){
-    #   cmfValueRound <- round(cmfValue, 3)
-    # }
-    
-    segment_data <- data.frame(xoffset = options[['range_x']][1] + (options[['range_x']][2]-options[['range_x']][1])/15,
-                               x = options[['range_x']][1], xend = args[['q']], y = cmfValue, label = cmfValueRound)
-    
-    
-    plot <- plot + 
-      ggplot2::geom_segment(data = segment_data,
-                            mapping = ggplot2::aes(x = xoffset, xend = xend, y = y, yend = y), linetype = 2) +
-      ggplot2::geom_text(data = segment_data,
-                         ggplot2::aes(x = x, y = y, label = label), size = 6) +
-      ggplot2::geom_linerange(x = args[['q']], ymin = 0, ymax = cmfValue, linetype = 2) + 
-      JASPgraphs::geom_point(x = args[['q']], y = cmfValue)
-  }
-  
+  breaks <- JASPgraphs::getPrettyAxisBreaks(options[['range_x']])
+  # display only pretty integers
+  breaks <- breaks[breaks %% 1 == 0]
   plot <- plot + 
     ggplot2::ylab("Probability (X \u2264 x)") + 
-    ggplot2::scale_x_continuous(limits = options[['range_x']] + c(-1.5, 1.5),
-                                expand = c(0, 0),
-                                breaks = JASPgraphs::getPrettyAxisBreaks(options[['range_x']])) +
+    ggplot2::scale_x_continuous(limits = xlim,
+                                breaks = breaks,
+                                labels = breaks,
+                                expand = c(0, 0)) + 
     ggplot2::scale_y_continuous(limits = c(0, 1))
   
   plot <- JASPgraphs::themeJasp(plot)
