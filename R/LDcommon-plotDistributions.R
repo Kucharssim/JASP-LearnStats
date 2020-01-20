@@ -166,7 +166,7 @@
   }
   
   plot <- plot + ggplot2::ylab("Density") + 
-    ggplot2::scale_x_continuous(limits = options[['range_x']], breaks = JASPgraphs::axesBreaks(options[['range_x']]))
+    ggplot2::scale_x_continuous(limits = options[['range_x']], breaks = JASPgraphs::getPrettyAxisBreaks(options[['range_x']]))
   
   plot <- JASPgraphs::themeJasp(plot)
   
@@ -220,17 +220,17 @@
   plot <- ggplot2::ggplot(data = data.frame(x = options[['range_x']]), ggplot2::aes(x = x)) +
     ggplot2::stat_function(fun = options[['cdfFun']], n = 101, args = options[['pars']], size = 1)
   
+  args <- options[['pars']]
+  if(options[['highlightType']] == "minmax"){
+    args[['q']] <- c(options[['highlightmin']], options[['highlightmax']])
+  } else if(options[['highlightType']] == "lower"){
+    args[['q']] <- options[['highlightmax']]
+  } else if(options[['highlightType']] == "upper"){
+    args[['q']] <- options[['highlightmin']]
+  }
 
   if(options$highlightDensity){
     # determine plotting region
-    args <- options[['pars']]
-    if(options[['highlightType']] == "minmax"){
-      args[['q']] <- c(options[['highlightmin']], options[['highlightmax']])
-    } else if(options[['highlightType']] == "lower"){
-      args[['q']] <- options[['highlightmax']]
-    } else if(options[['highlightType']] == "upper"){
-      args[['q']] <- options[['highlightmin']]
-    }
     pdfArgs <- args
     pdfArgs[['x']] <- pdfArgs[['q']]
     pdfArgs[['q']] <- NULL
@@ -243,23 +243,15 @@
     line_data <- data.frame(slope = pdfValue, intercept = intercept)
 
     plot <- plot + 
-      ggplot2::geom_abline(slope = pdfValue, intercept = intercept, linetype = 1) +
-      ggplot2::geom_text(data = data.frame(x = args[['q']], y = 1.1*cdfValue, label = round(pdfValue, 2)),
-                         ggplot2::aes(x = x, y = y, label = label), size = 6)
+      ggplot2::geom_abline(slope = pdfValue, intercept = intercept, linetype = 2) +
+      ggplot2::geom_point (data = data.frame(x = pdfArgs[['x']], y = cdfValue), ggplot2::aes(x = x, y = y)) + 
+      # ggplot2::geom_text(data = data.frame(x = args[['q']], y = 1.1*cdfValue, label = round(pdfValue, 2)),
+      #                    ggplot2::aes(x = x, y = y, label = label), size = 6)
+      ggplot2::geom_text(data = data.frame(x = c(2, 2), y = c(0.2, 0.4), text = slopeText),
+                         ggplot2::aes(x = x, y = y, label = text), size = 5)
   }
   
   if(options$highlightProbability){ 
-    # determine plotting region
-    args <- options[['pars']]
-    # argsPDF <- options[['pars']]
-    if(options[['highlightType']] == "minmax"){
-      args[['q']] <- c(options[['highlightmin']], options[['highlightmax']])
-    } else if(options[['highlightType']] == "lower"){
-      args[['q']] <- c(options[['highlightmax']])
-    } else if(options[['highlightType']] == "upper"){
-      args[['q']] <- c(options[['highlightmin']])
-    }
-    
     # calculate value under the curve
     cdfValue <- do.call(options[['cdfFun']], args)
     
@@ -285,7 +277,7 @@
   plot <- plot + 
     ggplot2::ylab("Probability (X \u2264 x)") +
     ggplot2::scale_x_continuous(limits = options[['range_x']], 
-                                breaks = JASPgraphs::axesBreaks(options[['range_x']])) +
+                                breaks = JASPgraphs::getPrettyAxisBreaks(options[['range_x']])) +
     ggplot2::scale_y_continuous(limits = c(0, 1))
   
   plot <- JASPgraphs::themeJasp(plot)
@@ -343,7 +335,7 @@
     ggplot2::ylab("x") + ggplot2::xlab("Probability(X \u2264 x)") +
     ggplot2::scale_x_continuous(limits = 0:1) +
     ggplot2::scale_y_continuous(limits = options[['range_x']], 
-                                breaks = JASPgraphs::axesBreaks(options[['range_x']]))
+                                breaks = JASPgraphs::getPrettyAxisBreaks(options[['range_x']]))
   
   plot <- JASPgraphs::themeJasp(plot)
   
@@ -596,7 +588,7 @@
     ggplot2::ylab("Probability (X \u2264 x)") + 
     ggplot2::scale_x_continuous(limits = options[['range_x']] + c(-1.5, 1.5),
                                 expand = c(0, 0),
-                                breaks = JASPgraphs::axesBreaks(options[['range_x']])) +
+                                breaks = JASPgraphs::getPrettyAxisBreaks(options[['range_x']])) +
     ggplot2::scale_y_continuous(limits = c(0, 1))
   
   plot <- JASPgraphs::themeJasp(plot)
@@ -654,7 +646,7 @@
   if(as == "scale"){
     plot <- plot + ggplot2::scale_x_continuous(limits = range, 
                                                expand = c(0.05, 0),
-                                               breaks = JASPgraphs::axesBreaks(range))
+                                               breaks = JASPgraphs::getPrettyAxisBreaks(range))
   } else if (as == "discrete"){
     breaks <- pretty(range)
     breaks <- breaks[breaks %% 1 == 0]
