@@ -97,7 +97,7 @@
 .ldFillPlotPDF <- function(pdfPlot, options){
   # basic density curve
   plot <- ggplot2::ggplot(data = data.frame(x = options[['range_x']]), ggplot2::aes(x = x)) +
-    ggplot2::stat_function(fun = options[['pdfFun']], n = 101, args = options[['pars']], size = 1)
+    ggplot2::stat_function(fun = options[['pdfFun']], n = 101, args = options[['pars']], size = 1.25)
   
   # highlight probability
   if(options$highlightProbability){
@@ -162,7 +162,7 @@
       ggplot2::geom_text(data = data.frame(x = options[['range_x']][1], y = pdfValue, label = round(pdfValue, 2)),
                          ggplot2::aes(x = x, y = y, label = label), size = 6) +
       ggplot2::geom_linerange(x = args[['x']], ymin = 0, ymax = pdfValue, linetype = 2) +
-      JASPgraphs::geom_point(x = args[['x']], y = pdfValue)
+      JASPgraphs::geom_point(x = args[['x']], y = pdfValue, size = 5)
   }
   
   plot <- plot + ggplot2::ylab("Density") + 
@@ -215,10 +215,9 @@
 
 .ldFillPlotCDF <- function(cdfPlot, options){
   
-  #dat <- data.frame(x = options[['range_x']][1]:options[['range_x']][2])
-  #dat$y <- 
   plot <- ggplot2::ggplot(data = data.frame(x = options[['range_x']]), ggplot2::aes(x = x)) +
-    ggplot2::stat_function(fun = options[['cdfFun']], n = 101, args = options[['pars']], size = 1)
+    ggplot2::stat_function(fun = options[['cdfFun']], n = 101, args = options[['pars']], size = 1.25)
+
   
   args <- options[['pars']]
   if(options[['highlightType']] == "minmax"){
@@ -228,38 +227,13 @@
   } else if(options[['highlightType']] == "upper"){
     args[['q']] <- options[['highlightmin']]
   }
-
-  if(options$highlightDensity){
-    # determine plotting region
-    pdfArgs <- args
-    pdfArgs[['x']] <- pdfArgs[['q']]
-    pdfArgs[['q']] <- NULL
-    
-    pdfValue <- do.call(options[['pdfFun']], pdfArgs)
-    cdfValue <- do.call(options[['cdfFun']], args)
-    intercept <- cdfValue - args[['q']]*pdfValue
-    slopeText <-  round(pdfValue, 2) #bquote(paste(beta, " = ", .(round(slope, 2))))
-    
-    line_data <- data.frame(slope = pdfValue, intercept = intercept)
-
-    plot <- plot + 
-      ggplot2::geom_abline(slope = pdfValue, intercept = intercept, linetype = 2) +
-      ggplot2::geom_point (data = data.frame(x = pdfArgs[['x']], y = cdfValue), ggplot2::aes(x = x, y = y)) + 
-      # ggplot2::geom_text(data = data.frame(x = args[['q']], y = 1.1*cdfValue, label = round(pdfValue, 2)),
-      #                    ggplot2::aes(x = x, y = y, label = label), size = 6)
-      ggplot2::geom_text(data = data.frame(x = c(2, 2), y = c(0.2, 0.4), text = slopeText),
-                         ggplot2::aes(x = x, y = y, label = text), size = 5)
-  }
+  
+  cdfValue <- do.call(options[['cdfFun']], args)
+  point_data <- data.frame(x = args[['q']], y = cdfValue, col = as.factor(seq_along(args[['q']])))
   
   if(options$highlightProbability){ 
-    # calculate value under the curve
-    cdfValue <- do.call(options[['cdfFun']], args)
-    
-    # round value under the curve for plotting
+    # round value for plotting as text
     cdfValueRound <- round(cdfValue, 2)
-    # if(cdfValueRound %in% c(0, 1)){
-    #   cdfValueRound <- round(cdfValue, 3)
-    # }
     
     segment_data <- data.frame(xoffset = options[['range_x']][1] + (options[['range_x']][2]-options[['range_x']][1])/15,
                                x = options[['range_x']][1], xend = args[['q']], y = cdfValue, label = cdfValueRound)
@@ -268,11 +242,29 @@
     plot <- plot + 
       ggplot2::geom_segment(data = segment_data,
                             mapping = ggplot2::aes(x = xoffset, xend = xend, y = y, yend = y), linetype = 2) +
-      ggplot2::geom_text(data = segment_data,
-                         ggplot2::aes(x = x, y = y, label = label), size = 6) +
+      ggplot2::geom_text(data = segment_data, ggplot2::aes(x = x, y = y, label = label), size = 6) +
       ggplot2::geom_linerange(x = args[['q']], ymin = 0, ymax = cdfValue, linetype = 2) + 
-      JASPgraphs::geom_point(x = args[['q']], y = cdfValue)
+      JASPgraphs::geom_point(data = point_data, ggplot2::aes(x = x, y = y), size = 5)
   }
+  
+  if(options$highlightDensity){
+    # determine plotting region
+    pdfArgs <- args
+    pdfArgs[['x']] <- pdfArgs[['q']]
+    pdfArgs[['q']] <- NULL
+    
+    pdfValue <- do.call(options[['pdfFun']], pdfArgs)
+    intercept <- cdfValue - args[['q']]*pdfValue
+    slopeText <-  round(pdfValue, 2)
+    
+    line_data <- data.frame(slope = pdfValue, intercept = intercept, col = as.factor(1:length(pdfArgs[['x']])))
+    
+    plot <- plot + 
+      ggplot2::geom_abline(data = line_data, ggplot2::aes(slope = slope, intercept = intercept, col = col), size = 1) +
+      JASPgraphs::geom_point (data = point_data, ggplot2::aes(x = x, y = y, col = col), size = 5) + 
+      JASPgraphs::scale_JASPcolor_discrete(name = "Slope", labels = as.character(slopeText))
+  }
+  
   
   plot <- plot + 
     ggplot2::ylab("Probability (X \u2264 x)") +
@@ -280,7 +272,7 @@
                                 breaks = JASPgraphs::getPrettyAxisBreaks(options[['range_x']])) +
     ggplot2::scale_y_continuous(limits = c(0, 1))
   
-  plot <- JASPgraphs::themeJasp(plot)
+  plot <- JASPgraphs::themeJasp(plot, legend.position = c(0.85, 0.4))
   
   cdfPlot[['plotObject']] <- plot
 }
@@ -331,7 +323,7 @@
   args[['q']] <- NULL
   
   plot <- ggplot2::ggplot(data = data.frame(x = prange), ggplot2::aes(x = x)) +
-    ggplot2::stat_function(fun = options[['qFun']], n = 151, args = args, size = 1)  +
+    ggplot2::stat_function(fun = options[['qFun']], n = 151, args = args, size = 1.25)  +
     ggplot2::ylab("x") + ggplot2::xlab("Probability(X \u2264 x)") +
     ggplot2::scale_x_continuous(limits = 0:1) +
     ggplot2::scale_y_continuous(limits = options[['range_x']], 

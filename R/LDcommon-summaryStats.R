@@ -1,4 +1,5 @@
 .simulateData <- function(jaspResults, options, as = "scale"){
+  return()
   if(is.null(jaspResults[['simdata']])){
     sample <- do.call(options[['rFun']], c(options[['pars']], n = options[['sampleSize']]))
     jaspResults[['simdata']] <- createJaspState(sample)
