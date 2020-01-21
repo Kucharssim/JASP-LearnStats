@@ -109,7 +109,7 @@ Form {
           height: 100
           visible: true
           AvailableVariablesList { name: "allVariables" }
-          AssignedVariablesList  { name: "variable"; label: qsTr("Get variable from data set"); allowedColumns: ["scale"]; singleVariable: true }
+		  AssignedVariablesList  { name: "variable"; label: qsTr("Get variable from data set"); suggestedColumns: ["scale"]; singleVariable: true }
       }
 
       Group
@@ -128,7 +128,7 @@ Form {
           title: qsTr("Plots")
           CheckBox
           {
-              name: "histogram";  label: qsTr("Histogram"); childrenOnSameRow: true
+			  name: "histogram";  label: qsTr("Bar plot"); childrenOnSameRow: true
               //IntegerField{ name: "histogramBins"; afterLabel: qsTr("bins"); defaultValue: 30 }
           }
           CheckBox{ name: "ecdf"; label: qsTr("Empirical cumulative distribution") }

@@ -607,7 +607,8 @@
   if(!options$histogram) return()
   if(!is.null(dataContainer[['histogram']])) return()
   
-  histPlot <- createJaspPlot(title = "Histogram", width = 500, height = 320)
+  title <- switch(as, scale = "Histogram", "Bar plot")
+  histPlot <- createJaspPlot(title = title, width = 500, height = 320)
   
   if(as != "scale"){
     histPlot$dependOn(c("histogram"))
