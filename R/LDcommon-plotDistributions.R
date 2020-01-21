@@ -19,7 +19,7 @@
   if(!is.null(jaspResults[[name]])){
     plotsContainer <- jaspResults[[name]]
   } else{
-    plotsContainer <- createJaspContainer(title = title)
+    plotsContainer <- createJaspContainer(title = gettext(title))
     plotsContainer$position <- position
     
     if("parametrization" %in% names(options)){

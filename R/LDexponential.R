@@ -134,30 +134,22 @@ LDexponential <- function(jaspResults, dataset, options, state=NULL){
 ### text fill functions -----
 .ldExponentialParsSupportMoments <- function(jaspResults, options){
   if(options$parsSupportMoments && is.null(jaspResults[['parsSupportMoments']])){
-    formulas <- createJaspHtml(title = "Parameters, Support, and Moments")
-    formulas$dependOn(c("parsSupportMoments", "parametrization"))
-    formulas$position <- 2
+    pars <- list()
+    pars[[1]] <- switch(options[['parametrization']],
+                        scale = gettext("scale: &beta; \u2208 \u211D<sup>+</sup>"),
+                        gettext("rate: &lambda; \u2208 \u211D<sup>+</sup>"))
     
-    text <- "<b>Parameters</b>"
+    support <- gettext("x \u2208 \u211D<sup>+</sup>")
     
-    text2 <- "<b>Support</b>
-    x \u2208 \u211D<sup>+</sup>"
+    moments <- list()
+    moments$expectation <- switch(options[['parametrization']],
+                                  scale = gettext("&beta;"),
+                                  gettext("&lambda;<sup>-1</sup>"))
+    moments$variance <- switch(options[['parametrization']],
+                               scale = gettext("&beta;<sup>2</sup>"),
+                               gettext("&lambda;<sup>-2</sup>"))
     
-    text3 <- "<b>Moments</b> 
-    E(X) = %s;
-    Var(X) = %s"
-    
-    if(options[['parametrization']] == "scale"){
-      text <- paste(text, "scale: &beta; \u2208 \u211D<sup>+</sup>")
-      text3 <- sprintf(text3, "&beta;", "&beta;<sup>2</sup>")
-    } else {
-      text <- paste(text, "rate: &lambda; \u2208 \u211D<sup>+</sup>")
-      text3 <- sprintf(text3, "&lambda;<sup>-1</sup>", "&lambda;<sup>-2</sup>")
-    }
-    
-    formulas$text <- paste(text, text2, text3, sep = "<br><br>")
-    
-    jaspResults[['parsSupportMoments']] <- formulas
+    jaspResults[['parsSupportMoments']] <- .ldParsSupportMoments(pars, support, moments)
   }
 }
 
@@ -212,10 +204,10 @@ LDexponential <- function(jaspResults, dataset, options, state=NULL){
   res$parName <- par
   
   if(results$fitdist$convergence != 0){
-    table$addFootnote("The optimization did not converge, try adjusting the parameter values.", symbol = "<i>Warning.</i>")
+    table$addFootnote(gettext("The optimization did not converge, try adjusting the parameter values."), symbol = gettext("<i>Warning.</i>"))
   }
   if(!is.null(results$fitdist$optim.message)){
-    table$addFootnote(results$fitdist$message, symbol = "<i>Warning.</i>")
+    table$addFootnote(results$fitdist$message, symbol = gettext("<i>Warning.</i>"))
   }
   
   table$setData(res)

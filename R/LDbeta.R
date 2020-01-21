@@ -129,24 +129,17 @@ LDbeta <- function(jaspResults, dataset, options, state=NULL){
 
 .ldBetaParsSupportMoments <- function(jaspResults, options){
   if(options$parsSupportMoments && is.null(jaspResults[['parsSupportMoments']])){
-    formulas <- createJaspHtml(title = "Parameters, Support, and Moments")
-    formulas$dependOn(c("parsSupportMoments", "parametrization"))
-    formulas$position <- 2
+    pars <- list()
+    pars[[1]] <- gettext("shape: &alpha; \u2208 \u211D<sup>+</sup>")
+    pars[[2]] <- gettext("shape: &beta;  \u2208 \u211D<sup>+</sup>")
     
-    text <- "<b>Parameters</b>
-    shape: &alpha; \u2208 \u211D<sup>+</sup>
-    shape: &beta;  \u2208 \u211D<sup>+</sup>"
+    support <- gettext("x \u2208 [0, 1]")
     
-    text2 <- "<b>Support</b>
-    x \u2208 [0, 1]"
+    moments <- list()
+    moments$expectation <- gettext("&alpha; (&alpha; + &beta;)<sup>-1</sup>")
+    moments$variance    <- gettext("&alpha;&beta; (&alpha; + &beta;)<sup>-2</sup> (&alpha; + &beta; + 1)<sup>-1</sup>")
     
-    text3 <- "<b>Moments</b> 
-    E(X) = &alpha; (&alpha; + &beta;)<sup>-1</sup>
-    Var(X) = &alpha;&beta; (&alpha; + &beta;)<sup>-2</sup> (&alpha; + &beta; + 1)<sup>-1</sup>"
-    
-    formulas$text <- paste(text, text2, text3, sep = "<br><br>")
-    
-    jaspResults[['parsSupportMoments']] <- formulas
+    jaspResults[['parsSupportMoments']] <- .ldParsSupportMoments(pars, support, moments)
   }
 }
 
@@ -188,10 +181,10 @@ LDbeta <- function(jaspResults, dataset, options, state=NULL){
   res$parName <- c(pars)
   
   if(results$fitdist$convergence != 0){
-    table$addFootnote("The optimization did not converge, try adjusting the parameter values.", symbol = "<i>Warning.</i>")
+    table$addFootnote(gettext("The optimization did not converge, try adjusting the parameter values."), symbol = gettext("<i>Warning.</i>"))
   }
   if(!is.null(results$fitdist$optim.message)){
-    table$addFootnote(results$fitdist$message, symbol = "<i>Warning.</i>")
+    table$addFootnote(results$fitdist$message, symbol = gettext("<i>Warning.</i>"))
   }
   
   table$setData(res)

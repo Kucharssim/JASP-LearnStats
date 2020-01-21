@@ -20,17 +20,28 @@
   formulas$dependOn(c("parsSupportMoments", "parametrization"))
   formulas$position <- 2
   
-  text <- gettextf(
-    "<b>Parameters</b>
-    %s
-    
-    <b>Support</b>
-    %s
-    
-    <b>Moments</b>
-    E(X) = %s
-    Var(X) = %s", paste(pars, collapse = " \n "), support, moments[[1]], moments[[2]])
-  
+  if(!is.na(moments)){
+    text <- gettextf(
+      "<b>Parameters</b>
+      %s
+      
+      <b>Support</b>
+      %s
+      
+      <b>Moments</b>
+      E(X) = %s
+      Var(X) = %s", paste(pars, collapse = " \n "), support, moments[[1]], moments[[2]])
+  } else{
+    text <- gettextf(
+      "<b>Parameters</b>
+      %s
+      
+      <b>Support</b>
+      %s
+      
+      <b>Moments</b>
+      not available", paste(pars, collapse = " \n "), support)
+  }
   formulas$text <- text
   
   return(formulas)
@@ -47,7 +58,8 @@
   if(is.function(introText)){
     intro[['text']] <- gettext(introText())
   } else if(is.character(introText)){
-    intro[['text']] <- gettextf(.ldAllTextsList, introText)
+    intro[['text']] <- gettextf(.ldAllTextsList$explanations$intro,
+                                gettext(introText), gettext(introText), gettext(introText), gettext(introText), gettext(introText))
   }
   
   jaspResults[['introText']] <- intro
@@ -87,7 +99,8 @@
     The second part allows to generate data from the %s and compute descriptive statistics and display descriptive plots.
     In the third part, the parameters of the %s can be estimated.
     The fourth part allows to check the fit of the %s to the data.
-    "
+    
+    For relationships with other distributions, visit www.math.wm.edu/~leemis/chart/UDR/UDR.html."
   ),
   references   = list(
     jasp = "JASP Team (2018). JASP (Version 0.9.2) [Computer software].",

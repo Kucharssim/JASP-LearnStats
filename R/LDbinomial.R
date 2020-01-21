@@ -120,27 +120,17 @@ LDbinomial <- function(jaspResults, dataset, options, state=NULL){
 ### text fill functions -----
 .ldBinomialParsSupportMoments <- function(jaspResults, options){
   if(options$parsSupportMoments && is.null(jaspResults[['parsSupportMoments']])){
-    formulas <- createJaspHtml(title = "Parameters, Support, and Moments")
-    formulas$dependOn(c("parsSupportMoments", "parametrization"))
-    formulas$position <- 2
+    pars <- list()
+    pars[[1]] <- gettext("probability of success: p \u2208 \u211D: 0 \u2264 p \u2264 1")
+    pars[[2]] <- gettext("number of trials: n \u2208 \u2124: n \u2265 0")
     
-    text <- "<b>Parameters</b>
-    probability of success: p \u2208 \u211D: 0 \u2264 p \u2264 1
-    number of trials: n \u2208 \u2124: n \u2265 0"
+    support <- gettext("x \u2208 \u2124: 0 \u2264 x \u2264 n")
     
-    text2 <- "<b>Support</b>
-    x \u2208 \u2124: 0 \u2264 x \u2264 n"
+    moments <- list()
+    moments$expectation <- gettext("np")
+    moments$variance <- gettext("np(1-p)")
     
-    text3 <- "<b>Moments</b> 
-    E(X)   = np
-    Var(X) = np(1-p)
-    
-    E(X/n)   = p
-    Var(X/n) = p(1-p)"
-    
-    formulas$text <- paste(text, text2, text3, sep = "<br><br>")
-    
-    jaspResults[['parsSupportMoments']] <- formulas
+    jaspResults[['parsSupportMoments']] <- .ldParsSupportMoments(pars, support, moments)
   }
 }
 
@@ -179,13 +169,13 @@ LDbinomial <- function(jaspResults, dataset, options, state=NULL){
   res$parName <- c("p")
   
   if(results$fitdist$convergence != 0){
-    table$addFootnote("The optimization did not converge, try adjusting the parameter values.", symbol = "<i>Warning.</i>")
+    table$addFootnote(gettext("The optimization did not converge, try adjusting the parameter values."), symbol = gettext("<i>Warning.</i>"))
   }
   if(!is.null(results$fitdist$optim.message)){
-    table$addFootnote(results$fitdist$message, symbol = "<i>Warning.</i>")
+    table$addFootnote(results$fitdist$message, symbol = gettext("<i>Warning.</i>"))
   }
   
-  table$addFootnote(message = sprintf("Parameter n was fixed at value %s.", options[['size']]))
+  table$addFootnote(message = gettextf("Parameter n was fixed at value %s.", options[['size']]))
   table$setData(res)
   
   return()

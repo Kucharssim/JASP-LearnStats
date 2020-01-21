@@ -119,23 +119,16 @@ LDpoisson <- function(jaspResults, dataset, options, state=NULL){
 ### text fill functions -----
 .ldPoissonParsSupportMoments <- function(jaspResults, options){
   if(options$parsSupportMoments && is.null(jaspResults[['parsSupportMoments']])){
-    formulas <- createJaspHtml(title = "Parameters, Support, and Moments")
-    formulas$dependOn(c("parsSupportMoments", "parametrization"))
-    formulas$position <- 2
+    pars <- list()
+    pars[[1]] <- gettext("rate: \u03BB \u2208 \u211D: \u03BB \u003E 0")
     
-    text <- "<b>Parameters</b>
-    rate: \u03BB \u2208 \u211D: \u03BB \u003E 0"
+    support <- gettext("x \u2208 \u2124: x \u2265 0")
     
-    text2 <- "<b>Support</b>
-    x \u2208 \u2124: x \u2265 0"
+    moments <- list()
+    moments$expectation <- gettext("\u03BB")
+    moments$variance <- gettext("\u03BB")
     
-    text3 <- "<b>Moments</b> 
-    E(X)   = \u03BB
-    Var(X) = \u03BB"
-    
-    formulas$text <- paste(text, text2, text3, sep = "<br><br>")
-    
-    jaspResults[['parsSupportMoments']] <- formulas
+    jaspResults[['parsSupportMoments']] <- .ldParsSupportMoments(pars, support, moments)
   }
 }
 
@@ -174,10 +167,10 @@ LDpoisson <- function(jaspResults, dataset, options, state=NULL){
   res$parName <- c("\u03BB")
   
   if(results$fitdist$convergence != 0){
-    table$addFootnote("The optimization did not converge, try adjusting the parameter values.", symbol = "<i>Warning.</i>")
+    table$addFootnote(gettext("The optimization did not converge, try adjusting the parameter values."), symbol = gettext("<i>Warning.</i>"))
   }
   if(!is.null(results$fitdist$optim.message)){
-    table$addFootnote(results$fitdist$message, symbol = "<i>Warning.</i>")
+    table$addFootnote(results$fitdist$message, symbol = gettext("<i>Warning.</i>"))
   }
   
   table$setData(res)

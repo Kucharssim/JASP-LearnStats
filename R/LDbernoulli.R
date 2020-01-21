@@ -118,23 +118,16 @@ LDbernoulli <- function(jaspResults, dataset, options, state=NULL){
 ### text fill functions -----
 .ldBernoulliParsSupportMoments <- function(jaspResults, options){
   if(options$parsSupportMoments && is.null(jaspResults[['parsSupportMoments']])){
-    formulas <- createJaspHtml(title = "Parameters, Support, and Moments")
-    formulas$dependOn(c("parsSupportMoments", "parametrization"))
-    formulas$position <- 2
+    pars <- list()
+    pars[[1]] <- gettext("probability of success: p \u2208 \u211D: 0 \u2264 p \u2264 1")
     
-    text <- "<b>Parameters</b>
-    probability of success: p \u2208 \u211D: 0 \u2264 p \u2264 1"
+    support <- gettext("x \u2208 \u2124: 0 \u2264 x \u2264 1")
     
-    text2 <- "<b>Support</b>
-    x \u2208 \u2124: 0 \u2264 x \u2264 1"
+    moments <- list()
+    moments$expectation <- gettext("p")
+    moments$variance <- gettext("p(1-p)")
     
-    text3 <- "<b>Moments</b> 
-    E(X)   = p
-    Var(X) = p(1-p)"
-    
-    formulas$text <- paste(text, text2, text3, sep = "<br><br>")
-    
-    jaspResults[['parsSupportMoments']] <- formulas
+    jaspResults[['parsSupportMoments']] <- .ldParsSupportMoments(pars, support, moments)
   }
 }
 
@@ -173,10 +166,10 @@ LDbernoulli <- function(jaspResults, dataset, options, state=NULL){
   res$parName <- sprintf("p (%s)", levels)
   
   if(results$fitdist$convergence != 0){
-    table$addFootnote("The optimization did not converge, try adjusting the parameter values.", symbol = "<i>Warning.</i>")
+    table$addFootnote(gettext("The optimization did not converge, try adjusting the parameter values."), symbol = gettext("<i>Warning.</i>"))
   }
   if(!is.null(results$fitdist$optim.message)){
-    table$addFootnote(results$fitdist$message, symbol = "<i>Warning.</i>")
+    table$addFootnote(results$fitdist$message, symbol = gettext("<i>Warning.</i>"))
   }
   
   table$setData(res)

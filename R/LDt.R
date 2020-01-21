@@ -124,24 +124,17 @@ LDt <- function(jaspResults, dataset, options, state=NULL){
 ### text fill functions -----
 .ldTParsSupportMoments <- function(jaspResults, options){
   if(options$parsSupportMoments && is.null(jaspResults[['parsSupportMoments']])){
-    formulas <- createJaspHtml(title = "Parameters, Support, and Moments")
-    formulas$dependOn(c("parsSupportMoments", "parametrization"))
-    formulas$position <- 2
+    pars <- list()
+    pars[[1]] <- gettext("degree of freedom: df \u2208 \u211D<sup>+</sup>")
+    pars[[2]] <- gettext("non-centrality: ncp \u2208 \u211D")
     
-    text <- "<b>Parameters</b>
-    degree of freedom: df \u2208 \u211D<sup>+</sup>
-    non-centrality: ncp \u2208 \u211D"
+    support <- gettext("x \u2208 \u211D")
     
-    text2 <- "<b>Support</b>
-    x \u2208 \u211D"
+    moments <- list()
+    moments$expectation <- gettext("does not exist unless df > 1")
+    moments$variance <- gettext("does not exist unless df > 2")
     
-    text3 <- "<b>Moments</b> 
-    E(X) - does not exist unless df > 1
-    Var(X) - does not exist unless df > 2"
-    
-    formulas$text <- paste(text, text2, text3, sep = "<br><br>")
-    
-    jaspResults[['parsSupportMoments']] <- formulas
+    jaspResults[['parsSupportMoments']] <- .ldParsSupportMoments(pars, support, moments)
   }
 }
 
@@ -183,10 +176,10 @@ LDt <- function(jaspResults, dataset, options, state=NULL){
   res$parName <- c(par1, par2)
   
   if(results$fitdist$convergence != 0){
-    table$addFootnote("The optimization did not converge, try adjusting the parameter values.", symbol = "<i>Warning.</i>")
+    table$addFootnote(gettext("The optimization did not converge, try adjusting the parameter values."), symbol = gettext("<i>Warning.</i>"))
   }
   if(!is.null(results$fitdist$optim.message)){
-    table$addFootnote(results$fitdist$message, symbol = "<i>Warning.</i>")
+    table$addFootnote(results$fitdist$message, symbol = gettext("<i>Warning.</i>"))
   }
   
   table$setData(res)
