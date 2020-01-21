@@ -138,43 +138,24 @@ LDgaussianunivariate <- function(jaspResults, dataset, options, state=NULL){
 ### text fill functions -----
 .ldGaussianParsSupportMoments <- function(jaspResults, options){
   if(options$parsSupportMoments && is.null(jaspResults[['parsSupportMoments']])){
-    formulas <- createJaspHtml(title = "Parameters, Support, and Moments")
-    formulas$dependOn(c("parsSupportMoments", "parametrization"))
-    formulas$position <- 2
+    pars <- list()
+    pars[[1]] <- gettext("mean: &mu; \u2208 \u211D")
+    pars[[2]] <- switch(options[['parametrization']],
+                        sigma2 = gettext("variance: &sigma;<sup>2</sup> \u2208 \u211D<sup>+</sup>"),
+                        sigma  = gettext("standard deviation: &sigma; \u2208 \u211D<sup>+</sup>"),
+                        tau2   = gettext("precision: &tau;<sup>2</sup> \u2208 \u211D<sup>+</sup>"),
+                        tau    = gettext("square root of precision: &tau; \u2208 \u211D<sup>+</sup>"))
     
-    text <- "<b>Parameters</b>
-    mean: &mu; \u2208 \u211D
-    "
+    support <- gettext("x \u2208 \u211D")
     
-    text2 <- "<b>Support</b>
-    x \u2208 \u211D"
-    
-    text3 <- "<b>Moments</b> 
-    E(X) = &mu;
-    Var(X) = "
-    
-    if(options[['parametrization']] == "sigma2"){
-      text <- paste(text,
-                    "variance: &sigma;<sup>2</sup> \u2208 \u211D<sup>+</sup>
-                    ")
-      text3 <- paste0(text3, "&sigma;<sup>2</sup>")
-    } else if(options[['parametrization']] == "sigma"){
-      text <- paste(text,
-                    "standard deviation: &sigma; \u2208 \u211D<sup>+</sup>")
-      text3 <- paste0(text3, "&sigma;<sup>2</sup>")
-    } else if(options[['parametrization']] == "tau2"){
-      text <- paste(text,
-                    "precision: &tau;<sup>2</sup> \u2208 \u211D<sup>+</sup>")
-      text3 <- paste0(text3, "1/&tau;<sup>2</sup>")
-    } else{
-      text <- paste(text,
-                    "square root of precision: &tau; \u2208 \u211D<sup>+</sup>")
-      text3 <- paste0(text3, "1/&tau;<sup>2</sup>")
-    }
-    
-    formulas$text <- paste(text, text2, text3, sep = "<br><br>")
-    
-    jaspResults[['parsSupportMoments']] <- formulas
+    moments <- list()
+    moments$expectation <- gettext("&mu;")
+    moments$variance <- switch(options[['parametrization']],
+                               sigma2 = gettext("&sigma;<sup>2</sup>"),
+                               sigma  = gettext("&sigma;<sup>2</sup>"),
+                               gettext("1/&tau;<sup>2</sup>"))
+
+    jaspResults[['parsSupportMoments']] <- .ldParsSupportMoments(pars, support, moments)
   }
 }
 

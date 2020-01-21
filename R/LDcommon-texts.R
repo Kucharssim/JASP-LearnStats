@@ -15,6 +15,27 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+.ldParsSupportMoments <- function(pars, support, moments){
+  formulas <- createJaspHtml(title = gettext("Parameters, Support, and Moments"))
+  formulas$dependOn(c("parsSupportMoments", "parametrization"))
+  formulas$position <- 2
+  
+  text <- gettextf(
+    "<b>Parameters</b>
+    %s
+    
+    <b>Support</b>
+    %s
+    
+    <b>Moments</b>
+    E(X) = %s
+    Var(X) = %s", paste(pars, collapse = " \n "), support, moments[[1]], moments[[2]])
+  
+  formulas$text <- text
+  
+  return(formulas)
+}
+
 .ldIntroText <- function(jaspResults, options, introText = NULL){
   if(!options$explanatoryText) return()
   if(!is.null(jaspResults[['introText']])) return()
