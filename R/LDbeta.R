@@ -103,7 +103,7 @@ LDbeta <- function(jaspResults, dataset, options, state=NULL){
   options[['rFun']]   <- rbeta
   options[['distNameInR']] <- "beta"
   
-  options[['range_x']] <- c(0, 1)
+  options[['range_x']] <- c(options[['min_x']], options[['max_x']])
   
   if(options[['highlightType']] == "minmax"){
     options[['highlightmin']] <- options[['min']]
