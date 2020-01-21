@@ -55,7 +55,20 @@ Form {
     {
         title: qsTr("Options")
         enabled: plotPDF.checked || plotCDF.checked
-        DoubleField{ name: "range"; label: qsTr("Range"); defaultValue: 3; id: range; visible: false}
+		Group
+		{
+			columns: 2
+			DoubleField
+			{
+				name: "min_x"; label: qsTr("Range of x from"); id: min_x;
+				defaultValue: 0; min: 0; max: max_x.value
+			}
+			DoubleField
+			{
+				name: "max_x"; label: qsTr("to"); id: max_x;
+				defaultValue: 1; max: 1; min: min_x.value
+			}
+		}
         Group
         {
             title: qsTr("Highlight")
@@ -68,7 +81,7 @@ Form {
             RadioButtonGroup
             {
                 name: "highlightType"
-                title: qsTr("Limits")
+				title: qsTr("Interval")
                 enabled: highlightDensity.checked || highlightProbability.checked
                 RadioButton
                 {

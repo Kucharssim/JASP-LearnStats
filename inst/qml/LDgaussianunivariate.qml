@@ -51,6 +51,7 @@ Form {
             DoubleField
             {
                 name: "varValue"
+				id:    varValue
                 label: ["σ²", "σ ", "τ²", "τ "][parametrization.currentIndex]
                 negativeValues: false
                 defaultValue: 1
@@ -85,21 +86,21 @@ Form {
 
     Group
     {
-        title: qsTr("Options")
+		title: qsTr("Options")
         enabled: plotPDF.checked || plotCDF.checked
+
         Group
         {
-            title: qsTr("Range")
-            columns: 2
-            IntegerField
+			columns: 2
+			DoubleField
             { 
-                name: "min_x"; label: qsTr("From"); id: min_x;
-                defaultValue: -3; negativeValues: true; max: max_x.value
+				name: "min_x"; label: qsTr("Range of x from"); id: min_x;
+				defaultValue: -3; negativeValues: true; max: max_x.value
             }
-            IntegerField
+			DoubleField
             { 
-                name: "max_x"; label: qsTr("to"); id: max_x;
-                defaultValue: 3; negativeValues: true; min: min_x.value
+				name: "max_x"; label: qsTr("to"); id: max_x;
+				defaultValue: 3; negativeValues: true; min: min_x.value
             }
         }
         Group
@@ -107,14 +108,14 @@ Form {
             title: qsTr("Highlight")
             Group
             {
-                columns: 2
+				columns: 2
                 CheckBox{ name: "highlightDensity"; label: qsTr("Density"); id: highlightDensity }
                 CheckBox{ name: "highlightProbability"; label: qsTr("Probability"); id: highlightProbability }
             }
             RadioButtonGroup
             {
                 name: "highlightType"
-                title: qsTr("Limits")
+				title: qsTr("Interval")
                 enabled: highlightDensity.checked || highlightProbability.checked
                 RadioButton
                 {

@@ -71,12 +71,11 @@ Form {
         title: qsTr("Options")
         enabled: plotPMF.checked || plotCMF.checked
         Group
-        {
-            title: qsTr("Range")
+		{
             columns: 2
             IntegerField
             { 
-                name: "min_x"; label: qsTr("From"); id: min_x;
+				name: "min_x"; label: qsTr("Range of x from"); id: min_x;
                 defaultValue: 0; min: 0; max: max_x.value
             }
             IntegerField
@@ -84,8 +83,7 @@ Form {
                 name: "max_x"; label: qsTr("to"); id: max_x;
                 defaultValue: 5; min: min_x.value
             }
-        }
-        DoubleField{ name:  "range"; label: qsTr("Range"); defaultValue: 3; id: range; visible: false}
+		}
         Group
         {
             title: qsTr("Highlight")
@@ -100,7 +98,7 @@ Form {
                 columns: 2
                 IntegerField
                 { 
-                    name: "min"; label: qsTr("Limits"); afterLabel: qsTr("≤ X ≤"); id: min;
+					name: "min"; label: qsTr("Interval"); afterLabel: qsTr("≤ X ≤"); id: min;
                     negativeValues: false; defaultValue: 0; max: max.value
                 }
                 IntegerField
