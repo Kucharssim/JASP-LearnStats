@@ -24,9 +24,9 @@
   intro$position <- 1
   
   if(is.function(introText)){
-    intro[['text']] <- introText()
+    intro[['text']] <- gettext(introText())
   } else if(is.character(introText)){
-    intro[['text']] <- gsub(pattern = "%s", replacement = introText, x = .ldAllTextsList$explanations$intro)
+    intro[['text']] <- gettextf(.ldAllTextsList, introText)
   }
   
   jaspResults[['introText']] <- intro
@@ -36,29 +36,29 @@
 
 .ldAllTextsList <- list(
   explanations = list(
-    pdf = "The probability density function (PDF), usually denoted as f(x), is a function of a random variable X.
+    pdf = gettext("The probability density function (PDF), usually denoted as f(x), is a function of a random variable X.
     The value of f(x) provides the relative likelihood that a realization of the random variable X yields a value equal to x.
     
     The density plot displays the probability density function of a random variable.
-    The y-axis displays the value of the density function for a particular value of the random variable (displayed on the x-axis).",
+    The y-axis displays the value of the density function for a particular value of the random variable (displayed on the x-axis)."),
     
-    pmf = "The probability mass function (PMF), usually denoted as f(x), is a function of a random variable X.
+    pmf = gettext("The probability mass function (PMF), usually denoted as f(x), is a function of a random variable X.
     The value of f(x) provides the probability that a realization of the random variable X yields a value equal to x.
     
     The probability mass plot displays the probability mass function of a random variable.
-    The y-axis displays the value of the probability mass function for a particular value of the random variable (displayed on the x-axis).",
+    The y-axis displays the value of the probability mass function for a particular value of the random variable (displayed on the x-axis)."),
     
-    cdf = "The cumulative distribution function (CDF), usually denoted as F(x), is a function of a random variable X.
+    cdf = gettext("The cumulative distribution function (CDF), usually denoted as F(x), is a function of a random variable X.
     The value of F(x) provides the probability that a realization of the random variable X yields a value that is equal to or smaller than x.
     
     The cumulative probability plot displays the cumulative distribution of a random variable.
-    The y-axis displays the value of the cumulative distribution function for a particular value of the random variable (displayed on the x-axis).",
+    The y-axis displays the value of the cumulative distribution function for a particular value of the random variable (displayed on the x-axis)."),
     
-    qf  = "The quantile function, usually denoted as Q(p), is the inverse of the cumulative distribution function.
+    qf  = gettext("The quantile function, usually denoted as Q(p), is the inverse of the cumulative distribution function.
     The function gives the quantile such that the probability of the random variable being less than or equal to that value equals the given probability p.   
     
     The quantile plot displays the quantile function.
-    The y-axis displays the quantile of which the probability that the random variable is less or equal to that value is equal to p (displayed on the x-axis).",
+    The y-axis displays the quantile of which the probability that the random variable is less or equal to that value is equal to p (displayed on the x-axis)."),
     
     intro = "<h3> Demonstration of the %s </h3>
     This demonstration is divided into four parts. 
@@ -69,12 +69,12 @@
     "
   ),
   references   = list(
-    jasp = " ",
+    jasp = "JASP Team (2018). JASP (Version 0.9.2) [Computer software].",
     goftest = "Julian Faraway, George Marsaglia, John Marsaglia and Adrian Baddeley (2017). goftest: Classical Goodness-of-Fit Tests for Univariate Distributions. R package version 1.1-1. https://CRAN.R-project.org/package=goftest",
     fitdistrplus = "Marie Laure Delignette-Muller, Christophe Dutang (2015). fitdistrplus: An R Package for Fitting Distributions. Journal of Statistical Software, 64(4), 1-34. URL: http://www.jstatsoft.org/v64/i04/.",
     car = "John Fox and Sanford Weisberg (2011). An R Companion to Applied Regression, Second Edition. Thousand Oaks CA: Sage. URL: http://socserv.socsci.mcmaster.ca/jfox/Books/Companion."
   ),
   feedback = list(
-    fitdistrError = "Estimation failed: try adjusting parameter values, check outliers, or feasibility of the distribution fitting the data."
+    fitdistrError = gettext("Estimation failed: try adjusting parameter values, check outliers, or feasibility of the distribution fitting the data.")
   )
 )

@@ -20,7 +20,7 @@
   if(!is.null(jaspResults[[name]])){
     fitContainer <- jaspResults[[name]]
   } else{
-    fitContainer <- createJaspContainer(title = title)
+    fitContainer <- createJaspContainer(title = gettext(title))
     fitContainer$position <- position
     
     fitContainer$dependOn(c("variable", "simulateNow"))
@@ -29,7 +29,7 @@
   }
 
   if(!isFALSE(errors)){
-    fitContainer$setError(errors$message)
+    fitContainer$setError(gettext(errors$message))
   }
   
   return(fitContainer)
@@ -39,29 +39,29 @@
   if(!options$outputEstimates) return()
   if(!is.null(container[['estParametersTable']])) return()
   
-  tab <- createJaspTable(title = "Estimated Parameters")
+  tab <- createJaspTable(title = gettext("Estimated Parameters"))
   tab$dependOn(c("outputEstimates", "outputSE", "ciInterval", "ciIntervalInterval", "parametrization", method))
   tab$position <- 1
   tab$showSpecifiedColumnsOnly <- TRUE
   tab$setExpectedSize(rows = length(options$pars) - length(options$fix.pars))
   
-  tab$addColumnInfo(name = "parName", title = "Parameter", type = "string")
-  tab$addColumnInfo(name = "estimate", title = "Estimate", type = "number")
+  tab$addColumnInfo(name = "parName",  title = gettext("Parameter"), type = "string")
+  tab$addColumnInfo(name = "estimate", title = gettext("Estimate"), type = "number")
   
   #"\u03BC\u0302"
   if(options$outputSE && se.possible){
-    tab$addColumnInfo(name = "se", title = "SE", type = "number")
+    tab$addColumnInfo(name = "se", title = gettext("SE"), type = "number")
   } else if(options$outputSE) {
-    tab$addFootnote("Standard errors are unavailable with this method")
+    tab$addFootnote(gettext("Standard errors are unavailable with this method"))
   }
   
   if(options$ciInterval && ci.possible){
-    tab$addColumnInfo(name = "lower", title = "Lower", type = "number",
-                      overtitle = sprintf("%s%% CI", options[['ciIntervalInterval']]*100))
-    tab$addColumnInfo(name = "upper", title = "Upper", type = "number",
-                      overtitle = sprintf("%s%% CI", options[['ciIntervalInterval']]*100))
+    tab$addColumnInfo(name = "lower", title = gettext("Lower"), type = "number",
+                      overtitle = gettextf("%s%% CI", options[['ciIntervalInterval']]*100))
+    tab$addColumnInfo(name = "upper", title = gettext("Upper"), type = "number",
+                      overtitle = gettextf("%s%% CI", options[['ciIntervalInterval']]*100))
   } else if(options$ciInterval){
-    tab$addFootnote("Confidence intervals are unavailable with this method.")
+    tab$addFootnote(gettext("Confidence intervals are unavailable with this method."))
   }
   
   if(method == "methodMLE"){
@@ -72,11 +72,11 @@
     }
     
     if(options$ciInterval && !options$outputSE){
-      tab$addFootnote("Confidence intervals were calculated using the delta method.")
+      tab$addFootnote(gettext("Confidence intervals were calculated using the delta method."))
     } else if(!options$ciInterval && options$outputSE){
-      tab$addFootnote("Standard errors were calculated using the delta method.")
+      tab$addFootnote(gettext("Standard errors were calculated using the delta method."))
     } else if(options$ciInterval && options$outputSE){
-      tab$addFootnote("Standard errors and confidence intervals were calculated using the delta method.")
+      tab$addFootnote(gettext("Standard errors and confidence intervals were calculated using the delta method."))
     }
   }
   
@@ -116,7 +116,7 @@
   }
   
   if(inherits(results$fitdist, "try-error")){
-    mleContainer$setError("Estimation failed: try adjusting parameter values, check outliers, or feasibility of the distribution fitting the data.")
+    mleContainer$setError(gettext("Estimation failed: try adjusting parameter values, check outliers, or feasibility of the distribution fitting the data."))
     return()
   } 
   

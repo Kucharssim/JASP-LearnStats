@@ -25,7 +25,7 @@
     errors <- !is_integer
   } else if(!is_integer){
     errors[['integer']] <- TRUE
-    errors[['message']] <- paste(errors[['message']], "<ul><li>Variable has to be discrete (i.e., integer).</li></ul>")
+    errors[['message']] <- paste(errors[['message']], gettext("<ul><li>Variable has to be discrete (i.e., integer).</li></ul>"))
   }
   
   return(errors)
@@ -35,7 +35,7 @@
   if(!is.null(jaspResults[['dataContainer']])){
     dataContainer <- jaspResults[['dataContainer']]
   } else{
-    dataContainer <- createJaspContainer(title = paste0("Overview - ", options[['variable']][1]))
+    dataContainer <- createJaspContainer(title = gettextf("Overview - %s", options[['variable']]))
     dataContainer$position <- 6
     dataContainer$dependOn(c("variable", "simulateNow"))
     
@@ -58,23 +58,22 @@
   if(!options$summary) return()
   if(!is.null(dataContainer[['summary']])) return()
   
-  summaryTable <- createJaspTable(title = "Descriptives")
+  summaryTable <- createJaspTable(title = gettext("Descriptives"))
   summaryTable$position <- 1
   summaryTable$dependOn(c("summary"))
-  summaryTable$addCitation("JASP Team (2018). JASP (Version 0.9.2) [Computer software].")
   
-  summaryTable$addColumnInfo(name = "variable",   title = "Variable",       type = "string", combine = TRUE)
-  summaryTable$addColumnInfo(name = "sampleSize", title = "n",              type = "integer")
-  summaryTable$addColumnInfo(name = "mean",       title = "Mean",           type = "number", format = "sf:4")
-  summaryTable$addColumnInfo(name = "var",        title = "Variance",       type = "number", format = "sf:4")
-  summaryTable$addColumnInfo(name = "sd",         title = "Std. deviation", type = "number", format = "sf:4")
-  summaryTable$addColumnInfo(name = "min",        title = "Minimum",        type = "number", format = "sf:4")
-  summaryTable$addColumnInfo(name = "quantile25", title = "25% Quantile",   type = "number", format = "sf:4")
-  summaryTable$addColumnInfo(name = "median",     title = "Median",         type = "number", format = "sf:4")
-  summaryTable$addColumnInfo(name = "quantile75", title = "75% Quantile",   type = "number", format = "sf:4")
-  summaryTable$addColumnInfo(name = "max",        title = "Maximum",        type = "number", format = "sf:4")
-  #summaryTable$addColumnInfo(name = "skew",       title = "Skewness",       type = "number", format = "sf:4")
-  #summaryTable$addColumnInfo(name = "kurt",       title = "Kurtosis",       type = "number", format = "sf:4")
+  summaryTable$addColumnInfo(name = "variable",   title = gettext("Variable"),       type = "string", combine = TRUE)
+  summaryTable$addColumnInfo(name = "sampleSize", title = gettext("n"),              type = "integer")
+  summaryTable$addColumnInfo(name = "mean",       title = gettext("Mean"),           type = "number", format = "sf:4")
+  summaryTable$addColumnInfo(name = "var",        title = gettext("Variance"),       type = "number", format = "sf:4")
+  summaryTable$addColumnInfo(name = "sd",         title = gettext("Std. deviation"), type = "number", format = "sf:4")
+  summaryTable$addColumnInfo(name = "min",        title = gettext("Minimum"),        type = "number", format = "sf:4")
+  summaryTable$addColumnInfo(name = "quantile25", title = gettext("25% Quantile"),   type = "number", format = "sf:4")
+  summaryTable$addColumnInfo(name = "median",     title = gettext("Median"),         type = "number", format = "sf:4")
+  summaryTable$addColumnInfo(name = "quantile75", title = gettext("75% Quantile"),   type = "number", format = "sf:4")
+  summaryTable$addColumnInfo(name = "max",        title = gettext("Maximum"),        type = "number", format = "sf:4")
+  #summaryTable$addColumnInfo(name = "skew",       title = gettext("Skewness"),       type = "number", format = "sf:4")
+  #summaryTable$addColumnInfo(name = "kurt",       title = gettext("Kurtosis"),       type = "number", format = "sf:4")
   
   dataContainer[['summary']] <- summaryTable
   
@@ -109,14 +108,14 @@
   if(!options$summary) return()
   if(!is.null(dataContainer[['summary']])) return()
   
-  summaryTable <- createJaspTable(title = "Descriptives")
+  summaryTable <- createJaspTable(title = gettext("Descriptives"))
   summaryTable$position <- 1
   summaryTable$dependOn(c("summary"))
-  summaryTable$addCitation("JASP Team (2018). JASP (Version 0.9.2) [Computer software].")
+  summaryTable$addCitation(.ldAllTextsList$references$jasp)
   
   summaryTable$addColumnInfo(name = "level", title = "", type = "string")
-  summaryTable$addColumnInfo(name = "freq",  title = "n", type = "integer")
-  summaryTable$addColumnInfo(name = "rel.freq",  title = "Rel. Frequency", type = "number")
+  summaryTable$addColumnInfo(name = "freq",  title = gettext("n"), type = "integer")
+  summaryTable$addColumnInfo(name = "rel.freq",  title = gettext("Rel. Frequency"), type = "number")
   
   summaryTable$setExpectedSize(rows = length(levels(variable)) + 1)
   
@@ -140,7 +139,7 @@
   }
   
   summaryTable$addRows(list(
-    level = "Total",
+    level = gettext("Total"),
     freq = length(variable),
     rel.freq = "."
   ))
@@ -151,13 +150,13 @@
   if(!options$moments) return()
   if(!is.null(dataContainer[['moments']])) return()
   
-  momentsTable <- createJaspTable(title = "Observed Moments")
+  momentsTable <- createJaspTable(title = gettext("Observed Moments"))
   momentsTable$position <- 2
   momentsTable$dependOn(c("moments", "momentsUpTo"))
   
-  momentsTable$addColumnInfo(name = "moment", title = "Moment", type = "integer")
-  momentsTable$addColumnInfo(name = "raw",    title = "Raw",    type = "number")
-  momentsTable$addColumnInfo(name = "central",title = "Central",type = "number")
+  momentsTable$addColumnInfo(name = "moment", title = gettext("Moment"), type = "integer")
+  momentsTable$addColumnInfo(name = "raw",    title = gettext("Raw"),    type = "number")
+  momentsTable$addColumnInfo(name = "central",title = gettext("Central"),type = "number")
   
   momentsTable$setExpectedSize(rows = options$momentsUpTo)
   

@@ -24,15 +24,15 @@
   
   if(all(!whichTests)) return()
   
-  tab <- createJaspTable(title = "Fit Statistics")
+  tab <- createJaspTable(title = gettext("Fit Statistics"))
   tab$position <- 1
   tab$dependOn(c(method, allTests[optionsTests]))
   tab$setExpectedSize(rows = sum(whichTests))
   
   
-  tab$addColumnInfo(name = "test", title = "Test", type = "string")
-  tab$addColumnInfo(name = "statistic", title = "Statistic", type = "number")
-  tab$addColumnInfo(name = "p.value", title = "p", type = "pvalue")
+  tab$addColumnInfo(name = "test",      title = gettext("Test"),      type = "string")
+  tab$addColumnInfo(name = "statistic", title = gettext("Statistic"), type = "number")
+  tab$addColumnInfo(name = "p.value",   title = gettext("p"),         type = "pvalue")
   
   tab$addCitation(.ldAllTextsList$references$goftest)
   
@@ -91,8 +91,11 @@
   
   allTests <- c("kolmogorovSmirnov", "cramerVonMisses", "andersonDarling", "shapiroWilk", "chiSquare")
   tests <- allTests[allTests %in% names(options)]
-  testNames <- c("Kolmogorov-Smirnov", "Cramer von Misses", "Anderson-Darling",
-                 "Shapiro-Wilk", "Chi-square")[allTests %in% names(options)]
+  testNames <- c(gettext("Kolmogorov-Smirnov"),
+                 gettext("Cramer von Misses"),
+                 gettext("Anderson-Darling"),
+                 gettext("Shapiro-Wilk"),
+                 gettext("Chi-square"))[allTests %in% names(options)]
   
   whichTests <- unlist(options[tests])
   
@@ -107,7 +110,7 @@
 .ldFitPlots <- function(fitContainer, estimates, options, variable, ready){
   estimates <- c(estimates, options$fix.pars)
   if(is.null(fitContainer[['estPDF']]) && isTRUE(options$estPDF)){
-    pdfplot <- createJaspPlot(title = "Histogram vs. Theoretical PDF")
+    pdfplot <- createJaspPlot(title = gettext("Histogram vs. Theoretical PDF"))
     pdfplot$dependOn(c("estPDF"))
     pdfplot$position <- 2
     fitContainer[['estPDF']] <- pdfplot
@@ -117,7 +120,7 @@
   }
   
   if(is.null(fitContainer[['estPMF']]) && isTRUE(options$estPMF)){
-    pmfplot <- createJaspPlot(title = "Histogram vs. Theoretical PMF")
+    pmfplot <- createJaspPlot(title = gettext("Histogram vs. Theoretical PMF"))
     pmfplot$dependOn(c("estPMF"))
     pmfplot$position <- 2
     fitContainer[['estPMF']] <- pmfplot
@@ -127,7 +130,7 @@
   }
   
   if(is.null(fitContainer[['qqplot']]) && options$qqplot){
-    qqplot <- createJaspPlot(title = "Q-Q plot")
+    qqplot <- createJaspPlot(title = gettext("Q-Q plot"))
     qqplot$dependOn(c("qqplot"))
     qqplot$position <- 3
     fitContainer[['qqplot']] <- qqplot
@@ -137,7 +140,7 @@
   }
   
   if(is.null(fitContainer[['estCDF']]) && options$estCDF){
-    cdfplot <- createJaspPlot(title = "Empirical vs. Theoretical CDF")
+    cdfplot <- createJaspPlot(title = gettext("Empirical vs. Theoretical CDF"))
     cdfplot$dependOn(c("estCDF"))
     cdfplot$position <- 4
     fitContainer[['estCDF']] <- cdfplot
@@ -147,7 +150,7 @@
   }
   
   if(is.null(fitContainer[['ppplot']]) && options$ppplot){
-    ppplot <- createJaspPlot(title = "P-P plot")
+    ppplot <- createJaspPlot(title = gettext("P-P plot"))
     ppplot$dependOn(c("ppplot"))
     ppplot$position <-5
     fitContainer[['ppplot']] <- ppplot
@@ -163,7 +166,7 @@
   p <- ggplot2::ggplot(data = NULL, ggplot2::aes(sample = variable)) +
     ggplot2::stat_qq(distribution = options[['qFun']], dparams = estParameters, shape = 21, fill = "grey", size = 3) +
     ggplot2::stat_qq_line(distribution = options[['qFun']], dparams = estParameters) +
-    ggplot2::xlab("Theoretical") + ggplot2::ylab("Sample")
+    ggplot2::xlab(gettext("Theoretical")) + ggplot2::ylab(gettext("Sample"))
   
   p <- JASPgraphs::themeJasp(p)
   
@@ -179,7 +182,7 @@
     ggplot2::geom_rug() +
     ggplot2::scale_x_continuous(limits = range(variable),
                                 breaks = pretty(range(variable))) +
-    ggplot2::ylab("Density") + ggplot2::xlab(options[['variable']])
+    ggplot2::ylab(gettext("Density")) + ggplot2::xlab(options[['variable']])
   
   p <- JASPgraphs::themeJasp(p)
   
@@ -202,7 +205,7 @@
                                 expand = c(0.1, 0.1),
                                 breaks = JASPgraphs::axesBreaks(range)) + 
     ggplot2::xlab(options$variable) +
-    ggplot2::ylab(paste0("Probability Mass"))
+    ggplot2::ylab(paste0(gettext("Probability Mass")))
   
   p <- JASPgraphs::themeJasp(p)
   
@@ -222,7 +225,7 @@
   p <- ggplot2::ggplot(data = NULL) +
     ggplot2::geom_abline(slope = 1, intercept = 0) +
     JASPgraphs::geom_point(ggplot2::aes(x = TheoreticalProp, y = ObservedProp)) +
-    ggplot2::xlab("Theoretical") + ggplot2::ylab("Sample") +
+    ggplot2::xlab(gettext("Theoretical")) + ggplot2::ylab(gettext("Sample")) +
     ggplot2::scale_x_continuous(limits = 0:1) + ggplot2::scale_y_continuous(limits = 0:1)
   
   p <- JASPgraphs::themeJasp(p)
@@ -239,7 +242,7 @@
     ggplot2::stat_function(fun = options[['cdfFun']], args = as.list(estParameters), size = 1.5) + 
     ggplot2::scale_x_continuous(limits = range(variable), breaks = pretty(range(variable))) +
     ggplot2::scale_y_continuous(limits = 0:1) + 
-    ggplot2::ylab("Probability (X \u2264 x)") + ggplot2::xlab(options[['variable']])
+    ggplot2::ylab(gettext("Probability (X \u2264 x)")) + ggplot2::xlab(options[['variable']])
   
   p <- JASPgraphs::themeJasp(p)
   

@@ -38,7 +38,7 @@
   if(!options$formulas) return()
   if(!is.null(container[['formula']])) return()  
   
-  formula <- createJaspHtml(title = "Formula", elementType = "h1")
+  formula <- createJaspHtml(title = gettext("Formula"), elementType = "h1")
   formula$position <- 3
   formula$dependOn(c("formulas", depend))
   
@@ -82,7 +82,7 @@
 .ldPlotPDF <- function(pdfContainer, options){
   if(!is.null(pdfContainer[['pdfPlot']])) return()
   
-  pdfPlot <- createJaspPlot(title = "Density Plot", width = 600, height = 320)
+  pdfPlot <- createJaspPlot(title = gettext("Density Plot"), width = 600, height = 320)
   pdfPlot$position <- 2 # after explanation, before formula
   pdfPlot$dependOn(c('plotPDF', 'min_x', 'max_x', 'highlightType',
                      'highlightDensity', 'highlightProbability', 
@@ -165,7 +165,7 @@
       JASPgraphs::geom_point(x = args[['x']], y = pdfValue, size = 5)
   }
   
-  plot <- plot + ggplot2::ylab("Density") + 
+  plot <- plot + ggplot2::ylab(gettext("Density")) + 
     ggplot2::scale_x_continuous(limits = options[['range_x']], breaks = JASPgraphs::getPrettyAxisBreaks(options[['range_x']]))
   
   plot <- JASPgraphs::themeJasp(plot)
@@ -201,7 +201,7 @@
 .ldPlotCDF <- function(cdfContainer, options){
   if(!is.null(cdfContainer[['cdfPlot']])) return()
   
-  cdfPlot <- createJaspPlot(title = "Cumulative Probability Plot", width = 600, height = 320)
+  cdfPlot <- createJaspPlot(title = gettext("Cumulative Probability Plot"), width = 600, height = 320)
   cdfPlot$position <- 2 # after explanation, before formula
   cdfPlot$dependOn(c('plotCDF', 'min_x', 'max_x', 'highlightType',
                      'highlightDensity', 'highlightProbability', 
@@ -262,12 +262,12 @@
     plot <- plot + 
       ggplot2::geom_abline(data = line_data, ggplot2::aes(slope = slope, intercept = intercept, col = col), size = 1) +
       JASPgraphs::geom_point (data = point_data, ggplot2::aes(x = x, y = y, col = col), size = 5) + 
-      JASPgraphs::scale_JASPcolor_discrete(name = "Slope", labels = as.character(slopeText))
+      JASPgraphs::scale_JASPcolor_discrete(name = gettext("Slope"), labels = as.character(slopeText))
   }
   
   
   plot <- plot + 
-    ggplot2::ylab("Probability (X \u2264 x)") +
+    ggplot2::ylab(gettext("Probability (X \u2264 x)")) +
     ggplot2::scale_x_continuous(limits = options[['range_x']], 
                                 breaks = JASPgraphs::getPrettyAxisBreaks(options[['range_x']])) +
     ggplot2::scale_y_continuous(limits = c(0, 1))
@@ -305,7 +305,7 @@
 .ldPlotQF <- function(qfContainer, options){
   if(!is.null(qfContainer[['qfPlot']])) return()
   
-  qfPlot <- createJaspPlot(title = "Quantile Plot", width = 600, height = 320)
+  qfPlot <- createJaspPlot(title = gettext("Quantile Plot"), width = 600, height = 320)
   qfPlot$position <- 2 # after explanation, before formula
   qfPlot$dependOn(c('plotQF', 'range'))
   qfContainer[['qfPlot']] <- qfPlot
@@ -324,7 +324,7 @@
   
   plot <- ggplot2::ggplot(data = data.frame(x = prange), ggplot2::aes(x = x)) +
     ggplot2::stat_function(fun = options[['qFun']], n = 151, args = args, size = 1.25)  +
-    ggplot2::ylab("x") + ggplot2::xlab("Probability(X \u2264 x)") +
+    ggplot2::ylab("x") + ggplot2::xlab(gettext("Probability(X \u2264 x)")) +
     ggplot2::scale_x_continuous(limits = 0:1) +
     ggplot2::scale_y_continuous(limits = options[['range_x']], 
                                 breaks = JASPgraphs::getPrettyAxisBreaks(options[['range_x']]))
@@ -365,7 +365,7 @@
 .ldPlotPMF <- function(pmfContainer, options){
   if(!is.null(pmfContainer[['pmfPlot']])) return()
   
-  pmfPlot <- createJaspPlot(title = "Probability Mass Plot", width = 600, height = 320)
+  pmfPlot <- createJaspPlot(title = gettext("Probability Mass Plot"), width = 600, height = 320)
   pmfPlot$position <- 2 # after explanation, before formula
   pmfPlot$dependOn(c('plotPMF', 
                      'min_x', 'max_x',
@@ -459,7 +459,7 @@
   # display only pretty integers
   breaks <- breaks[breaks %% 1 == 0]
   plot <- plot + 
-    ggplot2::ylab("Probability (X = x)") + 
+    ggplot2::ylab(gettext("Probability (X = x)")) + 
     ggplot2::scale_x_continuous(limits = xlim,
                                 breaks = breaks,
                                 labels = breaks,
@@ -498,7 +498,7 @@
 .ldPlotCMF <- function(cmfContainer, options){
   if(!is.null(cmfContainer[['cmfPlot']])) return()
   
-  cmfPlot <- createJaspPlot(title = "Cumulative Probability Plot", width = 600, height = 320)
+  cmfPlot <- createJaspPlot(title = gettext("Cumulative Probability Plot"), width = 600, height = 320)
   cmfPlot$position <- 2 # after explanation, before formula
   cmfPlot$dependOn(c('plotCMF', 'min_x', 'max_x', 'highlightType',
                      'highlightDensity', 'highlightProbability', 
@@ -590,7 +590,7 @@
   # display only pretty integers
   breaks <- breaks[breaks %% 1 == 0]
   plot <- plot + 
-    ggplot2::ylab("Probability (X \u2264 x)") + 
+    ggplot2::ylab(gettext("Probability (X \u2264 x)")) + 
     ggplot2::scale_x_continuous(limits = xlim,
                                 breaks = breaks,
                                 labels = breaks,
@@ -607,7 +607,7 @@
   if(!options$histogram) return()
   if(!is.null(dataContainer[['histogram']])) return()
   
-  title <- switch(as, scale = "Histogram", "Bar plot")
+  title <- switch(as, scale = gettext("Histogram"), gettext("Bar plot"))
   histPlot <- createJaspPlot(title = title, width = 500, height = 320)
   
   if(as != "scale"){
@@ -648,7 +648,7 @@
   plot <- ggplot2::ggplot(data = dat, ggplot2::aes(x = mids, y = counts/sum(counts))) +
     ggplot2::geom_bar(stat="identity", fill = "grey", colour = "black") +
     ggplot2::xlab(options$variable) +
-    ggplot2::ylab(paste0("Rel. Freq(", options[['variable']], " in bin)"))
+    ggplot2::ylab(gettextf("Rel. Freq (%s in bin)", options[['variable']]))
   
   if(as == "scale"){
     plot <- plot + ggplot2::scale_x_continuous(limits = range, 
@@ -676,7 +676,7 @@
   if(!options[['ecdf']]) return()
   if(!is.null(dataContainer[['ecdf']])) return()
   
-  ecdfPlot <- createJaspPlot(title = "Empirical Cumulative Distribution", width = 500, height = 320)
+  ecdfPlot <- createJaspPlot(title = gettext("Empirical Cumulative Distribution"), width = 500, height = 320)
   
   ecdfPlot$dependOn(c("ecdf"))
   ecdfPlot$position <- 4
@@ -694,7 +694,7 @@
     ggplot2::geom_rug() +
     ggplot2::scale_x_continuous(limits = range(variable)*1.1) +
     ggplot2::xlab(options$variable) +
-    ggplot2::ylab(paste0("Freq(", options[['variable']], " \u2264 x)"))
+    ggplot2::ylab(gettextf("Freq (%s \u2264 x)", options[['variable']]))
   
   p <- JASPgraphs::themeJasp(p)
   plot[['plotObject']] <- p
