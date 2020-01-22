@@ -71,7 +71,7 @@
   explanation$position <- 1
   
   if(is.null(explanationText)){
-    explanationText <- .ldAllTextsList$explanations$pdf
+    explanationText <- .ldAllTextsList()$explanations$pdf
   }
   
   explanation[['text']] <- explanationText
@@ -191,7 +191,7 @@
   explanation$position <- 1
   
   if(is.null(explanationText)){
-    explanationText <- .ldAllTextsList$explanations$cdf
+    explanationText <- .ldAllTextsList()$explanations$cdf
   }
   
   explanation[['text']] <- explanationText
@@ -295,7 +295,7 @@
   explanation$position <- 1
   
   if(is.null(explanationText)){
-    explanationText <- .ldAllTextsList$explanations$cdf
+    explanationText <- .ldAllTextsList()$explanations$cdf
   }
   
   explanation[['text']] <- explanationText
@@ -354,7 +354,7 @@
   explanation$position <- 1
   
   if(is.null(explanationText)){
-    explanationText <- .ldAllTextsList$explanations$pmf
+    explanationText <- .ldAllTextsList()$explanations$pmf
   }
   
   explanation[['text']] <- explanationText
@@ -488,7 +488,7 @@
   explanation$position <- 1
   
   if(is.null(explanationText)){
-    explanationText <- .ldAllTextsList$explanations$cdf
+    explanationText <- .ldAllTextsList()$explanations$cdf
   }
   
   explanation[['text']] <- explanationText
