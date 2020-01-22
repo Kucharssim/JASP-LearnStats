@@ -109,7 +109,7 @@ Form {
           title: qsTr("Plots")
           CheckBox
           {
-              name: "histogram";  label: qsTr("Histogram"); childrenOnSameRow: true
+			  name: "histogram";  label: qsTr("Bar plot"); childrenOnSameRow: true
           }
           CheckBox{ name: "ecdf"; label: qsTr("Empirical cumulative distribution"); visible: false }
       }
