@@ -65,10 +65,10 @@
   }
   
   if(method == "methodMLE"){
-    tab$addCitation(.ldAllTextsList$references$fitdistrplus)
+    tab$addCitation(.ldAllTextsList()$references$fitdistrplus)
     
     if(options$ciInterval || options$outputSE){
-      tab$addCitation(.ldAllTextsList$references$car)
+      tab$addCitation(.ldAllTextsList()$references$car)
     }
     
     if(options$ciInterval && !options$outputSE){

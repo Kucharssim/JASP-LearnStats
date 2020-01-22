@@ -113,7 +113,7 @@
     https://en.wikipedia.org/wiki/List_of_probability_distributions"
     ),
     references   = list(
-      jasp = "JASP Team (2018). JASP (Version 0.9.2) [Computer software].",
+      jasp = "JASP Team (2020). JASP (Version 0.11.1) [Computer software].",
       goftest = "Julian Faraway, George Marsaglia, John Marsaglia and Adrian Baddeley (2017). goftest: Classical Goodness-of-Fit Tests for Univariate Distributions. R package version 1.1-1. https://CRAN.R-project.org/package=goftest",
       fitdistrplus = "Marie Laure Delignette-Muller, Christophe Dutang (2015). fitdistrplus: An R Package for Fitting Distributions. Journal of Statistical Software, 64(4), 1-34. URL: http://www.jstatsoft.org/v64/i04/.",
       car = "John Fox and Sanford Weisberg (2011). An R Companion to Applied Regression, Second Edition. Thousand Oaks CA: Sage. URL: http://socserv.socsci.mcmaster.ca/jfox/Books/Companion."

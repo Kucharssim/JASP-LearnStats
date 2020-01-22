@@ -19,7 +19,7 @@ LDexponential <- function(jaspResults, dataset, options, state=NULL){
   options <- .ldRecodeOptionsExponential(options)
   
   #### Show exponential section ----
-  .ldIntroText(jaspResults, options, "exponential")
+  .ldIntroText(jaspResults, options, "Exponential distribution")
   .ldExponentialParsSupportMoments(jaspResults, options)
   
   

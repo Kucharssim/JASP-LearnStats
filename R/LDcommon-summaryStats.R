@@ -111,7 +111,7 @@
   summaryTable <- createJaspTable(title = gettext("Descriptives"))
   summaryTable$position <- 1
   summaryTable$dependOn(c("summary"))
-  summaryTable$addCitation(.ldAllTextsList$references$jasp)
+  summaryTable$addCitation(.ldAllTextsList()$references$jasp)
   
   summaryTable$addColumnInfo(name = "level", title = "", type = "string")
   summaryTable$addColumnInfo(name = "freq",  title = gettext("n"), type = "integer")
